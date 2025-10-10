@@ -1,0 +1,9 @@
+2025-10-10 22:51:47 | attendance_ai | INFO | Application started
+2025-10-10 22:51:47 | attendance_ai | ERROR | Something went wrong
+2025-10-10 22:52:08 | attendance_ai | INFO | Application started
+2025-10-10 22:52:08 | attendance_ai | ERROR | Something went wrong
+2025-10-10 22:53:32 | Agentic_tracking_system | INFO | Application started
+2025-10-10 22:53:32 | Agentic_tracking_system | ERROR | Something went wrong
+2025-10-10 23:14:30 | Agentic_tracking_system | ERROR | Failed to fetch data from None: expected str, bytes or os.PathLike object, not NoneType
+2025-10-10 23:20:14 | Agentic_tracking_system | ERROR | Failed to fetch data from None: expected str, bytes or os.PathLike object, not NoneType
+2025-10-10 23:35:44 | Agentic_tracking_system | INFO | Data fetched successfully and saved to data/raw/attendance.jsonl
