@@ -1,0 +1,27 @@
+{
+    "SOURCE_DATA_URL": "https://nodered.lenuage.io/rfid-log.jsonl",
+    "FETCHED_DATA_PATH": "data/fetched/raw_data.jsonl",
+    "PREPROCESSED_DATA_PATH": "data/preprocessed/clean_data.csv",
+    "MONITORED_OUTPUT_PATH": "data/monitored/alerts.csv",
+    "GROUPS_OUTPUT_PATH": "data/grouped/groups.json",
+    "GROUPS_COUNTS": {"Msc/IOT": 11, "Msc/SC": 2, "FIS": 2, "Test": 1},
+    "LLM_MODULES": {
+        "DATA_PIPELINE": {
+            "MODEL": {
+                "NAME": "gemini-2.5-flash-preview-05-20",
+                "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
+            },
+            "SETTINGS": {
+                "TEMPERATURE": 0.3,
+                "TOP_P": 0.9,
+                "MAX_TOKENS": 1024,
+                "PRESENCE_PENALTY": 0.2,
+                "FREQUENCY_PENALTY": 0.0,
+                "TIMEOUT": 60,
+                "RETRIES": 2
+            }
+        }
+    }
+
+}
+  
