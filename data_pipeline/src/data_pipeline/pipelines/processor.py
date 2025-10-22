@@ -4,8 +4,10 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import json
 import os
-from utils import Config, logger
+from utils import logger, get_config, load_config
 from utils.helpers import *
+
+load_config()
 
 class Preprocessor:
     """
@@ -20,8 +22,8 @@ class Preprocessor:
       7. Export clean ML-ready dataset
     """
 
-    def __init__(self, jsonl_path: str = None):
-        self.jsonl_path = jsonl_path or Config.ORGINAL_DATA_PATH
+    def __init__(self):
+        self.jsonl_path = get_config().FETCHED_DATA_PATH
         if not self.jsonl_path or not os.path.exists(self.jsonl_path):
             logger.error(f"JSONL path not found or invalid: {self.jsonl_path}")
             raise FileNotFoundError(f"Input file not found: {self.jsonl_path}")
@@ -241,7 +243,7 @@ class Preprocessor:
     # -------------------------------------------------------------------------
     def export_clean_data(self, output_path: str = None):
         """Export cleaned data to CSV."""
-        clean_data_path = output_path or Config.CLEAN_DATA_PATH
+        clean_data_path = output_path or get_config().PREPROCESSED_DATA_PATH
         try:
             os.makedirs(os.path.dirname(clean_data_path), exist_ok=True)
             self.df.to_csv(clean_data_path, index=False)
