@@ -7,7 +7,7 @@ class GroupAnalyzer:
 
     def __init__(self):
         load_config()
-        self.groups_count = get_config().GROUPS_COUNTS
+        self.groups_count = get_config().GROUPS_COUNTS.to_dict()
         self.allowed_lengths = set(self.groups_count.values())
         logger.info(f"GroupingTool initialized. Allowed lengths: {self.allowed_lengths}")
 
