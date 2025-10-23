@@ -2,10 +2,10 @@ import os
 import pandas as pd
 from smolagents import tool
 from utils import *
-from data_pipeline.pipelines.source_connector import fetch_data
-from data_pipeline.pipelines.processor import Preprocessor
-from data_pipeline.pipelines.observer import Observer
-from data_pipeline.pipelines.group_analyzer import GroupAnalyzer
+from pipelines.source_connector import fetch_data
+from pipelines.processor import Preprocessor
+from pipelines.observer import Observer
+from pipelines.group_analyzer import GroupAnalyzer
 
 # ---------------------------------------------------------
 # Fetch Tool
