@@ -37,6 +37,50 @@ class Preprocessor:
         logger.info(f"Preprocessor initialized with file: {self.jsonl_path}")
 
     # -------------------------------------------------------------------------
+   
+    def remove_redundant_users_in_record(self) -> None:
+        """
+        Remove redundant users in each JSONL record's logs.
+        Keeps only the earliest timestamp for each UID inside each record.
+        Updates self.raw_data in place.
+        """
+        logger.info("Removing redundant users within each JSONL record...")
+
+        try:
+            if not self.raw_data:
+                logger.warning("No raw data loaded. Run flatten_logs() or load JSONL first.")
+                return
+
+            total_removed = 0
+
+            for record in self.raw_data:
+                logs = record.get("logs", [])
+                if not logs:
+                    continue
+
+                # Keep earliest timestamp per UID
+                uid_map = {}
+                for log in logs:
+                    uid = log.get("uid")
+                    ts = log.get("ts")
+                    if uid not in uid_map or ts < uid_map[uid]["ts"]:
+                        uid_map[uid] = {"uid": uid, "ts": ts}
+
+                removed_count = len(logs) - len(uid_map)
+                total_removed += removed_count
+
+                # Replace logs with deduplicated ones
+                record["logs"] = list(uid_map.values())
+
+            logger.info(f"Removed {total_removed} redundant user entries across all records.")
+
+        except Exception as e:
+            logger.error(f"Error removing redundant users in records: {e}", exc_info=True)
+            raise
+
+
+    # -------------------------------------------------------------------------
+
     def _load_jsonl(self, path: str) -> list:
         """Load JSONL file into list of dicts."""
         try:
@@ -273,12 +317,13 @@ class Preprocessor:
         """Execute the full preprocessing workflow."""
         logger.info("Starting full preprocessing pipeline...")
 
+        self.remove_redundant_users_in_record()
         self.flatten_logs()
         self.detect_temporal_anomalies()
         self.detect_fake_badges()
         self.cluster_sessions()
-        self.build_user_profiles()
-        self.assess_device_health()
+        #self.build_user_profiles()
+        #self.assess_device_health()
         self.export_clean_data()
 
         summary = self.generate_summary_report()
