@@ -7,9 +7,8 @@ from .Secrets import Secrets
 from .config import load_config, get_config
 from .logger import logger
 from .helpers import safe_parse_timestamp
-from .file_helpers import save_csv, load_csv
-from .file_helpers import save_json, load_json
-from .file_helpers import load_jsonl
+from .file_helpers import save_csv, load_csv, save_json, load_json, load_jsonl
+from .models.gemini import GeminiModel
 
 __all__ = [
     "safe_parse_timestamp",
@@ -30,4 +29,7 @@ __all__ = [
 
     #JSONL
     "load_jsonl",
+
+    #gemini model
+    "GeminiModel"
 ]
