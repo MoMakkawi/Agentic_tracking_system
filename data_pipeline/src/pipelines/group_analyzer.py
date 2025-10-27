@@ -9,7 +9,7 @@ class GroupAnalyzer:
     """
 
     def __init__(self, input_path: str = None):
-        self.input_path = input_path or get_config().PREPROCESSED_DATA_PATH
+        self.input_path = input_path or get_config().PATHS.PREPROCESSED
 
         if not self.input_path or not os.path.exists(self.input_path):
             raise FileNotFoundError(f"GroupAnalyzer input file not found: {self.input_path}")
@@ -79,7 +79,7 @@ class GroupAnalyzer:
                 raise ValueError("No grouping results available")
             groups = self.last_result
 
-        output_path = output_path or get_config().GROUPS_OUTPUT_PATH
+        output_path = output_path or get_config().PATHS.GROUPED
         save_json(groups, output_path)
         logger.info(f"Groups saved to {output_path}")
         return output_path

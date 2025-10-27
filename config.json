@@ -1,10 +1,45 @@
 {
+    "GROUPS_COUNTS": {
+        "Msc/IOT": 11,
+        "Msc/SC": 2,
+        "FIS": 2,
+        "Test": 1
+    },
+
+    "SCHEDULE": {
+        "START_DATE": "2025-09-01",
+        "END_DATE": "2026-01-15",
+        "START_TIME": "08:00:00",
+        "END_TIME": "18:00:00",
+        "HOLIDAYS": [
+            "2025-12-25",
+            "2025-12-26",
+            "2026-01-01",
+            "2026-04-13"
+        ]
+    },
+
+    "PATHS": {
+        "RAW": "data/fetched/raw_data.jsonl",
+        "PREPROCESSED": "data/preprocessed/clean_data.json",
+        "GROUPED": "data/grouped/groups.json",
+        "ALERTS": {
+            "VALIDATION": {
+                "TIMESTAMP": "data/alerted/validation/timestamp.csv",
+                "IDENTITY": "data/alerted/validation/identity.csv"
+            }
+        }
+    },
+
     "SOURCE_DATA_URL": "https://nodered.lenuage.io/rfid-log.jsonl",
-    "FETCHED_DATA_PATH": "data/fetched/raw_data.jsonl",
-    "PREPROCESSED_DATA_PATH": "data/preprocessed/clean_data.csv",
-    "MONITORED_OUTPUT_PATH": "data/monitored/alerts.csv",
-    "GROUPS_OUTPUT_PATH": "data/grouped/groups.json",
-    "GROUPS_COUNTS": {"Msc/IOT": 11, "Msc/SC": 2, "FIS": 2, "Test": 1},
+
+    "ALERTS_PATH":{
+        "VALIDATION":{
+            "TIMESTAMP": "data/alerted/validation/timestamp.csv",
+            "IDENTITY": "data/alerted/validation/identity.csv"
+        }
+    },
+
     "LLM_MODULES": {
         "DATA_PIPELINE": {
             "MODEL": {

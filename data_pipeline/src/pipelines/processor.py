@@ -10,7 +10,7 @@ class Preprocessor:
     """
 
     def __init__(self, jsonl_path: str = None):
-        self.jsonl_path = jsonl_path or get_config().FETCHED_DATA_PATH
+        self.jsonl_path = jsonl_path or get_config().PATHS.RAW
 
         if not self.jsonl_path or not os.path.exists(self.jsonl_path):
             logger.error(f"JSONL path not found or invalid: {self.jsonl_path}")
@@ -117,7 +117,7 @@ class Preprocessor:
                 raise ValueError("No session data to save.")
             sessions = self.processed_sessions
 
-        output_path = output_path or get_config().PREPROCESSED_DATA_PATH
+        output_path = output_path or get_config().PATHS.PREPROCESSED
         save_json(sessions, output_path)
         logger.info(f"Preprocessed data saved to: {output_path}")
         return output_path
