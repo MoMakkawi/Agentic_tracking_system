@@ -1,8 +1,6 @@
 import requests
 import os
-from utils import logger, get_config, load_config
-
-load_config()
+from utils import logger, get_config
 
 def fetch_data(data_url=None, data_path=None):
     data_url = data_url or get_config().SOURCE_DATA_URL
