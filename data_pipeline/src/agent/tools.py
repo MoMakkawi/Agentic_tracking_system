@@ -4,7 +4,6 @@ from smolagents import tool
 from utils import *
 from pipelines.source_connector import fetch_data
 from pipelines.processor import Preprocessor
-from pipelines.observer import Observer
 from pipelines.group_analyzer import GroupAnalyzer
 
 # ---------------------------------------------------------
@@ -17,11 +16,12 @@ def fetch_tool() -> str:
     """
     try:
         logger.info("Start fetching data by Agent!")
-        fetch_data()
-        path = get_config().FETCHED_DATA_PATH
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        logger.info(f"Data fetched successfully and saved to {path}")
-        return path
+
+        output_path = fetch_data()
+
+        logger.info(f"Data fetched successfully and saved to {output_path}")
+        return output_path
+
     except Exception as e:
         logger.error("Fetch tool error", exc_info=True)
         return f"Error in fetch: {e}"
@@ -36,39 +36,17 @@ def preprocess_tool() -> str:
     """
     try:
         logger.info("Start preprocessing data by Agent!")
-        pre = Preprocessor()
-        pre.run_full_pipeline()
-        path = get_config().PREPROCESSED_DATA_PATH
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        logger.info(f"Data preprocessed successfully and saved to {path}")
-        return path
+
+        p = Preprocessor()
+        sessions = p.run()
+        output_path = p.save()
+
+        logger.info(f"Data preprocessed successfully and saved to {output_path}")
+        return output_path
+
     except Exception as e:
         logger.error("Preprocess tool error", exc_info=True)
         return f"Error in preprocessing: {e}"
-
-# ---------------------------------------------------------
-# Monitor Tool
-# ---------------------------------------------------------
-@tool
-def monitor_tool() -> str:
-    """
-    Monitor preprocessed attendance data and save alerts.
-    """
-    try:
-        logger.info("Start monitoring data by Agent!")
-        df = pd.read_csv(get_config().PREPROCESSED_DATA_PATH)
-        monitor = Observer(df)
-        alerts = monitor.run()
-
-        save_path = get_config().MONITORED_OUTPUT_PATH
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        monitor.save_alerts(alerts, path=save_path, file_format="csv")
-
-        logger.info(f"Alerts saved successfully to {save_path}")
-        return save_path
-    except Exception as e:
-        logger.error("Monitor tool error", exc_info=True)
-        return f"Error in monitoring: {e}"
 
 # ---------------------------------------------------------
 # Group Tool
@@ -76,25 +54,18 @@ def monitor_tool() -> str:
 @tool
 def group_tool() -> str:
     """
-    Group students into clusters.
+    Categorize or Aggregate or Classify students into groups Based on the preprocessed data.
     """
     try:
-        # Load JSONL data
-        data = load_jsonl(get_config().FETCHED_DATA_PATH)
-        logger.info(f"Loaded {len(data)} records for grouping")
+        logger.info("Start grouping data by Agent!")
 
-        # Run grouping
         analyzer = GroupAnalyzer()
-        top_named_groups = analyzer.run(data)
+        analyzer.run()
+        output_path = analyzer.save()
 
-        # Save grouped data
-        output_path = get_config().GROUPS_OUTPUT_PATH
-        analyzer.save(top_named_groups, output_path)
-        logger.info(f"Grouping completed and saved to {output_path}")
-
+        logger.info(f"Grouping completed successfully. Results saved to: {output_path}")
         return output_path
 
     except Exception as e:
         logger.error("Group tool error", exc_info=True)
         return f"Error in grouping: {e}"
-
