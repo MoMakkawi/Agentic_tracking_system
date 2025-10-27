@@ -1,69 +1,85 @@
-from utils import *
+from utils import logger, get_config
+from utils.file_helpers import load_json, save_json
+import os
+
 
 class GroupAnalyzer:
     """
-    Grouping fetched data based on UID sets and configuration.
+    Categorize students into groups Based on the preprocessed data.
     """
 
-    def __init__(self):
-        load_config()
+    def __init__(self, input_path: str = None):
+        self.input_path = input_path or get_config().PREPROCESSED_DATA_PATH
+
+        if not self.input_path or not os.path.exists(self.input_path):
+            raise FileNotFoundError(f"GroupAnalyzer input file not found: {self.input_path}")
+
+        self.raw_sessions = load_json(self.input_path)
+        self.last_result = None
         self.groups_count = get_config().GROUPS_COUNTS.to_dict()
         self.allowed_lengths = set(self.groups_count.values())
-        logger.info(f"GroupingTool initialized. Allowed lengths: {self.allowed_lengths}")
+        logger.info(f"GroupAnalyzer initialized with data: {len(self.raw_sessions)} sessions")
 
-    def run(self, data):
-        """Run full grouping pipeline on provided data."""
-        filtered = self._filter_by_count(data)
-        uid_groups = self._extract_uid_sets(filtered)
-        counter = self._count_uid_groups(uid_groups)
+    # ------------------------------------------------------------------
+    def run(self):
+        """Execute full grouping pipeline."""
+        logger.info("Running grouping on preprocessed sessions")
+
+        filtered = self._filter_by_count(self.raw_sessions)
+        uid_sets = self._extract_uid_sets(filtered)
+        counter = self._count_uid_groups(uid_sets)
         top_named_groups = self._assign_group_names(counter)
+
+        self.last_result = top_named_groups
+        logger.info("Grouping pipeline completed")
+
         return top_named_groups
 
-    # ---------- Internal helper methods ----------
+    # ---------- Internal Helpers ----------
     def _filter_by_count(self, data):
-        filtered = [item for item in data if item.get("count") in self.allowed_lengths]
-        logger.info(f"Filtered {len(filtered)} records from {len(data)}")
-        return filtered
+        return [
+            item for item in data
+            if item.get("unique_count") in self.allowed_lengths
+        ]
 
     def _extract_uid_sets(self, data):
-        uid_sets = [set(log["uid"] for log in item["logs"]) for item in data]
-        logger.info(f"Extracted {len(uid_sets)} UID sets")
-        return uid_sets
+        return [set(log["uid"] for log in item["logs"]) for item in data]
 
     def _count_uid_groups(self, uid_groups):
         from collections import Counter
-        counter = Counter(frozenset(group) for group in uid_groups)
-        logger.info(f"Counted {len(counter)} unique UID groups")
-        return counter
+        return Counter(frozenset(group) for group in uid_groups)
 
     def _assign_group_names(self, counter):
         from collections import defaultdict
         length_to_names = defaultdict(list)
         for name, length in self.groups_count.items():
             length_to_names[length].append(name)
-        
+
         groups_by_length = defaultdict(list)
-        for group, full_count in counter.items():
-            groups_by_length[len(group)].append((group, full_count))
-        
+        for group, count in counter.items():
+            groups_by_length[len(group)].append((group, count))
+
         result = []
         for length, names in length_to_names.items():
             sorted_groups = sorted(groups_by_length[length], key=lambda x: -x[1])
-            for name, (group, full_count) in zip(names, sorted_groups):
+            for name, (group, count) in zip(names, sorted_groups):
                 result.append({
                     "name": name,
-                    "full_count": full_count,
+                    "full_count": count,
                     "uids": list(group)
                 })
-                logger.info(f"Assigned group '{name}' with count {full_count}")
+
         return result
 
-    # ---------- Optional save/load ----------
-    def save(self, groups, file_path):
-        save_json(groups, file_path)
-        logger.info(f"Groups saved to {file_path}")
+    # ------------------------------------------------------------------
+    def save(self, groups=None, output_path: str = None):
+        """Save grouping results."""
+        if groups is None:
+            if self.last_result is None:
+                raise ValueError("No grouping results available")
+            groups = self.last_result
 
-    def load(self, file_path):
-        groups = load_json(file_path)
-        logger.info(f"Groups loaded from {file_path}")
-        return groups
+        output_path = output_path or get_config().GROUPS_OUTPUT_PATH
+        save_json(groups, output_path)
+        logger.info(f"Groups saved to {output_path}")
+        return output_path
