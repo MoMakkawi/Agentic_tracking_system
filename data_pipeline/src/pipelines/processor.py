@@ -91,7 +91,7 @@ class Preprocessor:
             logs.sort(key=lambda x: x["ts"])
 
             session = {
-                "session_id": f"session_{index}",
+                "session_id": index,
                 "device_id": record.get("device_id"),
                 "recorded_count": record.get("count", len(logs) + sum(redundant_uids.values())),
                 "unique_count": len({log["uid"] for log in logs}),
