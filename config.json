@@ -7,7 +7,7 @@
     },
 
     "SCHEDULE": {
-        "START_DATE": "2025-09-01",
+        "START_DATE": "2025-09-01", 
         "END_DATE": "2026-01-15",
         "START_TIME": "08:00:00",
         "END_TIME": "18:00:00",
@@ -16,7 +16,9 @@
             "2025-12-26",
             "2026-01-01",
             "2026-04-13"
-        ]
+        ],
+        
+        "SYSTEM_START_DATE": "2025-09-01"
     },
 
     "PATHS": {
@@ -26,7 +28,8 @@
         "ALERTS": {
             "VALIDATION": {
                 "TIMESTAMP": "data/alerted/validation/timestamp.csv",
-                "IDENTITY": "data/alerted/validation/identity.csv"
+                "IDENTITY": "data/alerted/validation/identity.csv",
+                "DEVICE": "data/alerted/validation/device.csv"
             }
         }
     },
