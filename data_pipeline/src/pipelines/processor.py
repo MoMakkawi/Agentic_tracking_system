@@ -1,12 +1,17 @@
+import os
 from utils import logger, get_config
 from utils.helpers import safe_parse_timestamp
-from utils.file_helpers import save_json, load_jsonl
-import os
-
+from utils.files_helper import FilesHelper
 
 class Preprocessor:
     """
-    Preprocessing for JSONL attendance data with tracking of redundant logs.
+    Preprocessor for raw JSONL attendance data.
+
+    Features:
+        - Remove redundant logs per UID
+        - Keep earliest timestamps for duplicates
+        - Convert logs into structured session objects
+        - Track redundant UID counts per session
     """
 
     def __init__(self, jsonl_path: str = None):
@@ -16,11 +21,11 @@ class Preprocessor:
             logger.error(f"JSONL path not found or invalid: {self.jsonl_path}")
             raise FileNotFoundError(f"Input file not found: {self.jsonl_path}")
 
-        self.raw_data = load_jsonl(self.jsonl_path)
+        logger.info(f"Loading raw data from: {self.jsonl_path}")
+        self.raw_data = FilesHelper.load(self.jsonl_path)
         self.processed_sessions = []
-        logger.info(f"Preprocessor initialized with file: {self.jsonl_path}")
 
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def run(self):
         """
         Execute full preprocessing pipeline.
@@ -69,15 +74,13 @@ class Preprocessor:
             record["redundant_uids"] = redundant_count
             total_redundant += sum(redundant_count.values())
 
-        logger.info(f"Identified {total_redundant} redundant logs in total")
+        logger.info(f"Detected {total_redundant} redundant logs in total")
         return data
 
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def _create_sessions(self, data):
-        """
-        Convert cleaned raw data into structured sessions.
-        """
-        logger.info("Generating structured session objects...")
+        """Convert cleaned data into structured session dictionaries."""
+        logger.info("Generating structured sessions...")
         sessions = []
 
         for index, record in enumerate(data, start=1):
@@ -100,10 +103,10 @@ class Preprocessor:
             }
             sessions.append(session)
 
-        logger.info(f"{len(sessions)} sessions generated successfully.")
+        logger.info(f"{len(sessions)} structured sessions generated.")
         return sessions
 
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def save(self, sessions=None, output_path: str = None):
         """
         Save processed sessions to JSON.
@@ -118,6 +121,6 @@ class Preprocessor:
             sessions = self.processed_sessions
 
         output_path = output_path or get_config().PATHS.PREPROCESSED
-        save_json(sessions, output_path)
+        FilesHelper.save(sessions, output_path)
         logger.info(f"Preprocessed data saved to: {output_path}")
         return output_path
