@@ -2,7 +2,7 @@ from datetime import datetime, time
 import pandas as pd
 from utils import logger, get_config, load_config
 from utils.helpers import safe_parse_timestamp
-from utils.file_helpers import save_csv, load_json
+from utils.files_helper import FilesHelper
 import os
 from collections import defaultdict
 
@@ -15,7 +15,6 @@ class TimestampValidator:
         - University hours validation
         - Semester period validation
         - Weekend & holiday check-in detection
-        - CSV export of grouped invalid check-ins
     """
 
     def __init__(self, input_path: str = None):
@@ -26,7 +25,7 @@ class TimestampValidator:
             raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
 
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = load_json(self.input_path)
+        self.data = FilesHelper.load(self.input_path)
         self.df = self._flatten_logs(self.data)
         self.alerts = []
 
@@ -51,7 +50,7 @@ class TimestampValidator:
         header = ["uid", "timestamp", "session_id", "device_id", "reason"]
         rows = [header] + self.alerts
 
-        save_csv(rows, output_path)
+        FilesHelper.save(rows, output_path)
         logger.info(f"Alerts exported to CSV: {output_path}")
         return output_path
 

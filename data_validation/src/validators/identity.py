@@ -2,7 +2,7 @@ import os
 import re
 import pandas as pd
 from utils import logger, get_config, load_config
-from utils.file_helpers import load_json, save_csv
+from utils.files_helper import FilesHelper
 
 class IdentityValidator:
     """
@@ -12,7 +12,6 @@ class IdentityValidator:
         - Aggregate alerts per UID & Device
         - Track repeated anomalies across sessions
         - Consistent UID and Device typing
-        - CSV export of alerts
     """
 
     def __init__(self, input_path: str = None):
@@ -23,7 +22,7 @@ class IdentityValidator:
             raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
 
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = load_json(self.input_path)
+        self.data = FilesHelper.load(self.input_path)
         self.df = self._flatten_logs(self.data)
         self.uid_meta = {}
         self.alerts = []
@@ -162,6 +161,6 @@ class IdentityValidator:
         ]
         rows = [header] + self.alerts
 
-        save_csv(rows, output_path)
+        FilesHelper.save(rows, output_path)
         logger.info(f"Identity alerts exported to CSV: {output_path}")
         return output_path
