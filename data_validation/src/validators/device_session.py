@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime
 from utils import logger, get_config, load_config
-from utils.file_helpers import load_json, save_csv
+from utils.files_helper import FilesHelper
 
 
 class DeviceValidator:
@@ -14,7 +14,6 @@ class DeviceValidator:
         - Detect unusually long active segments
         - Detect long inactive gaps within sessions
         - Detect missing or invalid timestamps
-        - CSV export of device-session level alerts
     """
 
     def __init__(self, input_path: str = None):
@@ -25,7 +24,7 @@ class DeviceValidator:
             raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
 
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = load_json(self.input_path)
+        self.data = FilesHelper.load(self.input_path)
         self.df = self._flatten_logs(self.data)
         self.alerts = []
 
@@ -140,6 +139,6 @@ class DeviceValidator:
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.DEVICE
         header = ["device_id", "session_id", "reason"]
         rows = [header] + self.alerts
-        save_csv(rows, output_path)
+        FilesHelper.save(rows, output_path)
         logger.info(f"Device-session alerts exported to CSV: {output_path}")
         return output_path
