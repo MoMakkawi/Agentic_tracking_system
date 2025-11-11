@@ -12,6 +12,7 @@ def main():
         # Initialize Gemini model
         gemini = GeminiModel(get_config().LLM_MODULES.DATA_VALIDATION.MODEL.NAME)
         model = gemini.to_smol_model()
+        instructions = get_config().LLM_MODULES.DATA_VALIDATION.INSTRACTIONS
 
         # Initialize the agent with validation tools
         agent = CodeAgent(
@@ -22,14 +23,7 @@ def main():
             ],
             add_base_tools=False,
             model=model,
-            instructions=(
-                "You are a data validation assistant agent. "
-                "You have access to three tools: device_validation_tool, timestamp_validation_tool, "
-                "and identity_validation_tool. Each tool checks different aspects of preprocessed session data. "
-                "Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. "
-                "Return clear paths to generated CSV files and summarize the main anomalies found. "
-                "Do not hallucinate paths or results—run the actual tools."
-            ),
+            instructions=instructions
         )
 
         # Example of a task (you can replace dynamically)
