@@ -52,7 +52,7 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRACTIONS": ""
+            "INSTRUCTIONS": ""
         },
         "DATA_PIPELINE": {
             "MODEL": {
@@ -62,7 +62,7 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRACTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves raw session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the raw data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
+            "INSTRUCTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves raw session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the raw data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
         },
         "DATA_VALIDATION": {
             "MODEL": {
@@ -72,7 +72,7 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRACTIONS": "You are a data validation assistant agent. You have access to three tools: device_validation_tool, timestamp_validation_tool, and identity_validation_tool. Each tool checks different aspects of preprocessed session data. Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. Return clear paths to generated CSV files and summarize the main anomalies found. Do not hallucinate paths or results—run the actual tools."
+            "INSTRUCTIONS": "You are a data validation assistant agent. You have access to three tools: device_validation_tool, timestamp_validation_tool, and identity_validation_tool. Each tool checks different aspects of preprocessed session data. Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. Return clear paths to generated CSV files and summarize the main anomalies found. Do not hallucinate paths or results—run the actual tools."
         }
     }
 
