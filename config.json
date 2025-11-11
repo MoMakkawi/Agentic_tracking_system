@@ -44,7 +44,37 @@
     },
 
     "LLM_MODULES": {
+        "ORCHESTRATOR": {
+            "MODEL": {
+                "NAME": "gemini-2.5-flash-preview-05-20",
+                "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
+            },
+            "SETTINGS": {
+                "TEMPERATURE": 0.3,
+                "TOP_P": 0.9,
+                "MAX_TOKENS": 1024,
+                "PRESENCE_PENALTY": 0.2,
+                "FREQUENCY_PENALTY": 0.0,
+                "TIMEOUT": 60,
+                "RETRIES": 2
+            }
+        },
         "DATA_PIPELINE": {
+            "MODEL": {
+                "NAME": "gemini-2.5-flash-preview-05-20",
+                "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
+            },
+            "SETTINGS": {
+                "TEMPERATURE": 0.3,
+                "TOP_P": 0.9,
+                "MAX_TOKENS": 1024,
+                "PRESENCE_PENALTY": 0.2,
+                "FREQUENCY_PENALTY": 0.0,
+                "TIMEOUT": 60,
+                "RETRIES": 2
+            }
+        },
+        "DATA_VALIDATION": {
             "MODEL": {
                 "NAME": "gemini-2.5-flash-preview-05-20",
                 "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
