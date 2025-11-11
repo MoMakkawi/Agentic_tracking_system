@@ -25,7 +25,7 @@ def fetch_tool() -> str:
         logger.info("Start fetching data by Agent!")
 
         fetcher = DataFetcher()
-        raw_data = fetcher.run()
+        fetcher.run()
         output_path = fetcher.save() 
 
         logger.info(f"Data fetched successfully and saved to {output_path}")
@@ -59,7 +59,7 @@ def preprocess_tool() -> str:
         logger.info("Start preprocessing data by Agent!")
 
         p = Preprocessor()
-        sessions = p.run()
+        p.run()
         output_path = p.save()
 
         logger.info(f"Data preprocessed successfully and saved to {output_path}")
@@ -93,7 +93,7 @@ def group_tool() -> str:
         logger.info("Start grouping data by Agent!")
 
         analyzer = GroupAnalyzer()
-        groups = analyzer.run()
+        analyzer.run()
         output_path = analyzer.save()
 
         logger.info(f"Grouping completed successfully. Results saved to: {output_path}")
