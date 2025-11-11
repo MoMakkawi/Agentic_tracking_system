@@ -10,7 +10,7 @@ from tools import device_validation_tool, timestamp_validation_tool, identity_va
 def main():
     try:
         # Initialize Gemini model
-        gemini = GeminiModel(get_config().LLM_MODULES.DATA_PIPELINE.MODEL.NAME)
+        gemini = GeminiModel(get_config().LLM_MODULES.DATA_VALIDATION.MODEL.NAME)
         model = gemini.to_smol_model()
 
         # Initialize the agent with validation tools
