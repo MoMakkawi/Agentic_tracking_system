@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .tools import *
+from .agent.agent import main
 
-__all__ = []
+__all__ = ["main"]
