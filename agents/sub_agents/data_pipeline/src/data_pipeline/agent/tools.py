@@ -1,8 +1,8 @@
 from smolagents import tool
 from utils import logger
-from pipelines.source_connector import DataFetcher
-from pipelines.processor import Preprocessor
-from pipelines.group_analyzer import GroupAnalyzer
+from data_pipeline.pipelines.source_connector import DataFetcher
+from data_pipeline.pipelines.processor import Preprocessor
+from data_pipeline.pipelines.group_analyzer import GroupAnalyzer
 
 # ---------------------------------------------------------
 # Fetch Tool

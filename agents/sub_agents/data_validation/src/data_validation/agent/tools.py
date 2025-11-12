@@ -1,9 +1,8 @@
-import os
 from smolagents import tool
 from utils import logger, load_config
-from validators.device_session import DeviceValidator
-from validators.identity import IdentityValidator
-from validators.timestamp import TimestampValidator
+from data_validation.validators.device_session import DeviceValidator
+from data_validation.validators.identity import IdentityValidator
+from data_validation.validators.timestamp import TimestampValidator
 
 # ---------------------------------------------------------
 # Device Validation Tool

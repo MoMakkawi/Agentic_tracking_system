@@ -1,7 +1,7 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
 from utils.models.gemini import GeminiModel
-from tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
+from data_validation.agent.tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
 
 
 class DataValidationAgent:
