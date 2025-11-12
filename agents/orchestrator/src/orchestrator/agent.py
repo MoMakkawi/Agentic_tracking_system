@@ -1,41 +1,39 @@
-# orchestrator_agent.py
+import sys
+from pathlib import Path
+
+# Get project root (go up 4 levels from tools.py)
+project_root = Path(__file__).resolve().parents[4]
+
+# Add sub_agents source paths
+sys.path.insert(0, str(project_root / "agents" / "sub_agents" / "data_pipeline" / "src"))
+sys.path.insert(0, str(project_root / "agents" / "sub_agents" / "data_validation" / "src"))
+sys.path.insert(0, str(project_root / "utils" / "src"))
+
+
+
 from smolagents.agents import CodeAgent, ToolCallingAgent
-from tools import *
 from utils.models.gemini import GeminiModel
-from utils import get_config, load_config
-from utils import logger
+from utils import logger, get_config, load_config
+from tools import *
 
 def main():
-    try:
-        load_config()
-        # Load LLM model
-        gemini = GeminiModel(get_config().LLM_MODULES.ORCHESTRATOR.MODEL.NAME)
-        model = gemini.to_smol_model()
+    load_config()
+    gemini = GeminiModel(get_config().LLM_MODULES.ORCHESTRATOR.MODEL.NAME)
+    model = gemini.to_smol_model()
 
-        # Master Orchestrator
-        orchestrator = CodeAgent(
-            tools=[
-                pipeline_agent_tool, validation_agent_tool
-            ],
-            add_base_tools=False,
-            model=model,
-            instructions=(
-                "You are the Master Orchestrator Agent. Your task is to orchestrate sub-agents. "
-                "Use PipelineAgent to fetch, preprocess, and group data. "
-                "Then use ValidationAgent to validate the data. "
-                "Summarize the outputs of each sub-agent and avoid hallucinating results."
-            ),
-        )
+    orchestrator = ToolCallingAgent(
+        tools=[pipeline_agent_tool, validation_agent_tool],
+        model=model,
+        instructions=get_config().LLM_MODULES.ORCHESTRATOR.INSTRUCTIONS
+    )
 
-        task = "Run full data pipeline and validate the results."
-        logger.info(f"Orchestrator task: {task}")
-        result = orchestrator.run(task)
+    task = "Run full data pipeline and validate the results."
+    logger.info(f"Starting Orchestrator Task: {task}")
 
-        print("\n=== Orchestrator Result ===")
-        print(result)
+    result = orchestrator.run(task)
 
-    except Exception as e:
-        logger.exception(f"Orchestrator execution failed: {e}")
+    print("\n=== Orchestrator Result ===")
+    print(result)
 
 if __name__ == "__main__":
     main()
