@@ -9,19 +9,21 @@ from .logger import logger
 from .helpers import safe_parse_timestamp
 from .files_helper import FilesHelper
 from .models.gemini import GeminiModel
+from .models.ragrenn import RagrennModel
 
 __all__ = [
-    "safe_parse_timestamp",
-    "logger",
-    "Secrets",
+    safe_parse_timestamp,
+    logger,
+    Secrets,
 
     #Config
-    "load_config",
-    "get_config",
+    load_config,
+    get_config,
 
     #File Helper 
-    "FilesHelper",
+    FilesHelper,
 
     #LLM models
-    "GeminiModel"
+    GeminiModel,
+    RagrennModel
 ]

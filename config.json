@@ -46,8 +46,8 @@
     "LLM_MODULES": {
         "ORCHESTRATOR": {
             "MODEL": {
-                "NAME": "gemini-2.5-flash-preview-05-20",
-                "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
+                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
@@ -56,8 +56,8 @@
         },
         "DATA_PIPELINE": {
             "MODEL": {
-                "NAME": "gemini-2.5-flash-preview-05-20",
-                "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
+                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
@@ -66,13 +66,33 @@
         },
         "DATA_VALIDATION": {
             "MODEL": {
+                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+            },
+            "SETTINGS": {
+                "RETRIES": 2
+            },
+            "INSTRUCTIONS": "You are a data validation assistant agent. You have access to three tools: device_validation_tool, timestamp_validation_tool, and identity_validation_tool. Each tool checks different aspects of preprocessed session data. Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. Return clear paths to generated CSV files and summarize the main anomalies found. Do not hallucinate paths or results—run the actual tools."
+        },
+        "BEHAVIOR_INDIVIDUAL_MODELING": {
+            "MODEL": {
+                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+            },
+            "SETTINGS": {
+                "RETRIES": 2
+            },
+            "INSTRUCTIONS": ""
+        },
+        "BEHAVIOR_GROUP_MODELING": {
+            "MODEL": {
                 "NAME": "gemini-2.5-flash-preview-05-20",
                 "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
             },
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRUCTIONS": "You are a data validation assistant agent. You have access to three tools: device_validation_tool, timestamp_validation_tool, and identity_validation_tool. Each tool checks different aspects of preprocessed session data. Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. Return clear paths to generated CSV files and summarize the main anomalies found. Do not hallucinate paths or results—run the actual tools."
+            "INSTRUCTIONS": ""
         }
     }
 

@@ -1,6 +1,6 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
-from utils.models.gemini import GeminiModel
+from utils.models.ragrenn import RagrennModel
 from data_pipeline.agent.tools import fetch_tool, preprocess_tool, group_tool
 
 
@@ -21,9 +21,8 @@ class DataPipelineAgent:
         load_config()
         config = get_config().LLM_MODULES.DATA_PIPELINE
 
-        # Initialize model (Gemini or other)
-        gemini = GeminiModel(config.MODEL.NAME)
-        self.model = gemini.to_smol_model()
+        # Initialize model
+        self.model = RagrennModel(model_name= config.MODEL.NAME, base_url= config.MODEL.BASE_URL).to_smol_model()
 
         # Load pipeline instructions
         self.instructions = config.INSTRUCTIONS

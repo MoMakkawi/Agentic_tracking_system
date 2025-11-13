@@ -1,6 +1,6 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
-from utils.models.gemini import GeminiModel
+from utils.models.ragrenn import RagrennModel
 from data_validation.agent.tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
 
 
@@ -18,11 +18,10 @@ class DataValidationAgent:
 
     def __init__(self):
         load_config()
+
         config = get_config().LLM_MODULES.DATA_VALIDATION
 
-        # Initialize model (Gemini or other)
-        gemini = GeminiModel(config.MODEL.NAME)
-        self.model = gemini.to_smol_model()
+        self.model = RagrennModel(model_name= config.MODEL.NAME, base_url= config.MODEL.BASE_URL).to_smol_model()
 
         # Load validation instructions
         self.instructions = config.INSTRUCTIONS

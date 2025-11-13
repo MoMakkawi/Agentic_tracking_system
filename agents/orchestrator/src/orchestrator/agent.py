@@ -12,19 +12,20 @@ sys.path.insert(0, str(project_root / "utils" / "src"))
 
 
 from smolagents.agents import CodeAgent, ToolCallingAgent
-from utils.models.gemini import GeminiModel
+from utils.models.ragrenn import RagrennModel
 from utils import logger, get_config, load_config
 from tools import *
 
 def main():
     load_config()
-    gemini = GeminiModel(get_config().LLM_MODULES.ORCHESTRATOR.MODEL.NAME)
-    model = gemini.to_smol_model()
+
+    config = get_config().LLM_MODULES.ORCHESTRATOR
+    model = RagrennModel(model_name= config.MODEL.NAME, base_url= config.MODEL.BASE_URL).to_smol_model()
 
     orchestrator = ToolCallingAgent(
         tools=[pipeline_agent_tool, validation_agent_tool],
         model=model,
-        instructions=get_config().LLM_MODULES.ORCHESTRATOR.INSTRUCTIONS
+        instructions=config.INSTRUCTIONS
     )
 
     task = "Run full data pipeline and validate the results."

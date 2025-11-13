@@ -11,3 +11,4 @@ load_dotenv(dotenv_path=env_path)
 
 class Secrets:
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    RENNES_API_KEY = os.getenv("RENNES_API_KEY")
