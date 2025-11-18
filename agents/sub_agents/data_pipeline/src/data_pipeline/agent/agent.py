@@ -11,7 +11,7 @@ class DataPipelineAgent:
     Executes end-to-end data pipeline tasks using SmolAgent tools.
 
     Features:
-        - Fetches raw data
+        - Fetches ics + logs data
         - Preprocesses and cleans datasets
         - Groups or analyzes preprocessed data
         - Retries failed runs with configurable attempts
@@ -89,7 +89,7 @@ def main(task: str = None):
         Any: Result of pipeline execution.
     """
     agent = DataPipelineAgent()
-    task = task or "Fetch raw data, preprocess, and group students."
+    task = task or "Fetch ics + logs data, preprocess, and group students."
     result = agent.run(task)
     return result
 
