@@ -21,8 +21,13 @@
         "SYSTEM_START_DATE": "2025-09-01"
     },
 
+    "SOURCE_URLS": {
+        "LOGS": "https://nodered.lenuage.io/rfid-log.jsonl"
+        },
+
     "PATHS": {
-        "RAW": "data/fetched/raw_data.jsonl",
+        "LOGS": "data/fetched/logs_data.jsonl",
+        "ICS": "data/fetched/pass.ics",
         "PREPROCESSED": "data/preprocessed/clean_data.json",
         "GROUPED": "data/grouped/groups.json",
         "ALERTS": {
@@ -33,8 +38,6 @@
             }
         }
     },
-
-    "SOURCE_DATA_URL": "https://nodered.lenuage.io/rfid-log.jsonl",
 
     "ALERTS_PATH":{
         "VALIDATION":{
@@ -62,7 +65,7 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRUCTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves raw session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the raw data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
+            "INSTRUCTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves ics (student scheduals) and logs session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the logs data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
         },
         "DATA_VALIDATION": {
             "MODEL": {
