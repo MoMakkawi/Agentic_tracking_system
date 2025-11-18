@@ -1,77 +1,127 @@
 import requests
-from utils import logger, get_config
+from typing import Optional, Dict, Any
+
+from utils import Secrets, logger, get_config
 from utils.files_helper import FilesHelper
+
 
 class DataFetcher:
     """
-    DataFetcher for downloading, fetching, and saving JSONL data.
+    Robust utility class for downloading logs (JSONL) and ICS calendar data.
 
-    Features:
-    - Fetch data from a URL
-    - Return fetched data
-    - Save data to disk
-
-    Methods:
-        run() -> bytes: Fetches data from the URL and stores it internally.
-        save(data=None, output_path=None): Saves the fetched or provided data to a file.
+    Responsibilities:
+    - Fetch logs from a configured URL
+    - Fetch ICS from a configured URL
+    - Save both to disk
     """
 
-    def __init__(self, data_url=None, data_path=None):
-        """
-        Initializes the DataFetcher with optional URL and file path.
+    REQUEST_TIMEOUT = 60
 
-        Args:
-            data_url (str, optional): URL to fetch the data from.
-            data_path (str, optional): File path to save the data.
-        """
-        self.data_url = data_url or get_config().SOURCE_DATA_URL
-        self.data_path = data_path or get_config().PATHS.RAW
+    def __init__(
+        self,
+        logs_url: Optional[str] = None,
+        logs_path: Optional[str] = None,
+        ics_url: Optional[str] = None,
+        ics_path: Optional[str] = None,
+    ):
+        config = get_config()
+
+        self.logs_url = logs_url or config.SOURCE_URLS.LOGS
+        self.logs_path = logs_path or config.PATHS.LOGS
+
+        self.ics_url = ics_url or Secrets.ICS_URL
+        self.ics_path = ics_path or config.PATHS.ICS
+
         self.data = None
+        self.ics = None
 
-        if not self.data_url:
-            raise ValueError("data_url must be provided either as argument or in get_config().SOURCE_DATA_URL")
-        if not self.data_path:
-            raise ValueError("data_path must be provided either as argument or in get_config().PATHS.RAW")
-    
-    # -------------------------------------------------------------------------
-    def _fetch(self):
-        """Private method to fetch data from the URL and return the raw content."""
+        self._validate_config()
+
+    # ----------------------------------------------------------------------
+    # Internal helpers
+    # ----------------------------------------------------------------------
+    def _validate_config(self) -> None:
+        """Ensures all required URLs and paths are provided."""
+        required = {
+            "logs_url": self.logs_url,
+            "logs_path": self.logs_path,
+            "ics_url": self.ics_url,
+            "ics_path": self.ics_path,
+        }
+
+        missing = [key for key, val in required.items() if not val]
+        if missing:
+            raise ValueError(f"Missing required configuration values: {', '.join(missing)}")
+
+    def _fetch(self, url: str, resource_name: str) -> bytes:
+        """Generic fetch wrapper with logging and error handling."""
+        logger.info(f"Fetching {resource_name} from: {url}")
+
         try:
-            response = requests.get(self.data_url, timeout=60)
+            response = requests.get(url, timeout=self.REQUEST_TIMEOUT)
             response.raise_for_status()
-            logger.info(f"Data fetched successfully from {self.data_url}")
+            logger.info(f"{resource_name.capitalize()} fetched successfully")
             return response.content
-        except requests.RequestException as e:
-            logger.error(f"Failed to fetch data from {self.data_url}: {e}")
+
+        except requests.Timeout:
+            logger.error(f"Timed out while fetching {resource_name} from {url}")
             raise
-    
-    # -------------------------------------------------------------------------
-    def run(self):
+
+        except requests.RequestException as e:
+            logger.error(f"Failed to fetch {resource_name} from {url}: {e}")
+            raise
+
+    def _save(self, data, path: str) -> str:
+        """Saves data to disk with robust error handling."""
+        logger.info(f"Saving file to: {path}")
+
+        try:
+            FilesHelper.save(data, path)
+            logger.info(f"Saved successfully to: {path}")
+            return path
+
+        except OSError as e:
+            logger.error(f"Failed to save file to {path}: {e}")
+            raise
+
+    # ----------------------------------------------------------------------
+    # Public methods
+    # ----------------------------------------------------------------------
+    def run(self) -> Dict[str, bytes]:
         """
-        Public method that fetches the data and stores it internally.
+        Fetch logs and ICS data and store them internally.
 
         Returns:
-            bytes: The raw content fetched from the URL.
+            dict: {
+                "logs": bytes,
+                "ics": bytes
+            }
         """
-        self.data = self._fetch()
-        return self.data
-    
-    # -------------------------------------------------------------------------
-    def save(self, data=None, output_path: str = None):
-        """
-        Saves the provided or internally stored data to a file.
+        self.data = self._fetch(self.logs_url, "logs")
+        self.ics = self._fetch(self.ics_url, "ics")
 
-        Args:
-            data (optional): Data to save; defaults to internally stored data.
-            output_path (str, optional): Path to save the data; defaults to initialized path.
+        return {
+            "logs": self.data,
+            "ics": self.ics,
+        }
+
+    def save(self) -> Dict[str, str]:
         """
-        output_path = output_path or self.data_path
-        data = data or self.data
-        
-        try:
-            FilesHelper.save(data, output_path)
-            logger.info(f"Data saved successfully to {output_path}")
-            return output_path
-        except OSError as e:
-            logger.error(f"Failed to save data to {output_path}: {e}")
-            raise
+        Saves fetched data to disk.
+
+        Returns:
+            dict: {
+                "logs": "<path>",
+                "ics": "<path>"
+            }
+        """
+        if self.data is None or self.ics is None:
+            raise RuntimeError("No data fetched. Call run() before save().")
+
+        logs_path = self._save(self.data, self.logs_path)
+        ics_path = self._save(self.ics, self.ics_path)
+
+        return {
+            "logs": logs_path,
+            "ics": ics_path,
+        }
