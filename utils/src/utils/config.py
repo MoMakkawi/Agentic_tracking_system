@@ -95,7 +95,6 @@ def get_config() -> Config:
     if _config_instance is None:
         logger.error("Config not loaded yet. Call load_config() first.")
         raise RuntimeError("Config not loaded yet. Call load_config() first.")
-    logger.info("Config retrieved successfully")
     return _config_instance
 
 # -----------------------------
