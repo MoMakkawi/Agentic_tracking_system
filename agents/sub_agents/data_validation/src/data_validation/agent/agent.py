@@ -41,7 +41,7 @@ class DataValidationAgent:
         Args:
             task (str): High-level validation instruction from Orchestrator.
         """
-        logger.info(f"🔍 Executing validation task: {task}")
+        logger.info(f"Executing validation task: {task}")
 
         # Create an isolated code agent for the task
         agent = CodeAgent(
