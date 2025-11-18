@@ -10,26 +10,28 @@ from data_pipeline.pipelines.group_analyzer import GroupAnalyzer
 @tool
 def fetch_tool() -> str:
     """
-    Download raw JSONL attendance data from the configured source and save it locally.
+    Download ICS + logs JSONL attendance data from the configured source and save it locally.
 
     Workflow:
-        1. Instantiate DataFetcher with optional URL/path from configuration.
+        1. Instantiate DataFetcher.
         2. Fetch data from the URL.
         3. Store fetched data internally.
         4. Save data to disk using FilesHelper.
 
-    Returns:
-        str: Path to the saved raw data file, or an error message if fetching fails.
-    """
+    Returns: output paths for fetched data in this form
+        dict: {
+            "logs": "<path>", # logs saved in this file path
+            "ics": "<path>"   # ics saved in this file path
+        }    """
     try:
         logger.info("Start fetching data by Agent!")
 
         fetcher = DataFetcher()
         fetcher.run()
-        output_path = fetcher.save() 
+        output_paths = fetcher.save() 
 
-        logger.info(f"Data fetched successfully and saved to {output_path}")
-        return output_path
+        logger.info(f"Fetched successfully and saved as {output_paths}")
+        return output_paths
 
     except Exception as e:
         logger.error("Fetch tool error", exc_info=True)
