@@ -1,4 +1,3 @@
-import os
 from collections import Counter, defaultdict
 from utils import logger, get_config
 from utils.files_helper import FilesHelper
@@ -16,24 +15,21 @@ class GroupAnalyzer:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
+        FilesHelper.ensure_exists(self.input_path)
 
-        if not self.input_path or not os.path.exists(self.input_path):
-            logger.error(f"Input file not found: {self.input_path}")
-            raise FileNotFoundError(f"GroupAnalyzer input file not found: {self.input_path}")
-
-        self.raw_sessions = FilesHelper.load(self.input_path)
+        self.logs_sessions = FilesHelper.load(self.input_path)
         self.groups_count = get_config().GROUPS_COUNTS.to_dict()
         self.allowed_lengths = set(self.groups_count.values())
         self.last_result = None
 
-        logger.info(f"Loaded {len(self.raw_sessions)} sessions for grouping")
+        logger.info(f"Loaded {len(self.logs_sessions)} sessions for grouping")
 
     # -------------------------------------------------------------------------
     def run(self):
         """Run full grouping pipeline."""
         logger.info("Running GroupAnalyzer pipeline...")
 
-        filtered = self._filter_by_count(self.raw_sessions)
+        filtered = self._filter_by_count(self.logs_sessions)
         uid_sets = self._extract_uid_sets(filtered)
         counter = self._count_uid_groups(uid_sets)
         named_groups = self._assign_group_names(counter)
