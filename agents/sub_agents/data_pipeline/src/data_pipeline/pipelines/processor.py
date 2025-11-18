@@ -81,23 +81,35 @@ class Preprocessor:
         sessions = []
 
         for index, record in enumerate(data, start=1):
+
             logs = record.get("logs", [])
             redundant_uids = record.get("redundant_uids", {})
 
-            # Parse timestamps in main logs
+            dates = []  # will collect YYYY-MM-DD from each log
+
             for log in logs:
-                log["ts"] = str(safe_parse_timestamp(log["ts"]))
+                ts_str = safe_parse_timestamp(log["ts"])  # "YYYY-MM-DD HH:MM:SS"
+                if not ts_str:
+                    continue
+                date_part, time_part = ts_str.split(" ")
+                dates.append(date_part)
+                log["ts"] = time_part
 
+            logs_date = min(dates) if dates else None
+            received_at = safe_parse_timestamp(record.get("received_at"))
             logs.sort(key=lambda x: x["ts"])
-
+            
             session = {
                 "session_id": index,
                 "device_id": record.get("device_id"),
+                "received_at": received_at,
+                "logs_date": logs_date,
                 "recorded_count": record.get("count", len(logs) + sum(redundant_uids.values())),
-                "unique_count": len({log["uid"] for log in logs}),
+                "unique_count": len(logs),
                 "logs": logs,
                 "redundant_uids": redundant_uids
             }
+
             sessions.append(session)
 
         logger.info(f"{len(sessions)} structured sessions generated.")
