@@ -42,7 +42,7 @@ class DataPipelineAgent:
         Args:
             task (str): High-level pipeline instruction from Orchestrator.
         """
-        logger.info(f"🚀 Executing task: {task}")
+        logger.info(f"Executing task: {task}")
 
         # Create an isolated code agent for the task
         agent = CodeAgent(
