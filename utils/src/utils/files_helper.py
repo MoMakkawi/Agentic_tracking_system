@@ -26,6 +26,8 @@ class FilesHelper:
             FilesHelper._save_json(data, file_path)
         elif ext == ".jsonl":
             FilesHelper._save_jsonl(data, file_path)
+        elif ext == ".ics":
+            FilesHelper._save_ics(data, file_path)
         else:
             raise ValueError(f"Unsupported file extension for saving: {ext}")
 
@@ -51,6 +53,27 @@ class FilesHelper:
         else:
             raise ValueError(f"Unsupported file extension for loading: {ext}")
 
+    # ---------------------------------------------------------
+    # File existence check (with exception)
+    # ---------------------------------------------------------
+    @staticmethod
+    def ensure_exists(file_path: str):
+        """
+        Ensure the file exists. 
+        Raises FileNotFoundError if it does not.
+
+        Args:
+            file_path (str): Path to check
+
+        Raises:
+            FileNotFoundError: If the file does not exist
+        """
+        if not os.path.isfile(file_path):
+            logger.error(f"File not found: {file_path}")
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        logger.info(f"File exists: {file_path}")
+        return True
 
 
     # ---------------------------------------------------------
@@ -202,4 +225,28 @@ class FilesHelper:
             raise
         except Exception as e:
             logger.exception(f"Error while loading JSONL '{file_path}': {e}")
+            raise
+
+    # ---------------------------------------------------------
+    # ICS functions
+    # ---------------------------------------------------------
+    @staticmethod
+    def _save_ics(content, file_path):
+        """
+        Save raw ICS data (bytes or string) exactly as-is.
+        """
+        FilesHelper._ensure_dir(file_path)
+
+        try:
+            # Decode bytes to string if needed
+            if isinstance(content, bytes):
+                content = content.decode("utf-8", errors="ignore")
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            logger.info(f"ICS saved successfully: {file_path}")
+            return file_path
+        except Exception as e:
+            logger.exception(f"Error while saving ICS '{file_path}': {e}")
             raise
