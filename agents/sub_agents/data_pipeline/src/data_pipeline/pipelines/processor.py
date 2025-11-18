@@ -5,7 +5,7 @@ from utils.files_helper import FilesHelper
 
 class Preprocessor:
     """
-    Preprocessor for raw JSONL attendance data.
+    Preprocessor for JSONL attendance data.
 
     Features:
         - Remove redundant logs per UID
@@ -15,14 +15,11 @@ class Preprocessor:
     """
 
     def __init__(self, jsonl_path: str = None):
-        self.jsonl_path = jsonl_path or get_config().PATHS.RAW
+        self.jsonl_path = jsonl_path or get_config().PATHS.LOGS
+        FilesHelper.ensure_exists(self.jsonl_path)
 
-        if not self.jsonl_path or not os.path.exists(self.jsonl_path):
-            logger.error(f"JSONL path not found or invalid: {self.jsonl_path}")
-            raise FileNotFoundError(f"Input file not found: {self.jsonl_path}")
-
-        logger.info(f"Loading raw data from: {self.jsonl_path}")
-        self.raw_data = FilesHelper.load(self.jsonl_path)
+        logger.info(f"Loading logs data from: {self.jsonl_path}")
+        self.logs_data = FilesHelper.load(self.jsonl_path)
         self.processed_sessions = []
 
     # -------------------------------------------------------------------------
@@ -33,7 +30,7 @@ class Preprocessor:
         """
         logger.info("Running preprocessing pipeline...")
 
-        cleaned_data = self._separate_redundant(self.raw_data)
+        cleaned_data = self._separate_redundant(self.logs_data)
         sessions = self._create_sessions(cleaned_data)
 
         self.processed_sessions = sessions
