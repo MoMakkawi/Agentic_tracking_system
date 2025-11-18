@@ -1,4 +1,3 @@
-import os
 from openai import OpenAI
 from smolagents.models import OpenAIServerModel
 from utils import logger, Secrets
