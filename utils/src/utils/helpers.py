@@ -2,21 +2,31 @@ from datetime import datetime
 import pandas as pd
 
 def safe_parse_timestamp(ts):
-    """Safely parse timestamps in various formats and normalize tz-aware ones to naive (local) datetimes."""
+    """Safely parse timestamps in various formats and return a string
+       formatted as 'YYYY-MM-DD HH:MM:SS', always in Europe/Paris time."""
+
     if not isinstance(ts, str):
-        return pd.NaT
+        return None
 
     try:
-        # Try pandas first (handles both tz-aware and naive)
-        dt = pd.to_datetime(ts, errors="coerce", utc=False)
-        if pd.isna(dt):
-            return pd.NaT
+        # Detect Zulu timestamps explicitly
+        if ts.endswith("Z"):
+            dt = pd.to_datetime(ts, utc=True)
+        else:
+            dt = pd.to_datetime(ts, errors="coerce", utc=False)
 
-        # If tz-aware (e.g. +02:00), convert to naive local time
+        if pd.isna(dt):
+            return None
+
+        # Convert tz-aware timestamps to Europe/Paris naive
         if getattr(dt, "tzinfo", None) is not None:
             dt = dt.tz_convert("Europe/Paris").tz_localize(None)
 
-        return dt
+        # Drop microseconds
+        dt = dt.replace(microsecond=0)
+
+        # RETURN STRING (IMPORTANT FOR JSON)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     except Exception:
-        return pd.NaT
+        return None
