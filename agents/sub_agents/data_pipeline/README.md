@@ -27,12 +27,12 @@ It automates the early stages of tracking and analysis by invoking a sequence of
 ## Tools and Functionalities
 
 ### fetch_tool
-- Downloads raw data from configured sources (URL, path, database).
+- Downloads ics + logs data from configured sources (URL, path, database).
 - Saves the data to disk or designated cloud storage.
 - Handles errors in connectivity or data retrieval, logging issues for transparency.
 
 ### preprocess_tool
-- Cleans and structures raw sessions into standardized formats.
+- Cleans and structures logs sessions into standardized formats.
 - Parses timestamps and verifies device/student identity attributes.
 - Filters redundant or malformed records.
 - Outputs validated session objects for analysis.
@@ -44,7 +44,7 @@ It automates the early stages of tracking and analysis by invoking a sequence of
 
 ## Workflow
 
-1. **Fetch**: Acquire the raw dataset using `fetch_tool`.
+1. **Fetch**: Acquire the ics + logs dataset using `fetch_tool`.
 2. **Preprocess**: Clean and normalize the collected data with `preprocess_tool`.
 3. **Group**: Organize and classify participants via `group_tool`.
 
