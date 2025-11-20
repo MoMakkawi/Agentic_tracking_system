@@ -5,9 +5,8 @@
         "FIS": 2,
         "Test": 1
     },
-
     "SCHEDULE": {
-        "START_DATE": "2025-09-01", 
+        "START_DATE": "2025-09-01",
         "END_DATE": "2026-01-15",
         "START_TIME": "08:00:00",
         "END_TIME": "18:00:00",
@@ -17,14 +16,11 @@
             "2026-01-01",
             "2026-04-13"
         ],
-        
         "SYSTEM_START_DATE": "2025-09-01"
     },
-
     "SOURCE_URLS": {
         "LOGS": "https://nodered.lenuage.io/rfid-log.jsonl"
-        },
-
+    },
     "PATHS": {
         "LOGS": "data/fetched/logs_data.jsonl",
         "ICS": "data/fetched/pass.ics",
@@ -38,14 +34,12 @@
             }
         }
     },
-
-    "ALERTS_PATH":{
-        "VALIDATION":{
+    "ALERTS_PATH": {
+        "VALIDATION": {
             "TIMESTAMP": "data/alerted/validation/timestamp.csv",
             "IDENTITY": "data/alerted/validation/identity.csv"
         }
     },
-
     "LLM_MODULES": {
         "ORCHESTRATOR": {
             "MODEL": {
@@ -55,7 +49,7 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRUCTIONS": ""
+            "INSTRUCTIONS": "You are the **Orchestrator Agent**, responsible for coordinating the data processing workflow. You have access to the following agents as tools: 1. **pipeline_agent_tool**: Runs the Data Pipeline (Fetch -> Preprocess -> Group). 2. **validation_agent_tool**: Runs Data Validation on the processed data. Your goal is to create and execute a plan based on these agents. The standard execution plan is: 1. Execute the **Data Pipeline** to prepare the data. 2. Execute **Data Validation** to ensure data quality. Always verify the output of each step before proceeding. If a step fails, stop and report the error. After completing the plan, provide a final summary of the execution."
         },
         "DATA_PIPELINE": {
             "MODEL": {
@@ -98,6 +92,4 @@
             "INSTRUCTIONS": ""
         }
     }
-
 }
-  
