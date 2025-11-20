@@ -1,9 +1,7 @@
-import os
 import pandas as pd
-from datetime import datetime
-from utils import logger, get_config, load_config
+from utils import logger, get_config
 from utils.helpers.files import FilesHelper
-
+from utils.helpers.time import TimestampHelper
 
 class DeviceValidator:
     """
@@ -18,11 +16,7 @@ class DeviceValidator:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-
-        if not os.path.exists(self.input_path):
-            logger.error(f"Preprocessed file not found: {self.input_path}")
-            raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
-
+        FilesHelper.ensure_exists(self.input_path)
         logger.info(f"Loading preprocessed data from: {self.input_path}")
         self.data = FilesHelper.load(self.input_path)
         self.df = self._flatten_logs(self.data)
@@ -33,8 +27,10 @@ class DeviceValidator:
         """Flatten session-based logs into a DataFrame with timestamps."""
         records = []
         for session in sessions:
-            session_id = str(session.get("session_id"))
-            device_id = str(session.get("device_id"))
+            session_id = session.get("session_id")
+            device_id = session.get("device_id")
+            session_received_at = session.get("received_at")
+            session_logs_date = session.get("logs_date")
 
             for log in session.get("logs", []):
                 uid = str(log.get("uid"))
@@ -43,7 +39,9 @@ class DeviceValidator:
                     "uid": uid,
                     "session_id": session_id,
                     "device_id": device_id,
-                    "timestamp": ts
+                    "timestamp": ts,
+                    "received_at": session_received_at,
+                    "logs_date": session_logs_date
                 })
 
         df = pd.DataFrame(records)
@@ -53,18 +51,28 @@ class DeviceValidator:
 
     # -------------------------------------------------------------------------
     def _detect_clock_resets(self):
-        """Detect backward timestamps or timestamps before system establishment."""
+        """Detect backward timestamps, timestamps before system establishment, or date mismatches."""
         self.df["is_clock_reset"] = False
-        for (device_id, session_id), group in self.df.groupby(["device_id", "session_id"]):
-            group_sorted = group.sort_values("timestamp_dt")
-            timestamps = group_sorted["timestamp_dt"]
 
-            backward_mask = timestamps.diff().dt.total_seconds() < 0
-            old_mask = timestamps < get_config().SCHEDULE.SYSTEM_START_DATE
-            combined_mask = backward_mask | old_mask
+        # Check for date mismatch (Clock reset)
+        def check_date_mismatch(row):
+            if pd.isna(row["received_at"]):
+                return False
+            
+            # Use UTC to avoid timezone shifts causing false positives
+            try:
+                rec_dt = pd.to_datetime(str(row["received_at"]), utc=True)
+                log_dt = pd.to_datetime(str(row["logs_date"]), utc=True)
+            except Exception:
+                return False
+            
+            if pd.isna(rec_dt) or pd.isna(log_dt):
+                return False
+                
+            return rec_dt.date() != log_dt.date()
 
-            if combined_mask.any():
-                self.df.loc[group_sorted.index[combined_mask], "is_clock_reset"] = True
+
+        self.df["is_clock_reset"] = self.df.apply(check_date_mismatch, axis=1)
 
         logger.info(f"Detected {self.df['is_clock_reset'].sum()} device-session entries with clock resets")
 
@@ -91,30 +99,37 @@ class DeviceValidator:
 
     # -------------------------------------------------------------------------
     def _detect_missing_data(self):
-        """Detect missing or invalid device/session id."""
+        """Detect missing or invalid device_id, session_id, or received_at timestamps."""
 
-        self.df["has_missing_data"] = self.df["device_id"].isna() | (self.df["device_id"] == "")
-        logger.info(f"Detected {self.df['has_missing_data'].sum()} logs with missing device_id")
+        self.df["missing_device_id"] = self.df["device_id"].isna() | (self.df["device_id"] == "")
+        logger.info(f"Detected {self.df['missing_device_id'].sum()} logs with missing device_id")
 
-        self.df["has_missing_data"] |= self.df["session_id"].isna() | (self.df["session_id"] == "")
-        logger.info(f"Detected {self.df['has_missing_data'].sum()} logs with missing session_id")
+        self.df["missing_session_id"] = self.df["session_id"].isna() | (self.df["session_id"] == "")
+        logger.info(f"Detected {self.df['missing_session_id'].sum()} logs with missing session_id")
+
+        self.df["missing_received_at"] = self.df["received_at"].isna() | (self.df["received_at"] == "")
+        logger.info(f"Detected {self.df['missing_received_at'].sum()} logs with missing received_at")
 
     # -------------------------------------------------------------------------
     def _collect_alerts(self):
         """Aggregate alerts per device-session."""
         alerts = []
-        grouped = self.df.groupby(["device_id", "session_id"])
-        for (device_id, session_id), group in grouped:
+        grouped = self.df.groupby(["session_id", "device_id"])
+        for (session_id, device_id), group in grouped:
             reasons = set()
-            if group["is_clock_reset"].any():
-                reasons.add("Clock reset detected")
             if group["is_active_continuous"].any():
                 reasons.add("Device active unusually long without breaks")
-            if group["has_missing_data"].any():
-                reasons.add("Gaps or missing device/session id detected")
+            if group["is_clock_reset"].any():
+                reasons.add("Clock reset detected")
+            if group["missing_device_id"].any():
+                reasons.add("Missing device id")
+            if group["missing_session_id"].any():
+                reasons.add("Missing session id")
+            if group["missing_received_at"].any():
+                reasons.add("Missing received_at datetime")
 
             if reasons:
-                alerts.append([device_id, session_id, "; ".join(sorted(reasons))])
+                alerts.append([session_id, device_id, "; ".join(sorted(reasons))])
 
         self.alerts = alerts
         logger.info(f"Collected {len(alerts)} device-session level alerts")
@@ -123,9 +138,9 @@ class DeviceValidator:
     def run(self):
         """Run full validation pipeline."""
         logger.info("Running DeviceValidator pipeline...")
+        self._detect_missing_data()
         self._detect_clock_resets()
         self._detect_unusual_active_sessions()
-        self._detect_missing_data()
         self._collect_alerts()
         return self.alerts
 
@@ -137,7 +152,7 @@ class DeviceValidator:
             raise ValueError("No alert data to save.")
 
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.DEVICE
-        header = ["device_id", "session_id", "reason"]
+        header = ["session_id", "device_id", "reason"]
         rows = [header] + self.alerts
         FilesHelper.save(rows, output_path)
         logger.info(f"Device-session alerts exported to CSV: {output_path}")
