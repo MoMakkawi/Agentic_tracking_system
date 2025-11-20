@@ -2,7 +2,7 @@ import requests
 from typing import Optional, Dict, Any
 
 from utils import Secrets, logger, get_config
-from utils.files_helper import FilesHelper
+from utils.helpers.files import FilesHelper
 
 
 class DataFetcher:

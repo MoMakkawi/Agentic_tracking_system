@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from utils import logger, get_config
-from utils.files_helper import FilesHelper
+from utils.helpers.files import FilesHelper
 
 class GroupAnalyzer:
     """

@@ -1,7 +1,7 @@
 import os
 from utils import logger, get_config
-from utils.helpers import safe_parse_timestamp
-from utils.files_helper import FilesHelper
+from utils.helpers.time import TimestampHelper
+from utils.helpers.files import FilesHelper
 
 class Preprocessor:
     """
@@ -88,7 +88,7 @@ class Preprocessor:
             dates = []  # will collect YYYY-MM-DD from each log
 
             for log in logs:
-                ts_str = safe_parse_timestamp(log["ts"])  # "YYYY-MM-DD HH:MM:SS"
+                ts_str = TimestampHelper.adjust_dst(log["ts"])  # "YYYY-MM-DD HH:MM:SS"
                 if not ts_str:
                     continue
                 date_part, time_part = ts_str.split(" ")
@@ -96,7 +96,7 @@ class Preprocessor:
                 log["ts"] = time_part
 
             logs_date = min(dates) if dates else None
-            received_at = safe_parse_timestamp(record.get("received_at"))
+            received_at = TimestampHelper.safe_parse(record.get("received_at"))
             logs.sort(key=lambda x: x["ts"])
             
             session = {

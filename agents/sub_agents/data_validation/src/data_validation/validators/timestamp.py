@@ -1,8 +1,8 @@
 from datetime import datetime, time
 import pandas as pd
 from utils import logger, get_config, load_config
-from utils.helpers import safe_parse_timestamp
-from utils.files_helper import FilesHelper
+from utils.helpers.time import TimestampHelper
+from utils.helpers.files import FilesHelper
 import os
 from collections import defaultdict
 
@@ -65,7 +65,7 @@ class TimestampValidator:
             for log in session.get("logs", []):
                 records.append({
                     "uid": log["uid"],
-                    "timestamp": safe_parse_timestamp(log["ts"]),
+                    "timestamp": TimestampHelper.to_datetime(log["ts"]),
                     "session_id": session_id,
                     "device_id": device_id
                 })

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime
 from utils import logger, get_config, load_config
-from utils.files_helper import FilesHelper
+from utils.helpers.files import FilesHelper
 
 
 class DeviceValidator:
