@@ -3,7 +3,6 @@ import pandas as pd
 from utils import logger, get_config, load_config
 from utils.helpers.time import TimestampHelper
 from utils.helpers.files import FilesHelper
-import os
 from collections import defaultdict
 
 
@@ -19,11 +18,7 @@ class TimestampValidator:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-
-        if not os.path.exists(self.input_path):
-            logger.error(f"Preprocessed file not found: {self.input_path}")
-            raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
-
+        FilesHelper.ensure_exists(self.input_path)
         logger.info(f"Loading preprocessed data from: {self.input_path}")
         self.data = FilesHelper.load(self.input_path)
         self.df = self._flatten_logs(self.data)
