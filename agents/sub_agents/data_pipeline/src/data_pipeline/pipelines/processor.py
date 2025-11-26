@@ -1,7 +1,8 @@
 import os
 from utils import logger, get_config
 from utils.helpers.time import TimestampHelper
-from utils.helpers.files import FilesHelper
+from utils.storage.jsonl_repo import JsonlRepository
+from utils.storage.json_repo import JsonRepository
 
 class Preprocessor:
     """
@@ -16,10 +17,11 @@ class Preprocessor:
 
     def __init__(self, jsonl_path: str = None):
         self.jsonl_path = jsonl_path or get_config().PATHS.LOGS
-        FilesHelper.ensure_exists(self.jsonl_path)
+        self.jsonl_repo = JsonlRepository(self.jsonl_path)
+        self.jsonl_repo.ensure_exists()
 
         logger.info(f"Loading logs data from: {self.jsonl_path}")
-        self.logs_data = FilesHelper.load(self.jsonl_path)
+        self.logs_data = self.jsonl_repo.read_all()
         self.processed_sessions = []
 
     # -------------------------------------------------------------------------
@@ -130,6 +132,7 @@ class Preprocessor:
             sessions = self.processed_sessions
 
         output_path = output_path or get_config().PATHS.PREPROCESSED
-        FilesHelper.save(sessions, output_path)
+        json_repo = JsonRepository(output_path)
+        json_repo.save_all(sessions)
         logger.info(f"Preprocessed data saved to: {output_path}")
         return output_path

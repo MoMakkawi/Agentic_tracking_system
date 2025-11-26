@@ -1,9 +1,7 @@
 import requests
-from typing import Optional, Dict, Any
-
+from typing import Optional, Dict
 from utils import Secrets, logger, get_config
-from utils.helpers.files import FilesHelper
-
+from utils.storage.factory import RepositoryFactory
 
 class DataFetcher:
     """
@@ -14,8 +12,6 @@ class DataFetcher:
     - Fetch ICS from a configured URL
     - Save both to disk
     """
-
-    REQUEST_TIMEOUT = 60
 
     def __init__(
         self,
@@ -32,7 +28,7 @@ class DataFetcher:
         self.ics_url = ics_url or Secrets.ICS_URL
         self.ics_path = ics_path or config.PATHS.ICS
 
-        self.data = None
+        self.logs = None
         self.ics = None
 
         self._validate_config()
@@ -58,7 +54,7 @@ class DataFetcher:
         logger.info(f"Fetching {resource_name} from: {url}")
 
         try:
-            response = requests.get(url, timeout=self.REQUEST_TIMEOUT)
+            response = requests.get(url, timeout= 60)
             response.raise_for_status()
             logger.info(f"{resource_name.capitalize()} fetched successfully")
             return response.content
@@ -71,17 +67,21 @@ class DataFetcher:
             logger.error(f"Failed to fetch {resource_name} from {url}: {e}")
             raise
 
-    def _save(self, data, path: str) -> str:
-        """Saves data to disk with robust error handling."""
-        logger.info(f"Saving file to: {path}")
-
+    def _save_data(self, data: bytes, path: str, resource_name: str) -> None:
+        """
+        Helper method to save data using RepositoryFactory.
+        
+        Args:
+            data: The bytes data to save
+            path: The file path where data should be saved
+            resource_name: Name of the resource for logging purposes
+        """
         try:
-            FilesHelper.save(data, path)
-            logger.info(f"Saved successfully to: {path}")
-            return path
-
-        except OSError as e:
-            logger.error(f"Failed to save file to {path}: {e}")
+            repo = RepositoryFactory.get_repository(path)
+            repo.save_from_bytes(data)
+            logger.info(f"{resource_name.capitalize()} saved successfully to: {path}")
+        except Exception as e:
+            logger.error(f"Failed to save {resource_name} to {path}: {e}")
             raise
 
     # ----------------------------------------------------------------------
@@ -89,7 +89,7 @@ class DataFetcher:
     # ----------------------------------------------------------------------
     def run(self) -> Dict[str, bytes]:
         """
-        Fetch logs and ICS data and store them internally.
+        Fetch logs and ICS data.
 
         Returns:
             dict: {
@@ -97,11 +97,11 @@ class DataFetcher:
                 "ics": bytes
             }
         """
-        self.data = self._fetch(self.logs_url, "logs")
         self.ics = self._fetch(self.ics_url, "ics")
+        self.logs = self._fetch(self.logs_url, "logs")
 
         return {
-            "logs": self.data,
+            "logs": self.logs,
             "ics": self.ics,
         }
 
@@ -115,13 +115,17 @@ class DataFetcher:
                 "ics": "<path>"
             }
         """
-        if self.data is None or self.ics is None:
-            raise RuntimeError("No data fetched. Call run() before save().")
+        if not self.logs or not self.ics:
+            raise ValueError("Data must contain both 'logs' and 'ics' keys")
 
-        logs_path = self._save(self.data, self.logs_path)
-        ics_path = self._save(self.ics, self.ics_path)
+        # Save ICS in ics format using RepositoryFactory
+        self._save_data(self.ics, self.ics_path, "ics")
 
+        # Save logs in jsonl format using RepositoryFactory
+        self._save_data(self.logs, self.logs_path, "logs")
+
+        # Return the saved paths
         return {
-            "logs": logs_path,
-            "ics": ics_path,
+            "logs": self.logs_path,
+            "ics": self.ics_path,
         }

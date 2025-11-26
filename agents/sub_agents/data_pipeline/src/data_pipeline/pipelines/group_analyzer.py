@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from utils import logger, get_config
-from utils.helpers.files import FilesHelper
+from utils.storage.json_repo import JsonRepository
 
 class GroupAnalyzer:
     """
@@ -15,9 +15,10 @@ class GroupAnalyzer:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-        FilesHelper.ensure_exists(self.input_path)
+        self.json_repo = JsonRepository(self.input_path)
+        self.json_repo.ensure_exists()
 
-        self.logs_sessions = FilesHelper.load(self.input_path)
+        self.logs_sessions = self.json_repo.read_all()
         self.groups_count = get_config().GROUPS_COUNTS.to_dict()
         self.allowed_lengths = set(self.groups_count.values())
         self.last_result = None
@@ -86,6 +87,7 @@ class GroupAnalyzer:
             groups = self.last_result
 
         output_path = output_path or get_config().PATHS.GROUPED
-        FilesHelper.save(groups, output_path)
+        output_repo = JsonRepository(output_path)
+        output_repo.save_all(groups)
         logger.info(f"Group data saved to: {output_path}")
         return output_path
