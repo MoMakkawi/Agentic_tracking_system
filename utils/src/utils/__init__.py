@@ -7,7 +7,6 @@ from .Secrets import Secrets
 from .config import load_config, get_config
 from .logger import logger
 from .helpers.time import TimestampHelper
-from .helpers.files import FilesHelper
 from .models.gemini import GeminiModel
 from .models.ragrenn import RagrennModel
 
@@ -20,7 +19,6 @@ __all__ = [
     get_config,
 
     #Helpers
-    FilesHelper,
     TimestampHelper,
 
     #LLM models
