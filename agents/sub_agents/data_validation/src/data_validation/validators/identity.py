@@ -1,8 +1,8 @@
-import os
 import re
 import pandas as pd
 from utils import logger, get_config, load_config
-from utils.helpers.files import FilesHelper
+from utils.storage.csv_repo import CsvRepository
+from utils.storage.json_repo import JsonRepository
 
 class IdentityValidator:
     """
@@ -17,12 +17,11 @@ class IdentityValidator:
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
 
-        if not os.path.exists(self.input_path):
-            logger.error(f"Preprocessed file not found: {self.input_path}")
-            raise FileNotFoundError(f"Input file does not exist: {self.input_path}")
-
+        json_repo = JsonRepository(self.input_path)
+        json_repo.ensure_exists()
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = FilesHelper.load(self.input_path)
+        self.data = json_repo.read_all()
+
         self.df = self._flatten_logs(self.data)
         self.uid_meta = {}
         self.alerts = []
@@ -159,8 +158,9 @@ class IdentityValidator:
             "anomaly_sessions",
             "reason"
         ]
-        rows = [header] + self.alerts
-
-        FilesHelper.save(rows, output_path)
+        
+        data = [dict(zip(header, alert)) for alert in self.alerts]
+        CsvRepository(output_path).save_all(data)
+        
         logger.info(f"Identity alerts exported to CSV: {output_path}")
         return output_path

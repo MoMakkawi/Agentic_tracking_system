@@ -1,6 +1,7 @@
 import pandas as pd
 from utils import logger, get_config
-from utils.helpers.files import FilesHelper
+from utils.storage.csv_repo import CsvRepository
+from utils.storage.json_repo import JsonRepository
 from utils.helpers.time import TimestampHelper
 
 class DeviceValidator:
@@ -16,9 +17,13 @@ class DeviceValidator:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-        FilesHelper.ensure_exists(self.input_path)
+        
+        # Use JsonRepository to load preprocessed data
+        json_repo = JsonRepository(self.input_path)
+        json_repo.ensure_exists()
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = FilesHelper.load(self.input_path)
+        self.data = json_repo.read_all()
+        
         self.df = self._flatten_logs(self.data)
         self.alerts = []
 
@@ -152,8 +157,20 @@ class DeviceValidator:
             raise ValueError("No alert data to save.")
 
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.DEVICE
-        header = ["session_id", "device_id", "reason"]
-        rows = [header] + self.alerts
-        FilesHelper.save(rows, output_path)
+        
+        # Convert alerts from list format to dict format
+        alert_dicts = [
+            {
+                "session_id": alert[0],
+                "device_id": alert[1],
+                "reason": alert[2]
+            }
+            for alert in self.alerts
+        ]
+        
+        # Use CsvRepository to save alerts
+        csv_repo = CsvRepository(output_path)
+        csv_repo._save(alert_dicts)
+        
         logger.info(f"Device-session alerts exported to CSV: {output_path}")
         return output_path

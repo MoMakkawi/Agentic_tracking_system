@@ -2,7 +2,8 @@ from datetime import datetime, time
 import pandas as pd
 from utils import logger, get_config, load_config
 from utils.helpers.time import TimestampHelper
-from utils.helpers.files import FilesHelper
+from utils.storage.csv_repo import CsvRepository
+from utils.storage.json_repo import JsonRepository
 from collections import defaultdict
 
 
@@ -18,9 +19,11 @@ class TimestampValidator:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-        FilesHelper.ensure_exists(self.input_path)
         logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = FilesHelper.load(self.input_path)
+        self.data = JsonRepository(self.input_path).read_all()
+        if not self.data:
+             logger.warning(f"No data loaded from {self.input_path}")
+        
         self.df = self._flatten_logs(self.data)
         self.alerts = []
 
@@ -42,10 +45,8 @@ class TimestampValidator:
             raise ValueError("No alert data to save.")
 
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.TIMESTAMP
-        header = ["uid", "timestamp", "session_id", "device_id", "reason"]
-        rows = [header] + self.alerts
-
-        FilesHelper.save(rows, output_path)
+        
+        CsvRepository(output_path).save_all(self.alerts)
         logger.info(f"Alerts exported to CSV: {output_path}")
         return output_path
 
@@ -56,11 +57,12 @@ class TimestampValidator:
         for session in sessions:
             session_id = session.get("session_id")
             device_id = session.get("device_id")
+            logs_date = session.get("logs_date")
 
             for log in session.get("logs", []):
                 records.append({
                     "uid": log["uid"],
-                    "timestamp": TimestampHelper.to_datetime(log["ts"]),
+                    "timestamp": TimestampHelper.to_datetime(logs_date + " " + log["ts"]),
                     "session_id": session_id,
                     "device_id": device_id
                 })
@@ -117,7 +119,13 @@ class TimestampValidator:
                 grouped_alerts[key].add("Weekend or holiday check-in")
 
         self.alerts = [
-            [uid, ts, session_id, device_id, "; ".join(sorted(reasons))]
+            {
+                "uid": uid,
+                "timestamp": ts,
+                "session_id": session_id,
+                "device_id": device_id,
+                "reason": "; ".join(sorted(reasons))
+            }
             for (uid, ts, session_id, device_id), reasons in grouped_alerts.items()
         ]
         logger.info(f"Collected {len(self.alerts)} unique alerts (grouped by UID & session)")
