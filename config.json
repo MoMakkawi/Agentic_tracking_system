@@ -34,16 +34,10 @@
             }
         }
     },
-    "ALERTS_PATH": {
-        "VALIDATION": {
-            "TIMESTAMP": "data/alerted/validation/timestamp.csv",
-            "IDENTITY": "data/alerted/validation/identity.csv"
-        }
-    },
     "LLM_MODULES": {
         "ORCHESTRATOR": {
             "MODEL": {
-                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-25", "openai/gpt-oss-120b"],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -53,7 +47,7 @@
         },
         "DATA_PIPELINE": {
             "MODEL": {
-                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -63,7 +57,7 @@
         },
         "DATA_VALIDATION": {
             "MODEL": {
-                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -73,7 +67,7 @@
         },
         "BEHAVIOR_INDIVIDUAL_MODELING": {
             "MODEL": {
-                "NAME": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506"],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -83,7 +77,7 @@
         },
         "BEHAVIOR_GROUP_MODELING": {
             "MODEL": {
-                "NAME": "gemini-2.5-flash-preview-05-20",
+                "NAME": ["gemini-2.5-flash-preview-05-20"],
                 "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
             },
             "SETTINGS": {
