@@ -16,7 +16,7 @@ def fetch_tool() -> str:
         1. Instantiate DataFetcher.
         2. Fetch data from the URL.
         3. Store fetched data internally.
-        4. Save data to disk using FilesHelper.
+        4. Save data to disk using Files Helper Repositories.
 
     Returns: output paths for fetched data in this form
         dict: {
