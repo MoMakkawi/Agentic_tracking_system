@@ -30,9 +30,7 @@ class JsonlRepository(FileRepository):
 
     def add(self, data: Union[Dict[str, Any], List[Dict[str, Any]]]) -> None:
         try:
-            dirname = os.path.dirname(self.file_path)
-            if dirname:
-                os.makedirs(dirname, exist_ok=True)
+            self.ensure_directory_exists()
             with open(self.file_path, 'a', encoding='utf-8') as f:
                 if isinstance(data, list):
                     for record in data:
@@ -46,9 +44,7 @@ class JsonlRepository(FileRepository):
 
     def save_all(self, data: List[Dict[str, Any]]):
         try:
-            dirname = os.path.dirname(self.file_path)
-            if dirname:
-                os.makedirs(dirname, exist_ok=True)
+            self.ensure_directory_exists()
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 for record in data:
                     f.write(json.dumps(record) + '\n')
@@ -94,9 +90,7 @@ class JsonlRepository(FileRepository):
         """
         Parse raw bytes content into JSON objects and save them.
         """
-        dirname = os.path.dirname(self.file_path)
-        if dirname:
-            os.makedirs(dirname, exist_ok=True)
+        self.ensure_directory_exists()
         try:
             logs_str = content.decode('utf-8')
             data = []

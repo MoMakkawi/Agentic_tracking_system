@@ -13,7 +13,7 @@ class JsonRepository(FileRepository):
             return []
 
     def _save(self, data: List[Dict[str, Any]]):
-        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+        self.ensure_directory_exists()
         with open(self.file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
 
@@ -25,9 +25,7 @@ class JsonRepository(FileRepository):
             data: List of dictionaries to save
         """
         try:
-            dirname = os.path.dirname(self.file_path)
-            if dirname:
-                os.makedirs(dirname, exist_ok=True)
+            self.ensure_directory_exists()
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
             from utils import logger

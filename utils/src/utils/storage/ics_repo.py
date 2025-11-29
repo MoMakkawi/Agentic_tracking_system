@@ -71,7 +71,7 @@ class IcsRepository(FileRepository):
 
             cal.add_component(event)
 
-        os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+        self.ensure_directory_exists()
         with open(self.file_path, 'wb') as f:
             f.write(cal.to_ical())
 
@@ -110,9 +110,7 @@ class IcsRepository(FileRepository):
         """
         Save raw ICS data (bytes or string) exactly as-is.
         """
-        dirname = os.path.dirname(self.file_path)
-        if dirname:
-            os.makedirs(dirname, exist_ok=True)
+        self.ensure_directory_exists()
             
         try:
             # Decode bytes to string if needed

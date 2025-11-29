@@ -16,16 +16,12 @@ class CsvRepository(FileRepository):
     def _save(self, data: List[Dict[str, Any]]):
         if not data:
             # If empty, create an empty file
-            dir_path = os.path.dirname(self.file_path)
-            if dir_path:
-                os.makedirs(dir_path, exist_ok=True)
+            self.ensure_directory_exists()
             open(self.file_path, 'w').close()
             return
 
         # Ensure directory exists
-        dir_path = os.path.dirname(self.file_path)
-        if dir_path:
-            os.makedirs(dir_path, exist_ok=True)
+        self.ensure_directory_exists()
             
         fieldnames = data[0].keys()
         with open(self.file_path, 'w', newline='', encoding='utf-8') as f:

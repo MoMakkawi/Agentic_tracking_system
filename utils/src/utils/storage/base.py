@@ -13,6 +13,16 @@ class FileRepository(ABC):
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
+    def ensure_directory_exists(self) -> None:
+        """
+        Create parent directories for the file path if they don't exist.
+        This method extracts the directory path from self.file_path and creates
+        all necessary parent directories.
+        """
+        dir_path = os.path.dirname(self.file_path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+
     @abstractmethod
     def read_all(self) -> List[Dict[str, Any]]:
         """Read all records from the file."""
