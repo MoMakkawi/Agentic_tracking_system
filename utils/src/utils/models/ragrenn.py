@@ -1,19 +1,20 @@
 from openai import OpenAI
 from smolagents.models import OpenAIServerModel
 from utils import logger, Secrets
+from typing import Union, List
 
 class RagrennModel:
     """
     Wrapper class for interacting with the Ragrenn (Rennes) model through its OpenAI-compatible API.
     Provides unified text generation and smolagent compatibility.
+    Supports automatic model selection from a list with fallback.
     """
 
     def __init__(
         self,
-        model_name: str = "mistralai/Mistral-Small-3.2-24B",
+        model_name: Union[str, List[str]] = "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
         base_url: str = "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
     ):
-        self.model_name = model_name
         self.base_url = base_url
         try:
             api_key = Secrets.RENNES_API_KEY
@@ -21,11 +22,55 @@ class RagrennModel:
                 raise EnvironmentError("Missing RENNES_API_KEY")
 
             self.client = OpenAI(api_key=api_key, base_url=self.base_url)
+            
+            # Select available model from the provided name(s)
+            self.model_name = self._select_available_model(model_name)
             logger.info(f"RagrennModel initialized with model '{self.model_name}'")
 
         except Exception as e:
             logger.exception(f"Failed to initialize RagrennModel: {e}")
             raise
+
+    def _select_available_model(self, model_name: Union[str, List[str]]) -> str:
+        """
+        Select the first available model from the provided name(s).
+        
+        Args:
+            model_name: Single model name or list of model names to try
+            
+        Returns:
+            The first available model name
+            
+        Raises:
+            RuntimeError: If no models are available
+        """
+        # Convert single string to list for uniform processing
+        model_names = [model_name] if isinstance(model_name, str) else model_name
+        
+        try:
+            # Fetch available models from the API
+            available_models_response = self.client.models.list()
+            available_model_ids = {model.id for model in available_models_response.data}
+            
+            logger.debug(f"Available models from API: {available_model_ids}")
+            logger.debug(f"Requested models: {model_names}")
+            
+            # Find the first available model
+            for model in model_names:
+                if model in available_model_ids:
+                    logger.info(f"Selected model: {model}")
+                    return model
+            
+            # No models available
+            raise RuntimeError(
+                f"None of the requested models are available. "
+                f"Requested: {model_names}, Available: {available_model_ids}"
+            )
+            
+        except Exception as e:
+            logger.warning(f"Failed to fetch available models: {e}. Using first model from list.")
+            # Fallback: use the first model in the list if API check fails
+            return model_names[0]
 
     def generate_text(self, prompt: str) -> str:
         """Send a text prompt to Ragrenn and return the response."""
