@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 from utils import logger, get_config
-from utils.storage.json_repo import JsonRepository
+from utils import JsonRepository
 
 class GroupAnalyzer:
     """

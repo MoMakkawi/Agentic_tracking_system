@@ -1,6 +1,6 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
-from utils.models.ragrenn import RagrennModel
+from utils import RagrennModel
 from data_validation.agent.tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
 
 

@@ -1,8 +1,7 @@
 import re
 import pandas as pd
 from utils import logger, get_config, load_config
-from utils.storage.csv_repo import CsvRepository
-from utils.storage.json_repo import JsonRepository
+from utils import JsonRepository, CsvRepository
 
 class IdentityValidator:
     """

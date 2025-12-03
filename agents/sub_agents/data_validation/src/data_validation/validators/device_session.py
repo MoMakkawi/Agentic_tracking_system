@@ -1,8 +1,7 @@
 import pandas as pd
 from utils import logger, get_config
-from utils.storage.csv_repo import CsvRepository
-from utils.storage.json_repo import JsonRepository
-from utils.helpers.time import TimestampHelper
+from utils import CsvRepository, JsonRepository
+from utils import TimestampHelper
 
 class DeviceValidator:
     """

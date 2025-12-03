@@ -1,7 +1,7 @@
 import requests
 from typing import Optional, Dict
 from utils import Secrets, logger, get_config
-from utils.storage.factory import RepositoryFactory
+from utils import RepositoryFactory
 
 class DataFetcher:
     """

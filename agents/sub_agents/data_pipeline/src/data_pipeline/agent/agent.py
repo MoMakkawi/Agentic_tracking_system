@@ -1,7 +1,7 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
-from utils.models.ragrenn import RagrennModel
-from data_pipeline.agent.tools import fetch_tool, preprocess_tool, group_tool
+from utils import RagrennModel
+from .tools import fetch_tool, preprocess_tool, group_tool
 
 
 class DataPipelineAgent:
@@ -73,8 +73,6 @@ class DataPipelineAgent:
                     logger.error("All attempts failed for task: %s", task)
                     raise
                 logger.info("Retrying...")
-
-        return None
 
 
 # ----------------------------
