@@ -1,7 +1,7 @@
 import os
 from openai import OpenAI
 from smolagents.models import OpenAIServerModel
-from utils import logger, Secrets, get_config
+from utils import logger, Secrets
 from IPython.display import display, Markdown
 from typing import Union, List
 
