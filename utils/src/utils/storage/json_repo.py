@@ -15,7 +15,7 @@ class JsonRepository(FileRepository):
     def _save(self, data: List[Dict[str, Any]]):
         self.ensure_directory_exists()
         with open(self.file_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, indent=4, ensure_ascii=False)
 
     def save_all(self, data: List[Dict[str, Any]]) -> None:
         """
@@ -27,7 +27,7 @@ class JsonRepository(FileRepository):
         try:
             self.ensure_directory_exists()
             with open(self.file_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=4)
+                json.dump(data, f, indent=4, ensure_ascii=False)
             from utils import logger
             logger.info(f"JSON content saved successfully to: {self.file_path}")
         except Exception as e:

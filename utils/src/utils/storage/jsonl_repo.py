@@ -34,9 +34,9 @@ class JsonlRepository(FileRepository):
             with open(self.file_path, 'a', encoding='utf-8') as f:
                 if isinstance(data, list):
                     for record in data:
-                        f.write(json.dumps(record) + '\n')
+                        f.write(json.dumps(record, ensure_ascii=False) + '\n')
                 else:
-                    f.write(json.dumps(data) + '\n')
+                    f.write(json.dumps(data, ensure_ascii=False) + '\n')
             logger.info(f"Added data to JSONL: {self.file_path}")
         except Exception as e:
             logger.exception(f"Error while adding to JSONL '{self.file_path}': {e}")
@@ -47,7 +47,7 @@ class JsonlRepository(FileRepository):
             self.ensure_directory_exists()
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 for record in data:
-                    f.write(json.dumps(record) + '\n')
+                    f.write(json.dumps(record, ensure_ascii=False) + '\n')
             logger.info(f"JSONL content saved successfully to: {self.file_path}")
         except Exception as e:
             logger.exception(f"Error while saving JSONL '{self.file_path}': {e}")
