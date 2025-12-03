@@ -2,6 +2,7 @@ import os
 from typing import List, Dict, Any, Union
 from datetime import datetime
 from .base import FileRepository
+from utils import TimestampHelper
 
 try:
     from icalendar import Calendar, Event
@@ -30,14 +31,18 @@ class IcsRepository(FileRepository):
                         "end": component.get("DTEND").dt if component.get("DTEND") else None,
                         "description": str(component.get("DESCRIPTION")) if component.get("DESCRIPTION") else "",
                     }
-                    # Convert datetimes to ISO format strings for consistency with other formats
-                    if isinstance(event_dict["start"], datetime):
-                        event_dict["start"] = event_dict["start"].isoformat()
-                    if isinstance(event_dict["end"], datetime):
-                        event_dict["end"] = event_dict["end"].isoformat()
+                    # Convert datetimes to desired format using TimestampHelper
+                    if event_dict["start"]:
+                        # safe_parse expects a string, so we convert datetime/date to string first
+                        event_dict["start"] = TimestampHelper.safe_parse(str(event_dict["start"]))
+                    if event_dict["end"]:
+                        event_dict["end"] = TimestampHelper.safe_parse(str(event_dict["end"]))
                         
                     events.append(event_dict)
             return events
+
+    def save_all(self, data: List[Dict[str, Any]]):
+        self._save(data)
 
     def _save(self, data: List[Dict[str, Any]]):
         cal = Calendar()
