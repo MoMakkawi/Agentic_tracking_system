@@ -1,0 +1,16 @@
+[project]
+name = "agentic_tracking_system"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pdm]
+packages = [
+    { path = "utils", editable = true },
+    { path = "agents/orchestrator", editable = true },
+    { path = "agents/sub_agents/data_pipeline", editable = true },
+    { path = "agents/sub_agents/behavior_group_modeling", editable = true },
+    { path = "agents/sub_agents/behavior_individual_modeling", editable = true },
+    { path = "agents/sub_agents/data_validation", editable = true }
+]
+
