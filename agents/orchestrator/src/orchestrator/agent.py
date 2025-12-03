@@ -1,40 +1,87 @@
-import sys
-from pathlib import Path
-
-# Get project root (go up 4 levels from tools.py)
-project_root = Path(__file__).resolve().parents[4]
-
-# Add sub_agents source paths
-sys.path.insert(0, str(project_root / "agents" / "sub_agents" / "data_pipeline" / "src"))
-sys.path.insert(0, str(project_root / "agents" / "sub_agents" / "data_validation" / "src"))
-sys.path.insert(0, str(project_root / "utils" / "src"))
-
-
-
-from smolagents.agents import CodeAgent, ToolCallingAgent
-from utils.models.ragrenn import RagrennModel
+from smolagents.agents import ToolCallingAgent
 from utils import logger, get_config, load_config
-from tools import *
+from utils import RagrennModel
+from .tools import pipeline_agent_tool, validation_agent_tool
 
-def main():
-    load_config()
 
-    config = get_config().LLM_MODULES.ORCHESTRATOR
-    model = RagrennModel(model_name= config.MODEL.NAME, base_url= config.MODEL.BASE_URL).to_smol_model()
+class Orchestrator:
+    """
+    Orchestrator
+    -----------------
+    Coordinates multiple agents (pipeline + validation) using SmolAgent tools.
 
-    orchestrator = ToolCallingAgent(
-        tools=[pipeline_agent_tool, validation_agent_tool],
-        model=model,
-        instructions=config.INSTRUCTIONS
-    )
+    Features:
+        - Executes complete pipeline and validation workflow
+        - Delegates tasks to pipeline and validation tools
+        - Supports configurable instructions and retry logic
+    """
 
-    task = "Run full data pipeline and validate the results."
-    logger.info(f"Starting Orchestrator Task: {task}")
+    def __init__(self):
+        load_config()
+        config = get_config().LLM_MODULES.ORCHESTRATOR
 
+        # Initialize model
+        self.model = RagrennModel(
+            model_name=config.MODEL.NAME,
+            base_url=config.MODEL.BASE_URL
+        ).to_smol_model()
+
+        # Load orchestrator instructions
+        self.instructions = config.INSTRUCTIONS
+        self.retries = config.SETTINGS.RETRIES
+
+        # Register tools
+        self.tools = [pipeline_agent_tool, validation_agent_tool]
+
+        logger.info("OrchestratorAgent initialized with tools: %s",
+                    [t.name for t in self.tools])
+
+    # ---------------------------------------------------------
+    # Execute Task
+    # ---------------------------------------------------------
+    def _execute(self, task: str):
+        logger.info(f"Executing orchestrator task: {task}")
+
+        agent = ToolCallingAgent(
+            tools=self.tools,
+            model=self.model,
+            instructions=self.instructions,
+            add_base_tools=False
+        )
+
+        result = agent.run(task)
+        logger.info("Orchestrator task completed successfully. Result: %s", result)
+        return result
+
+    # ---------------------------------------------------------
+    # Run with Retries
+    # ---------------------------------------------------------
+    def run(self, task: str):
+        for attempt in range(1, self.retries + 1):
+            try:
+                return self._execute(task)
+            except Exception as e:
+                logger.exception(f"Attempt {attempt} failed: {e}")
+                if attempt == self.retries:
+                    logger.error("All attempts failed for task: %s", task)
+                    raise
+                logger.info("Retrying orchestrator task...")
+
+
+# ----------------------------
+# main() entry-point
+# ----------------------------
+def main(task: str = None):
+    orchestrator = Orchestrator()
+    task = task or "Run full data pipeline and validate the results."
     result = orchestrator.run(task)
+    return result
 
-    print("\n=== Orchestrator Result ===")
-    print(result)
 
+# ----------------------------
+# CLI Usage
+# ----------------------------
 if __name__ == "__main__":
-    main()
+    output = main()
+    print("\n=== Orchestrator Result ===")
+    print(output)
