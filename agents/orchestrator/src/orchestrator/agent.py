@@ -21,10 +21,7 @@ class Orchestrator:
         config = get_config().LLM_MODULES.ORCHESTRATOR
 
         # Initialize model
-        self.model = RagrennModel(
-            model_name=config.MODEL.NAME,
-            base_url=config.MODEL.BASE_URL
-        ).to_smol_model()
+        self.model = RagrennModel(model_config=config).to_smol_model()
 
         # Load orchestrator instructions
         self.instructions = config.INSTRUCTIONS

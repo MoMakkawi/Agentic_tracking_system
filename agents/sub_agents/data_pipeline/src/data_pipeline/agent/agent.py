@@ -22,7 +22,7 @@ class DataPipelineAgent:
         config = get_config().LLM_MODULES.DATA_PIPELINE
 
         # Initialize model
-        self.model = RagrennModel(model_name= config.MODEL.NAME, base_url= config.MODEL.BASE_URL).to_smol_model()
+        self.model = RagrennModel(model_config=config).to_smol_model()
 
         # Load pipeline instructions
         self.instructions = config.INSTRUCTIONS
