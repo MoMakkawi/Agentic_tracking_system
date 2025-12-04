@@ -132,9 +132,11 @@ class Preprocessor:
     # -------------------------------------------------------------------------
     def _enrich_session(self, session):
         """Enrich a session with matching calendar events."""
-        date_str = session.get("logs_date")
-        session_logs = session.get("logs", [])
+        received_at = session.get("received_at")
+        received_at_date = TimestampHelper.to_date(received_at)
+        date_str = received_at_date or session.get("logs_date")
         
+        session_logs = session.get("logs", [])
         if not session_logs or not self.ics_data or not date_str:
             session["matched_events"] = []
             session["event_context"] = ""
