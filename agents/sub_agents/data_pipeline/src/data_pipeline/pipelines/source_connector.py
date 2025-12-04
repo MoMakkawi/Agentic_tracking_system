@@ -51,7 +51,7 @@ class DataFetcher:
 
     def _fetch(self, url: str, resource_name: str) -> bytes:
         """Generic fetch wrapper with logging and error handling."""
-        logger.info(f"Fetching {resource_name} from: {url}")
+        logger.info(f"Fetching {resource_name}")
 
         try:
             response = requests.get(url, timeout= 60)
