@@ -111,12 +111,14 @@ class Preprocessor:
             session = {
                 "session_id": index,
                 "device_id": record.get("device_id"),
+                "event_context": "", # will be enriched by _enrich_session
+                "matched_events": [], # will be enriched by _enrich_session
                 "received_at": received_at,
                 "logs_date": logs_date,
                 "recorded_count": record.get("count", len(logs) + sum(redundant_uids.values())),
                 "unique_count": len(logs),
-                "logs": logs,
-                "redundant_uids": redundant_uids
+                "redundant_uids": redundant_uids,
+                "logs": logs
             }
             
             # Enrich session with (ics) event context
@@ -198,6 +200,10 @@ class Preprocessor:
         
         event_copy["summary"] = details
         event_copy["_title_for_context"] = title
+        
+        # Remove description
+        event_copy.pop("description", None)
+
         return event_copy
 
     # -------------------------------------------------------------------------
