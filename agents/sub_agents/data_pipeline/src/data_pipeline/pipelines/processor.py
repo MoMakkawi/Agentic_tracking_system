@@ -144,7 +144,7 @@ class Preprocessor:
         seen_event_ids = set()
 
         for log in session_logs:
-            log_dt = self._parse_log_datetime(date_str, log.get("ts"))
+            log_dt = TimestampHelper.combine_date_time(date_str, log.get("ts"))
             if not log_dt:
                 continue
 
@@ -152,7 +152,7 @@ class Preprocessor:
                 if event.get("id") in seen_event_ids:
                     continue
                 
-                if self._event_overlaps(event, log_dt):
+                if TimestampHelper.is_overlap(log_dt, event.get("start"), event.get("end")):
                     event_copy = self._prepare_event_copy(event)
                     matched_events.append(event_copy)
                     seen_event_ids.add(event.get("id"))
@@ -160,32 +160,6 @@ class Preprocessor:
         session["matched_events"] = matched_events
         titles = [e.pop("_title_for_context", "Unknown Event") for e in matched_events]
         session["event_context"] = ", ".join(dict.fromkeys(titles))
-
-    def _parse_log_datetime(self, date_str, time_str):
-        """Parse log datetime from date and time strings."""
-        try:
-            return datetime.fromisoformat(f"{date_str} {time_str}")
-        except (ValueError, TypeError):
-            return None
-
-    def _event_overlaps(self, event, log_dt):
-        """Check if event time range overlaps with log datetime."""
-        start_str, end_str = event.get("start"), event.get("end")
-        if not start_str or not end_str:
-            return False
-        
-        try:
-            start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
-            end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
-            
-            # Normalize to naive datetime for comparison
-            if start_dt.tzinfo and not log_dt.tzinfo:
-                start_dt = start_dt.replace(tzinfo=None)
-                end_dt = end_dt.replace(tzinfo=None)
-            
-            return start_dt <= log_dt <= end_dt
-        except (ValueError, TypeError):
-            return False
 
     def _prepare_event_copy(self, event):
         """Create event copy with split title/details."""
