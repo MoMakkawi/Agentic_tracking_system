@@ -81,3 +81,34 @@ class TimestampHelper:
             return dt.to_pydatetime()
         except Exception:
             return None
+
+    @staticmethod
+    def combine_date_time(date_str: str, time_str: str) -> datetime | None:
+        """
+        Combine date and time strings into a datetime object.
+        """
+        try:
+            return datetime.fromisoformat(f"{date_str} {time_str}")
+        except (ValueError, TypeError):
+            return None
+
+    @staticmethod
+    def is_overlap(log_dt: datetime, start_str: str, end_str: str) -> bool:
+        """
+        Check if a log datetime overlaps with a time range defined by start and end strings.
+        """
+        if not start_str or not end_str:
+            return False
+        
+        try:
+            start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+            
+            # Normalize to naive datetime for comparison if log_dt is naive
+            if start_dt.tzinfo and not log_dt.tzinfo:
+                start_dt = start_dt.replace(tzinfo=None)
+                end_dt = end_dt.replace(tzinfo=None)
+            
+            return start_dt <= log_dt <= end_dt
+        except (ValueError, TypeError):
+            return False
