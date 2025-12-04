@@ -10,12 +10,10 @@ class RagrennModel:
     Supports automatic model selection from a list with fallback.
     """
 
-    def __init__(
-        self,
-        model_name: Union[str, List[str]] = "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
-        base_url: str = "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
-    ):
-        self.base_url = base_url
+    def __init__(self, model_config):
+        self.base_url = model_config.MODEL.BASE_URL
+        target_model_name = model_config.MODEL.NAME
+
         try:
             api_key = Secrets.RENNES_API_KEY
             if not api_key:
@@ -24,7 +22,7 @@ class RagrennModel:
             self.client = OpenAI(api_key=api_key, base_url=self.base_url)
             
             # Select available model from the provided name(s)
-            self.model_name = self._select_available_model(model_name)
+            self.model_name = self._select_available_model(target_model_name)
             logger.info(f"RagrennModel initialized with model '{self.model_name}'")
 
         except Exception as e:
@@ -102,4 +100,5 @@ class RagrennModel:
             model_id=self.model_name,
             api_base=self.base_url,
             api_key=Secrets.RENNES_API_KEY,
+            flatten_messages_as_text=True,
         )
