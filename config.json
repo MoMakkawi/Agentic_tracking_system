@@ -37,7 +37,7 @@
     "LLM_MODULES": {
         "ORCHESTRATOR": {
             "MODEL": {
-                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-25", "openai/gpt-oss-120b"],
+                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
