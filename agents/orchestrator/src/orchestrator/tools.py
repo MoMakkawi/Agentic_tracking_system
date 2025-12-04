@@ -1,6 +1,6 @@
 from smolagents import tool
-from data_pipeline import main as data_pipeline_agent_main
-from data_validation import main as data_validation_agent_main
+from agents.sub_agents.data_pipeline.src.data_pipeline.agent.agent import main as data_pipeline_agent_main
+from agents.sub_agents.data_validation.src.data_validation.agent.agent import main as data_validation_agent_main
 from utils import logger
 
 # -------------------------------
@@ -27,7 +27,7 @@ def pipeline_agent_tool(task: str = None) -> str:
         logger.info("[Orchestrator] Invoking DataPipelineAgent...")
         result = data_pipeline_agent_main(task)
         logger.info("DataPipelineAgent completed successfully.")
-        return str(result)
+        return str(result) if result is not None else "Task completed but returned no result."
     except Exception as e:
         logger.exception("Pipeline agent tool failed.")
         return f"Error in pipeline_agent_tool: {e}"
@@ -52,7 +52,7 @@ def validation_agent_tool(task: str = None) -> str:
         logger.info("[Orchestrator] Invoking DataValidationAgent...")
         result = data_validation_agent_main(task)
         logger.info("DataValidationAgent completed successfully.")
-        return str(result)
+        return str(result) if result is not None else "Task completed but returned no result."
     except Exception as e:
         logger.exception("Validation agent tool failed.")
         return f"Error in validation_agent_tool: {e}"
