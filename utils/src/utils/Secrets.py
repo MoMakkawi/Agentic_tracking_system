@@ -3,10 +3,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Get the directory where this Secrets.py file is located
-SECRETS_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).resolve().parents[3] 
 
 # Load .env file from the utils package directory
-env_path = SECRETS_DIR / ".env"
+env_path = ROOT_DIR / ".env"
 load_dotenv(dotenv_path=env_path)
 
 class Secrets:
