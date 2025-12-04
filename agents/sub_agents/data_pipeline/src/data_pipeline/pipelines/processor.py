@@ -1,8 +1,8 @@
 import os
 from utils import logger, get_config
-from utils.helpers.time import TimestampHelper
-from utils.storage.jsonl_repo import JsonlRepository
-from utils.storage.json_repo import JsonRepository
+from utils import TimestampHelper
+from utils import JsonlRepository, JsonRepository, IcsRepository
+from datetime import datetime
 
 class Preprocessor:
     """
@@ -15,13 +15,20 @@ class Preprocessor:
         - Track redundant UID counts per session
     """
 
-    def __init__(self, jsonl_path: str = None):
+    def __init__(self, jsonl_path: str = None, ics_path: str = None):
         self.jsonl_path = jsonl_path or get_config().PATHS.LOGS
+        self.ics_path = ics_path or get_config().PATHS.ICS
+        
+        logger.info(f"Loading logs data from: {self.jsonl_path}")
         self.jsonl_repo = JsonlRepository(self.jsonl_path)
         self.jsonl_repo.ensure_exists()
-
-        logger.info(f"Loading logs data from: {self.jsonl_path}")
         self.logs_data = self.jsonl_repo.read_all()
+
+        logger.info(f"Loading ICS data from: {self.ics_path}")
+        self.ics_repo = IcsRepository(self.ics_path)
+        self.ics_repo.ensure_exists()
+        self.ics_data = self.ics_repo.read_all()
+
         self.processed_sessions = []
 
     # -------------------------------------------------------------------------
@@ -111,11 +118,87 @@ class Preprocessor:
                 "logs": logs,
                 "redundant_uids": redundant_uids
             }
+            
+            # Enrich session with (ics) event context
+            self._enrich_session(session)
 
             sessions.append(session)
 
         logger.info(f"{len(sessions)} structured sessions generated.")
         return sessions
+
+    # -------------------------------------------------------------------------
+    def _enrich_session(self, session):
+        """Enrich a session with matching calendar events."""
+        date_str = session.get("logs_date")
+        session_logs = session.get("logs", [])
+        
+        if not session_logs or not self.ics_data or not date_str:
+            session["matched_events"] = []
+            session["event_context"] = ""
+            return
+
+        matched_events = []
+        seen_event_ids = set()
+
+        for log in session_logs:
+            log_dt = self._parse_log_datetime(date_str, log.get("ts"))
+            if not log_dt:
+                continue
+
+            for event in self.ics_data:
+                if event.get("id") in seen_event_ids:
+                    continue
+                
+                if self._event_overlaps(event, log_dt):
+                    event_copy = self._prepare_event_copy(event)
+                    matched_events.append(event_copy)
+                    seen_event_ids.add(event.get("id"))
+
+        session["matched_events"] = matched_events
+        titles = [e.pop("_title_for_context", "Unknown Event") for e in matched_events]
+        session["event_context"] = ", ".join(dict.fromkeys(titles))
+
+    def _parse_log_datetime(self, date_str, time_str):
+        """Parse log datetime from date and time strings."""
+        try:
+            return datetime.fromisoformat(f"{date_str} {time_str}")
+        except (ValueError, TypeError):
+            return None
+
+    def _event_overlaps(self, event, log_dt):
+        """Check if event time range overlaps with log datetime."""
+        start_str, end_str = event.get("start"), event.get("end")
+        if not start_str or not end_str:
+            return False
+        
+        try:
+            start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+            
+            # Normalize to naive datetime for comparison
+            if start_dt.tzinfo and not log_dt.tzinfo:
+                start_dt = start_dt.replace(tzinfo=None)
+                end_dt = end_dt.replace(tzinfo=None)
+            
+            return start_dt <= log_dt <= end_dt
+        except (ValueError, TypeError):
+            return False
+
+    def _prepare_event_copy(self, event):
+        """Create event copy with split title/details."""
+        event_copy = event.copy()
+        raw_summary = event_copy.get("summary", "")
+        
+        # Split "Title - Details" format
+        if " - " in raw_summary:
+            title, details = raw_summary.split(" - ", 1)
+        else:
+            title = details = raw_summary
+        
+        event_copy["summary"] = details
+        event_copy["_title_for_context"] = title
+        return event_copy
 
     # -------------------------------------------------------------------------
     def save(self, sessions=None, output_path: str = None):
