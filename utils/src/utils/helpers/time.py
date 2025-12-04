@@ -20,6 +20,16 @@ class TimestampHelper:
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
+    def to_date(ts: str) -> str | None:
+        """
+        Safely parse timestamps and return the date string 'YYYY-MM-DD'.
+        """
+        dt = TimestampHelper.to_datetime(ts)
+        if dt is None:
+            return None
+        return dt.strftime("%Y-%m-%d")
+
+    @staticmethod
     def adjust_dst(ts: str) -> str | None:
         """
         Adjusts a timestamp for Daylight Saving Time (DST) based on 'Europe/Paris' timezone rules.
