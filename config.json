@@ -25,7 +25,7 @@
         "LOGS": "data/fetched/logs_data.jsonl",
         "ICS": "data/fetched/pass.ics",
         "PREPROCESSED": "data/preprocessed/clean_data.json",
-        "GROUPED": "data/grouped/groups.json",
+        "GROUPS": "data/grouped/groups.json",
         "ALERTS": {
             "VALIDATION": {
                 "TIMESTAMP": "data/alerted/validation/timestamp.csv",
@@ -37,7 +37,10 @@
     "LLM_MODULES": {
         "ORCHESTRATOR": {
             "MODEL": {
-                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b"
+                ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -47,7 +50,10 @@
         },
         "DATA_PIPELINE": {
             "MODEL": {
-                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b"
+                ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -55,9 +61,26 @@
             },
             "INSTRUCTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves ics (student scheduals) and logs session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the logs data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
         },
+        "GROUP_IDENTIFIER": {
+            "MODEL": {
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b"
+                ],
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+            },
+            "SETTINGS": {
+                "RETRIES": 2
+            },
+            "DEFAULT_TASK": "Find the IoT MSc group i know that they attend Coaching professionnel.",
+            "INSTRUCTIONS": "You are the Group Identifier Agent.   \nYour goal: Identify student groups based on the user's task, using two tools:\n1. attendance_mapper_tool – this returns attendance groups based on session names\n2. save_tool – this saves only the final classified groups\n\n==============================\n1. UNDERSTAND THE RAW DATA  \n==============================\n\nThe function attendance_mapper_tool() returns a dictionary:\n\n{\n  \"Session Name A\": [\"uid1\", \"uid2\", \"uid3\"],\n  \"Session Name B\": [\"uid2\", \"uid4\"],\n  ...\n}\n\nImportant:\n- These are NOT the final groups.\n- These are only raw attendance clusters grouped by session/event names.\n- A single UID may appear in multiple sessions.\n- You must REASON over these raw groups to classify students based on the user's query.\n\n=======================================\n2. YOUR JOB: CLASSIFY STUDENT GROUPS  \n=======================================\n\nBased on the user's task, you must:\n- interpret which groups are needed (e.g., \u201cMSc IoT group\u201d, \u201cstudents who attend Coaching professionnel\u201d)\n- analyze the raw attendance dictionary returned by attendance_mapper_tool\n- select, combine, filter, intersect, or transform UIDs\n- produce NEW groups that match the task\n\nFor example, if the user asks:\n\"Find the IoT MSc group i know that they attend Coaching professionnel.\"\n\nThen you must:\n1. Call attendance_mapper_tool\n2. Determine which sessions correspond to IoT MSc\n3. Extract UIDs from relevant sessions\n4. Classify them into final groups\n5. Produce a final dictionary like:\n\n{\n  \"MSc IoT\": [\"uid1\", \"uid5\", \"uid7\"]\n}\n\n=============================\n3. OUTPUT FORMAT RULES  \n=============================\n\nAfter reasoning, your final groups MUST be a JSON object:\n\n{\n  \"Group Name 1\\\": [\\\"uid1\\\", \\\"uid2\\\"],\n  \"Group Name 2\\\": [\\\"uid3\\\", \\\"uid4\\\"]\n}\n\nRules:\n- Only JSON (no comments, no explanation)\n- Keys = final group names derived from the user's task\n- Values = sorted list of distinct UIDs\n- No text outside the JSON\n- No Python dict formatting (must be real JSON)\n\n==============================================\n4. MANDATORY EXECUTION PIPELINE (IMPORTANT)  \n==============================================\n\nYou MUST ALWAYS follow this exact workflow:\n\nStep 1 → Call attendance_mapper_tool  \n- Retrieve the raw attendance mapping: { session_name: [uids] }\n\nStep 2 → Reason  \n- Decide which groups the user wants  \n- Construct the final groups dictionary  \n- Ensure the structure is correct  \n\nStep 3 → Call save_tool  \n- Provide the final groups as:\n\n{\n  \"groups\": {\n    \"MyGroupName\": [\"uid1\", \"uid2\"],\n    \"AnotherGroup\": [\"uid5\", \"uid6\"]\n  }\n}\n\nThe output of the agent MUST be the return of save_tool.\n\n==========================================\n5. BE STRICT, CONSISTENT, AND RELIABLE  \n==========================================\n\n- Never output intermediate text.  \n- Never output the result of attendance_mapper_tool directly to the user.  \n- Never skip save_tool.  \n- Never invent UIDs.  \n- Only use UIDs that appear in attendance_mapper_tool output.  \n- Always produce valid JSON."
+        },
         "DATA_VALIDATION": {
             "MODEL": {
-                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506", "openai/gpt-oss-120b"],
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b"
+                ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -67,7 +90,9 @@
         },
         "BEHAVIOR_INDIVIDUAL_MODELING": {
             "MODEL": {
-                "NAME": ["mistralai/Mistral-Small-3.2-24B-Instruct-2506"],
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+                ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
             },
             "SETTINGS": {
@@ -77,7 +102,9 @@
         },
         "BEHAVIOR_GROUP_MODELING": {
             "MODEL": {
-                "NAME": ["gemini-2.5-flash-preview-05-20"],
+                "NAME": [
+                    "gemini-2.5-flash-preview-05-20"
+                ],
                 "BASE_URL": "https://generativelanguage.googleapis.com/v1beta/openai/"
             },
             "SETTINGS": {

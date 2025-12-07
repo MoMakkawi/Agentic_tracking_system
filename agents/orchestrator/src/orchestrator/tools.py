@@ -1,6 +1,7 @@
 from smolagents import tool
 from agents.sub_agents.data_pipeline.src.data_pipeline.agent.agent import main as data_pipeline_agent_main
 from agents.sub_agents.data_validation.src.data_validation.agent.agent import main as data_validation_agent_main
+from agents.sub_agents.group_identification.src.group_identification.agent.agent import main as group_identification_agent_main
 from utils import logger
 
 # -------------------------------
@@ -56,3 +57,28 @@ def validation_agent_tool(task: str = None) -> str:
     except Exception as e:
         logger.exception("Validation agent tool failed.")
         return f"Error in validation_agent_tool: {e}"
+
+@tool
+def group_identification_agent_tool(task: str = None) -> str:
+    """
+    Orchestrates the GroupIdentifierAgent.
+
+    Workflow:
+        1. Runs the GroupIdentifierAgent to identify student groups.
+        2. Can answer questions like "Find the IoT MSc group".
+        3. Returns the result or summary.
+
+    Args:
+        task (str, optional): Task description (default task will be used if None).
+
+    Returns:
+        str: Result of group identification or summary message.
+    """
+    try:
+        logger.info("[Orchestrator] Invoking GroupIdentifierAgent...")
+        result = group_identification_agent_main(task)
+        logger.info("GroupIdentifierAgent completed successfully.")
+        return str(result) if result is not None else "Task completed but returned no result."
+    except Exception as e:
+        logger.exception("Group identifier agent tool failed.")
+        return f"Error in group_identification_agent_tool: {e}"
