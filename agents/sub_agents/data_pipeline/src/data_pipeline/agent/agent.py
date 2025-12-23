@@ -1,8 +1,6 @@
 from smolagents.agents import CodeAgent
-from utils import logger, load_config, get_config
-from utils import RagrennModel
-from .tools import fetch_tool, preprocess_tool, group_tool
-
+from utils import RagrennModel, logger, load_config, get_config
+from .tools import fetch_tool, preprocess_tool
 
 class DataPipelineAgent:
     """
@@ -13,7 +11,6 @@ class DataPipelineAgent:
     Features:
         - Fetches ics + logs data
         - Preprocesses and cleans datasets
-        - Groups or analyzes preprocessed data
         - Retries failed runs with configurable attempts
     """
 
@@ -29,7 +26,7 @@ class DataPipelineAgent:
         self.retries = config.SETTINGS.RETRIES
 
         # Register tools
-        self.tools = [fetch_tool, preprocess_tool, group_tool]
+        self.tools = [fetch_tool, preprocess_tool]
 
         logger.info("DataPipelineAgent initialized with tools: %s", [t.name for t in self.tools])
 
@@ -87,15 +84,6 @@ def main(task: str = None):
         Any: Result of pipeline execution.
     """
     agent = DataPipelineAgent()
-    task = task or "Fetch ics + logs data, preprocess, and group students."
+    task = task or "Fetch attendance data, preprocess attendance data."
     result = agent.run(task)
     return result
-
-
-# ----------------------------
-# CLI Usage
-# ----------------------------
-if __name__ == "__main__":
-    test_task = "Fetch attendance data, preprocess, and group students by recurring sessions."
-    output = main(test_task)
-    print("PipelineAgent output:", output)

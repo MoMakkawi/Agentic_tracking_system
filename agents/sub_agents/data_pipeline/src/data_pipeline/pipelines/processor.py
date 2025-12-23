@@ -1,8 +1,6 @@
-import os
 from utils import logger, get_config
 from utils import TimestampHelper
 from utils import JsonlRepository, JsonRepository, IcsRepository
-from datetime import datetime
 
 class Preprocessor:
     """
@@ -47,7 +45,7 @@ class Preprocessor:
 
         return sessions
 
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     def _separate_redundant(self, data):
         """
         Remove redundant logs and track redundancy count per UID.

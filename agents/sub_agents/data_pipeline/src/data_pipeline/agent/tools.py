@@ -1,7 +1,6 @@
 from smolagents import tool
 from utils import logger
 from ..pipelines.processor import Preprocessor
-from ..pipelines.group_analyzer import GroupAnalyzer
 from ..pipelines.source_connector import DataFetcher
 
 # ---------------------------------------------------------
@@ -70,37 +69,3 @@ def preprocess_tool() -> str:
     except Exception as e:
         logger.error("Preprocess tool error", exc_info=True)
         return f"Error in preprocessing: {e}"
-
-
-# ---------------------------------------------------------
-# Group Tool
-# ---------------------------------------------------------
-@tool
-def group_tool() -> str:
-    """
-    Analyze preprocessed attendance sessions and generate student groupings.
-
-    Workflow:
-        1. Instantiate GroupAnalyzer with path to preprocessed sessions.
-        2. Filter sessions by valid unique counts.
-        3. Extract UID sets from filtered sessions.
-        4. Count frequency of identical UID combinations.
-        5. Assign readable group names based on group size and frequency.
-        6. Save grouped results to disk.
-
-    Returns:
-        str: Path to the saved grouped data file, or an error message if grouping fails.
-    """
-    try:
-        logger.info("Start grouping data by Agent!")
-
-        analyzer = GroupAnalyzer()
-        analyzer.run()
-        output_path = analyzer.save()
-
-        logger.info(f"Grouping completed successfully. Results saved to: {output_path}")
-        return output_path
-
-    except Exception as e:
-        logger.error("Group tool error", exc_info=True)
-        return f"Error in grouping: {e}"
