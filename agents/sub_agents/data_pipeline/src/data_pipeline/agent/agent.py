@@ -22,6 +22,7 @@ class DataPipelineAgent:
         self.model = RagrennModel(model_config=config).to_smol_model()
 
         # Load pipeline instructions
+        self.default_task = config.DEFAULT_TASK
         self.instructions = config.INSTRUCTIONS
         self.retries = config.SETTINGS.RETRIES
 
@@ -61,6 +62,9 @@ class DataPipelineAgent:
         """
         Run task with retry logic.
         """
+
+        task = task or self.default_task
+
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)
@@ -84,6 +88,5 @@ def main(task: str = None):
         Any: Result of pipeline execution.
     """
     agent = DataPipelineAgent()
-    task = task or "Fetch attendance data, preprocess attendance data."
     result = agent.run(task)
     return result

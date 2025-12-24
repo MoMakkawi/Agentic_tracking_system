@@ -25,6 +25,7 @@ class DataValidationAgent:
 
         # Load validation instructions
         self.instructions = config.INSTRUCTIONS
+        self.default_task = config.DEFAULT_TASK
         self.retries = config.SETTINGS.RETRIES
 
         # Register tools
@@ -63,6 +64,9 @@ class DataValidationAgent:
         """
         Run validation task with retry logic.
         """
+
+        task = task or self.default_task
+
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)
@@ -88,10 +92,6 @@ def main(task: str = None):
         Any: Result of validation execution.
     """
     agent = DataValidationAgent()
-    task = task or (
-        "Run all validation tools to check device, timestamp, and identity anomalies "
-        "in the preprocessed session dataset, then summarize detected issues."
-    )
     result = agent.run(task)
     return result
 
