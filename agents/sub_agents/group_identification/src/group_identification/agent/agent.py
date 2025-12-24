@@ -2,8 +2,7 @@ from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
 from utils import RagrennModel
-from .tools import attendance_mapper_tool, save_tool
-
+from .tools import cluster_tool ,save_tool
 
 class GroupIdentifierAgent:
     """
@@ -13,7 +12,6 @@ class GroupIdentifierAgent:
 
     Features:
         - Loads precomputed attendance groups
-        - Answers questions like "Find IoT MSc group"
         - Runs with retry logic
         - Uses LLM reasoning on small summaries
     """
@@ -31,7 +29,7 @@ class GroupIdentifierAgent:
         self.retries = config.SETTINGS.RETRIES
 
         # Register tools
-        self.tools = [attendance_mapper_tool, save_tool]
+        self.tools = [cluster_tool, save_tool]
 
     # ---------------------------------------------------------
     # Execute Task
