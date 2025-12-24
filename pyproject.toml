@@ -10,7 +10,7 @@ packages = [
     { path = "agents/orchestrator", editable = true },
     { path = "agents/sub_agents/data_pipeline", editable = true },
     { path = "agents/sub_agents/behavior_group_modeling", editable = true },
-    { path = "agents/sub_agents/behavior_individual_modeling", editable = true },
+    { path = "agents/sub_agents/behavior_modeling", editable = true },
     { path = "agents/sub_agents/data_validation", editable = true }
 ]
 
