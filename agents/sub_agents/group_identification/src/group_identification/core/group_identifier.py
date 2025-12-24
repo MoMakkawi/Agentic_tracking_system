@@ -12,13 +12,13 @@ class GroupIdentifier:
 
     Workflow:
         1. Load preprocessed session attendance data from storage.
-        2. Group student IDs (UIDs) by event names, splitting multi-event entries if necessary.
+        2. Group student IDs (UIDs) by session names, splitting multi-session entries if necessary.
         3. Cluster students based on session attendance similarity.
         4. Save the resulting groups to a JSON file.
 
     Methods:
         - mapping_students_by_sessions_names() -> dict[str, List[str]]:
-            Returns a mapping of event names to lists of valid student UIDs.
+            Returns a mapping of session names to lists of valid student UIDs.
         - cluster_students() -> dict[str, List[str]]:
             Clusters students based on session attendance using DBSCAN with Jaccard similarity.
         - save_groups(groups: dict[str, List[str]]) -> str:
@@ -51,30 +51,30 @@ class GroupIdentifier:
         groups: dict[str, set] = {}
         
         for session in self.sessions:
-            event_context = session.get("event_context", "")
+            session_context = session.get("session_context", "")
             logs = session.get("logs", [])
             
             # Extract UIDs from this session
             uids = {log.get("uid") for log in logs if log.get("uid") and self._is_valid_id(log.get("uid"))}
             
-            if not event_context:
+            if not session_context:
                 continue
                 
-            # Split event names (assuming comma separation as per processor.py)
+            # Split session names (assuming comma separation as per processor.py)
             # "Coaching professionnel, Communications et Réseaux pour l’IoT" -> ["Coaching professionnel", "Communications et Réseaux pour l’IoT"]
-            events = [e.strip() for e in event_context.split(",")]
+            sessions = [e.strip() for e in session_context.split(",")]
             
-            for event in events:
-                if not event:
+            for session in sessions:
+                if not session:
                     continue
                 
-                if event not in groups:
-                    groups[event] = set()
+                if session not in groups:
+                    groups[session] = set()
                 
-                groups[event].update(uids)
+                groups[session].update(uids)
         
         # Convert sets to sorted lists for JSON serialization and consistency
-        return {event: sorted(list(uids)) for event, uids in groups.items()}
+        return {session: sorted(list(uids)) for session, uids in groups.items()}
     
     def save_groups(self, groups: dict[str, List[str]]) -> str:
         logger.info(f"Saving groups {groups} to: {self.output_path}")
@@ -92,12 +92,12 @@ class GroupIdentifier:
             Dict of cluster label -> list of student UIDs
         """
 
-           # Step 1: Build mapping {event: [uids]}
-        event_to_uids = self.mapping_students_by_sessions_names()
+           # Step 1: Build mapping {session: [uids]}
+        session_to_uids = self.mapping_students_by_sessions_names()
 
         # Step 2: Build set of all students
         all_students = set()
-        for uids in event_to_uids.values():
+        for uids in session_to_uids.values():
             all_students.update(uids)
         all_students = sorted(all_students)
 
@@ -105,7 +105,7 @@ class GroupIdentifier:
             return {}
 
         # Step 3: Transform into student-session matrix
-        sessions_list = list(event_to_uids.values())
+        sessions_list = list(session_to_uids.values())
         mlb = MultiLabelBinarizer(classes=all_students)
         matrix = mlb.fit_transform(sessions_list).T  # rows = students, columns = sessions
 

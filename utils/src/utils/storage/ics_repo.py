@@ -21,10 +21,10 @@ class IcsRepository(FileRepository):
         
         with open(self.file_path, 'rb') as f:
             cal = Calendar.from_ical(f.read())
-            events = []
+            sessions = []
             for component in cal.walk():
                 if component.name == "VEVENT":
-                    event_dict = {
+                    session_dict = {
                         "id": str(component.get("UID")),
                         "summary": str(component.get("SUMMARY")),
                         "start": component.get("DTSTART").dt if component.get("DTSTART") else None,
@@ -32,14 +32,14 @@ class IcsRepository(FileRepository):
                         "description": str(component.get("DESCRIPTION")) if component.get("DESCRIPTION") else "",
                     }
                     # Convert datetimes to desired format using TimestampHelper
-                    if event_dict["start"]:
+                    if session_dict["start"]:
                         # safe_parse expects a string, so we convert datetime/date to string first
-                        event_dict["start"] = TimestampHelper.safe_parse(str(event_dict["start"]))
-                    if event_dict["end"]:
-                        event_dict["end"] = TimestampHelper.safe_parse(str(event_dict["end"]))
+                        session_dict["start"] = TimestampHelper.safe_parse(str(session_dict["start"]))
+                    if session_dict["end"]:
+                        session_dict["end"] = TimestampHelper.safe_parse(str(session_dict["end"]))
                         
-                    events.append(event_dict)
-            return events
+                    sessions.append(session_dict)
+            return sessions
 
     def save_all(self, data: List[Dict[str, Any]]):
         self._save(data)
@@ -50,10 +50,10 @@ class IcsRepository(FileRepository):
         cal.add('version', '2.0')
 
         for item in data:
-            event = Event()
-            event.add('uid', item.get('id'))
-            event.add('summary', item.get('summary'))
-            event.add('description', item.get('description', ''))
+            session = Event()
+            session.add('uid', item.get('id'))
+            session.add('summary', item.get('summary'))
+            session.add('description', item.get('description', ''))
             
             # Basic datetime handling - assumes ISO strings or datetime objects
             start = item.get('start')
@@ -63,7 +63,7 @@ class IcsRepository(FileRepository):
                 except ValueError:
                     pass # Handle or log error
             if start:
-                event.add('dtstart', start)
+                session.add('dtstart', start)
 
             end = item.get('end')
             if isinstance(end, str):
@@ -72,9 +72,9 @@ class IcsRepository(FileRepository):
                 except ValueError:
                     pass
             if end:
-                event.add('dtend', end)
+                session.add('dtend', end)
 
-            cal.add_component(event)
+            cal.add_component(session)
 
         self.ensure_directory_exists()
         with open(self.file_path, 'wb') as f:

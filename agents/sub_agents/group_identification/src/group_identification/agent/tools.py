@@ -12,7 +12,7 @@ def attendance_mapper_tool() -> Dict[str, List[str]]:
     Map attendance based on session names.
 
     Returns:
-        Dict[str, List[str]]: A mapping of event/session names to lists of UIDs.
+        Dict[str, List[str]]: A mapping of session/session names to lists of UIDs.
 
         Example output:
         {
@@ -22,8 +22,8 @@ def attendance_mapper_tool() -> Dict[str, List[str]]:
 
     Notes:
         - Aggregates UIDs from all sessions.
-        - Splits multi-event sessions (comma-separated).
-        - Ensures unique UIDs per event.
+        - Splits multi-session sessions (comma-separated).
+        - Ensures unique UIDs per session.
         - Sorted UIDs for consistency.
     """
     try:
@@ -46,7 +46,7 @@ def cluster_tool() -> Dict[str, List[str]]:
     Cluster attendance based on session names.
 
     Returns:
-        Dict[str, List[str]]: A mapping of event/session names to lists of UIDs.
+        Dict[str, List[str]]: A mapping of session/session names to lists of UIDs.
 
         Example output:
         {
@@ -56,8 +56,8 @@ def cluster_tool() -> Dict[str, List[str]]:
 
     Notes:
         - Aggregates UIDs from all sessions.
-        - Splits multi-event sessions (comma-separated).
-        - Ensures unique UIDs per event.
+        - Splits multi-session sessions (comma-separated).
+        - Ensures unique UIDs per session.
         - Sorted UIDs for consistency.
     """
     try:

@@ -109,8 +109,8 @@ class Preprocessor:
             session = {
                 "session_id": index,
                 "device_id": record.get("device_id"),
-                "event_context": "", # will be enriched by _enrich_session
-                "matched_events": [], # will be enriched by _enrich_session
+                "session_context": "", # will be enriched by _enrich_session
+                "matched_sessions": [], # will be enriched by _enrich_session
                 "received_at": received_at,
                 "logs_date": logs_date,
                 "recorded_count": record.get("count", len(logs) + sum(redundant_uids.values())),
@@ -119,7 +119,7 @@ class Preprocessor:
                 "logs": logs
             }
             
-            # Enrich session with (ics) event context
+            # Enrich session with (ics) session context
             self._enrich_session(session)
 
             sessions.append(session)
@@ -129,19 +129,19 @@ class Preprocessor:
 
     # -------------------------------------------------------------------------
     def _enrich_session(self, session):
-        """Enrich a session with matching calendar events."""
+        """Enrich a session with matching calendar sessions."""
         received_at = session.get("received_at")
         received_at_date = TimestampHelper.to_date(received_at)
         date_str = received_at_date or session.get("logs_date")
         
         session_logs = session.get("logs", [])
         if not session_logs or not self.ics_data or not date_str:
-            session["matched_events"] = []
-            session["event_context"] = ""
+            session["matched_sessions"] = []
+            session["session_context"] = ""
             return
 
-        matched_events = []
-        seen_event_ids = set()
+        matched_sessions = []
+        seen_session_ids = set()
 
         for log in session_logs:
             log_dt = TimestampHelper.combine_date_time(date_str, log.get("ts"))
@@ -149,17 +149,17 @@ class Preprocessor:
                 continue
 
             for event in self.ics_data:
-                if event.get("id") in seen_event_ids:
+                if event.get("id") in seen_session_ids:
                     continue
                 
                 if TimestampHelper.is_overlap(log_dt, event.get("start"), event.get("end")):
                     event_copy = self._prepare_event_copy(event)
-                    matched_events.append(event_copy)
-                    seen_event_ids.add(event.get("id"))
+                    matched_sessions.append(event_copy)
+                    seen_session_ids.add(event.get("id"))
 
-        session["matched_events"] = matched_events
-        titles = [e.pop("_title_for_context", "Unknown Event") for e in matched_events]
-        session["event_context"] = ", ".join(dict.fromkeys(titles))
+        session["matched_sessions"] = matched_sessions
+        titles = [e.pop("_title_for_context", "Unknown session") for e in matched_sessions]
+        session["session_context"] = ", ".join(dict.fromkeys(titles))
 
     def _prepare_event_copy(self, event):
         """Create event copy with split title/details."""

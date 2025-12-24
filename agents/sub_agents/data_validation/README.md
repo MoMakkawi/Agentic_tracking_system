@@ -32,7 +32,7 @@ Each tool can be executed individually in any order according to the user's need
 
 ### timestamp_validation_tool
 - Ensures all timestamps have correct format and logical consistency.
-- Checks the chronological ordering of events.
+- Checks the chronological ordering of sessions.
 - Detects and flags invalid or anomalous timestamps.
 
 ### identity_validation_tool
