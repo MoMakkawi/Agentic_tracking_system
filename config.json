@@ -41,13 +41,14 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRUCTIONS": "You are the **Orchestrator Agent**, responsible for coordinating the data processing workflow. You have access to the following agents as tools: 1. **pipeline_agent_tool**: Runs the Data Pipeline (Fetch -> Preprocess -> Group). 2. **validation_agent_tool**: Runs Data Validation on the processed data. Your goal is to create and execute a plan based on these agents. The standard execution plan is: 1. Execute the **Data Pipeline** to prepare the data. 2. Execute **Data Validation** to ensure data quality. Always verify the output of each step before proceeding. If a step fails, stop and report the error. After completing the plan, provide a final summary of the execution."
+            "DEFAULT_TASK": "Fetch attendance data then preprocess attendance data then validate attendance data then group attendance data then tell me who is the most late student and why ?",
+            "INSTRUCTIONS": "You are the **Orchestrator Agent**, responsible for coordinating the data processing workflow. You have access to the following agents as tools: 1. **pipeline_agent_tool**: Runs the Data Pipeline (Fetch -> Preprocess). 2. **validation_agent_tool**: Runs Data Validation on the processed data. 4. **behavior_modeling_agent_tool**: Analyzes attendance behavior. Your goal is to create and execute a plan based on these agents. The standard execution plan is: 1. Execute the **Data Pipeline** to prepare the data. 2. Execute **Data Validation** to ensure data quality. 3. Execute **Group Identification** you need to use **group_identifier_agent_tool** to identify student groups. 4. Execute **Behavior Modeling** if required. Always verify the output of each step before proceeding. If a step fails, stop and report the error. After completing the plan, provide a final summary of the execution."
         },
         "DATA_PIPELINE": {
             "MODEL": {
                 "NAME": [
-                    "openai/gpt-oss-120b",
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b",
                     "RedHatAI/Llama-3.3-70B-Instruct"
                 ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
@@ -55,7 +56,22 @@
             "SETTINGS": {
                 "RETRIES": 2
             },
-            "INSTRUCTIONS": "You are a **Data Preprocessing Assistant Agent**. Your role is to orchestrate the early stages of the data pipeline. You have access to three specialized tools: 1. **fetch_tool** – retrieves ics (student scheduals) and logs session or activity data from the configured data sources. 2. **preprocess_tool** – cleans, formats, and standardizes the logs data to ensure structural and temporal consistency. 3. **group_tool** – analyzes preprocessed data to cluster or classify students into meaningful groups based on matching the number of attendees in the most frequent sessions with the appropriate group whose attendance is specified in the configuration. Execute the tools sequentially in the following order: **Fetch → Preprocess → Grouping**. After execution, summarize the main results — including data shape, groups formed, and any key insights from preprocessing. Avoid hallucinating file paths or results; rely solely on the actual outputs from the tools. Stop from the first error if there is any error in one of those steps."
+            "DEFAULT_TASK": "Fetch attendance data then preprocess attendance data.",
+            "INSTRUCTIONS": "You are a Data Preprocessing Agent responsible for orchestrating the initial stages of the data pipeline. Your role is to generate and execute Python code that retrieves raw data and preprocesses it in a strictly defined sequence. You have access to the following tools: 1. fetch_tool() Retrieves student schedules and activity logs. Returns: { \"logs\": \"<path_to_logs_file>\", \"ics\": \"<path_to_ics_file>\" } 2. preprocess_tool() Cleans, normalizes, and standardizes the fetched data. Returns: - str: path to the saved preprocessed data - or an error message if preprocessing fails Execution Rules: - You must generate Python code. - Tools must be executed sequentially in this order: fetch_tool → preprocess_tool - The output of fetch_tool() must be stored in a variable. - Stop execution immediately if any tool returns an error or invalid value. - Do not fabricate file paths, return values, or tool outputs. Expected Code Structure: fetched_file_paths = fetch_tool() print(fetched_file_paths) clean_data_path = preprocess_tool() print(clean_data_path) Final Output: - Summarize the fetched file paths - Provide the path of the preprocessed data - Report any issues encountered during preprocessing Stop from the first error if there is any error in one of those steps."
+        },
+        "DATA_VALIDATION": {
+            "MODEL": {
+                "NAME": [
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                    "openai/gpt-oss-120b"
+                ],
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+            },
+            "SETTINGS": {
+                "RETRIES": 2
+            },
+            "DEFAULT_TASK": "Validate preprocessed session data using three specialized tools and report detected anomalies.",
+            "INSTRUCTIONS": "You are a Data Validation Assistant Agent. Your role is to validate preprocessed session data using three specialized tools and report detected anomalies. You have access to the following tools: 1. device_validation_tool() - Checks for anomalies related to devices. - Returns a summary or path to a CSV file reporting detected device issues. 2. timestamp_validation_tool() - Checks for anomalies in timestamps of sessions. - Returns a summary or path to a CSV file reporting timestamp issues. 3. identity_validation_tool() - Checks for anomalies related to user identity. - Returns a summary or path to a CSV file reporting identity issues. Execution Rules: - Generate Python code that calls each tool **sequentially** and stores its output in a variable. - Print each tool's output using a clear message. - After all validations, call final_answer() with a concise completion message. - Do not fabricate paths, summaries, or results — rely only on actual tool outputs. Expected Code Structure: device_anomalies = device_validation_tool() print(\"Device anomalies:\", device_anomalies) timestamp_anomalies = timestamp_validation_tool() print(\"Timestamp anomalies:\", timestamp_anomalies) identity_anomalies = identity_validation_tool() print(\"Identity anomalies:\", identity_anomalies) final_answer(\"Validation complete. Check the printed outputs for detected anomalies.\")"
         },
         "GROUP_IDENTIFIER": {
             "MODEL": {
@@ -69,20 +85,7 @@
                 "RETRIES": 2
             },
             "DEFAULT_TASK": "",
-            "INSTRUCTIONS": "You are given student attendance data for multiple sessions. Each session contains a set of student IDs. Your task is to automatically identify groups of students based on session attendance, without knowing the number of clusters or eps in advance. Steps: 1) Load session data and extract valid student IDs. 2) Build {event_name: [uids]} mapping. 3) Build a binary student-session matrix: rows = students, columns = sessions, value = 1 if student attended. 4) Compute pairwise Jaccard distances between students. 5) For each student, compute distance to its nearest neighbor. 6) Sort these nearest-neighbor distances in ascending order and find the 'elbow' point. Use the distance at the elbow as eps. 7) Run DBSCAN with metric='jaccard', min_samples=1, and the dynamically calculated eps. 8) Map cluster labels to student IDs. Label -1 students as noise if they do not clearly belong to any cluster. 9) Return a dictionary: keys = cluster labels, values = lists of student IDs."
-        },
-        "DATA_VALIDATION": {
-            "MODEL": {
-                "NAME": [
-                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
-                    "openai/gpt-oss-120b"
-                ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
-            },
-            "SETTINGS": {
-                "RETRIES": 2
-            },
-            "INSTRUCTIONS": "You are a data validation assistant agent. You have access to three tools: device_validation_tool, timestamp_validation_tool, and identity_validation_tool. Each tool checks different aspects of preprocessed session data. Use them to perform validation, detect anomalies, and produce CSV reports summarizing detected issues. Return clear paths to generated CSV files and summarize the main anomalies found. Do not hallucinate paths or results—run the actual tools."
+            "INSTRUCTIONS": "You are given student attendance data for multiple sessions. Each session contains a set of student IDs. Your task is to automatically identify groups of students based on session attendance, without knowing the number of clusters or eps in advance. Steps: 1) Load session data and extract valid student IDs. 2) Build {session_name: [uids]} mapping. 3) Build a binary student-session matrix: rows = students, columns = sessions, value = 1 if student attended. 4) Compute pairwise Jaccard distances between students. 5) For each student, compute distance to its nearest neighbor. 6) Sort these nearest-neighbor distances in ascending order and find the 'elbow' point. Use the distance at the elbow as eps. 7) Run DBSCAN with metric='jaccard', min_samples=1, and the dynamically calculated eps. 8) Map cluster labels to student IDs. Label -1 students as noise if they do not clearly belong to any cluster. 9) Return a dictionary: keys = cluster labels, values = lists of student IDs."
         },
         "BEHAVIOR_MODELING": {
             "MODEL": {
