@@ -1,18 +1,18 @@
 from smolagents.agents import ToolCallingAgent
 from utils import logger, get_config, load_config
 from utils import RagrennModel
-from .tools import pipeline_agent_tool, validation_agent_tool
+from .tools import pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, behavior_modeling_agent_tool 
 
 
 class Orchestrator:
     """
     Orchestrator
     -----------------
-    Coordinates multiple agents (pipeline + validation) using SmolAgent tools.
+    Coordinates multiple agents (pipeline, validation, group identification, behavior modeling) using SmolAgent tools.
 
     Features:
-        - Executes complete pipeline and validation workflow
-        - Delegates tasks to pipeline and validation tools
+        - Executes complete pipeline, validation, identification, and modeling workflows
+        - Delegates tasks to specialized sub-agents
         - Supports configurable instructions and retry logic
     """
 
@@ -28,7 +28,7 @@ class Orchestrator:
         self.retries = config.SETTINGS.RETRIES
 
         # Register tools
-        self.tools = [pipeline_agent_tool, validation_agent_tool]
+        self.tools = [pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, behavior_modeling_agent_tool]
 
         logger.info("OrchestratorAgent initialized with tools: %s",
                     [t.name for t in self.tools])
