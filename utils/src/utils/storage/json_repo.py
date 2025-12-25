@@ -68,16 +68,17 @@ class JsonRepository(FileRepository):
         return False
 
     def get_schema_info(self) -> Dict[str, Any]:
-        """
-        Get schema information about the JSON file.
-        Returns the keys of the first record as 'fields' and the first record as 'sample'.
-        """
         data = self.read_all()
-        if data and isinstance(data, list) and len(data) > 0:
-            first_record = data[0]
-            if isinstance(first_record, dict):
-                return {
-                    "fields": list(first_record.keys()),
-                    "sample": first_record
-                }
+
+        for record in data:
+            if isinstance(record, dict):
+                sample = record.copy()
+
+                if sample.get("matched_sessions"):
+                    return {
+                        "fields": list(sample.keys()),
+                        "sample": sample
+                    }
+
         return {"fields": [], "sample": None}
+
