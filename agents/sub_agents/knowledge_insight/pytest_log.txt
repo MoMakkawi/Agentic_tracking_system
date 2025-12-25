@@ -1,0 +1,33 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.5, pytest-8.4.2, pluggy-1.6.0 -- C:\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\a\Desktop\Agentic_tracking_system\agents\sub_agents\knowledge_insight
+configfile: pyproject.toml
+plugins: anyio-4.8.0, deepeval-3.6.7, langsmith-0.4.31, asyncio-1.2.0, repeat-0.9.4, rerunfailures-12.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+
+tests/test_executor.py::TestCodeValidator::test_init_config PASSED       [  5%]
+tests/test_executor.py::TestCodeValidator::test_validate_valid_code PASSED [ 11%]
+tests/test_executor.py::TestCodeValidator::test_validate_syntax_error PASSED [ 16%]
+tests/test_executor.py::TestCodeValidator::test_validate_forbidden_import PASSED [ 22%]
+tests/test_executor.py::TestCodeValidator::test_validate_forbidden_import_from PASSED [ 27%]
+tests/test_executor.py::TestCodeValidator::test_validate_allowed_import PASSED [ 33%]
+tests/test_executor.py::TestCodeValidator::test_validate_forbidden_function_calls PASSED [ 38%]
+tests/test_executor.py::TestCodeValidator::test_validate_dunder_attributes PASSED [ 44%]
+tests/test_executor.py::TestCodeValidator::test_custom_forbidden_names PASSED [ 50%]
+tests/test_executor.py::TestCodeExecutor::test_execute_success_simple PASSED [ 55%]
+tests/test_executor.py::TestCodeExecutor::test_execute_success_formatted_dict PASSED [ 61%]
+tests/test_executor.py::TestCodeExecutor::test_execute_no_result_variable PASSED [ 66%]
+tests/test_executor.py::TestCodeExecutor::test_execute_validation_error_handling PASSED [ 72%]
+tests/test_executor.py::TestCodeExecutor::test_execute_runtime_error_handling PASSED [ 77%]
+tests/test_executor.py::TestCodeExecutor::test_execution_environment_modules PASSED [ 83%]
+tests/test_executor.py::TestCodeExecutor::test_execution_environment_helpers PASSED [ 88%]
+tests/test_executor.py::TestCodeExecutor::test_execution_environment_datasets PASSED [ 94%]
+tests/test_executor.py::TestCodeExecutor::test_namespace_isolation_builtins PASSED [100%]Running teardown with pytest
+sessionfinish...
+
+
+============================= 18 passed in 0.07s ==============================
+
+Exit code: 0
