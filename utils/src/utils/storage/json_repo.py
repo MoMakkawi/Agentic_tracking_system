@@ -66,3 +66,18 @@ class JsonRepository(FileRepository):
             self._save(data)
             return True
         return False
+
+    def get_schema_info(self) -> Dict[str, Any]:
+        """
+        Get schema information about the JSON file.
+        Returns the keys of the first record as 'fields' and the first record as 'sample'.
+        """
+        data = self.read_all()
+        if data and isinstance(data, list) and len(data) > 0:
+            first_record = data[0]
+            if isinstance(first_record, dict):
+                return {
+                    "fields": list(first_record.keys()),
+                    "sample": first_record
+                }
+        return {"fields": [], "sample": None}

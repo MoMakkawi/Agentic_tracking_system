@@ -65,3 +65,25 @@ class CsvRepository(FileRepository):
         Overwrite the file with the provided list of records.
         """
         self._save(data)
+
+    def get_schema_info(self) -> Dict[str, Any]:
+        """
+        Get schema information about the CSV file.
+        Returns the fieldnames as 'fields' and the first row as 'sample'.
+        """
+        try:
+            self.ensure_exists()
+            with open(self.file_path, 'r', newline='', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                fieldnames = reader.fieldnames if reader.fieldnames else []
+                try:
+                    sample = next(reader)
+                except StopIteration:
+                    sample = None
+                
+                return {
+                    "fields": fieldnames,
+                    "sample": sample
+                }
+        except Exception:
+            return {"fields": [], "sample": None}

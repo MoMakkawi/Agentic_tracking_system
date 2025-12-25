@@ -106,3 +106,24 @@ class JsonlRepository(FileRepository):
         except Exception as e:
             logger.exception(f"Error while saving from bytes to '{self.file_path}': {e}")
             raise
+
+    def get_schema_info(self) -> Dict[str, Any]:
+        """
+        Get schema information about the JSONL file.
+        Returns the keys of the first record as 'fields' and the first record as 'sample'.
+        """
+        try:
+            self.ensure_exists()
+            with open(self.file_path, 'r', encoding='utf-8') as f:
+                first_line = f.readline()
+                if first_line.strip():
+                    data = json.loads(first_line)
+                    if isinstance(data, dict):
+                        return {
+                            "fields": list(data.keys()),
+                            "sample": data
+                        }
+        except Exception as e:
+            pass # Return empty fields on error or empty file
+        
+        return {"fields": [], "sample": None}

@@ -130,3 +130,19 @@ class IcsRepository(FileRepository):
             # logger is not imported in this file, so we might need to import it or just raise
             # For now, let's just raise as the caller handles logging
             raise
+
+    def get_schema_info(self) -> Dict[str, Any]:
+        """
+        Get schema information about the ICS file.
+        Returns the fixed fields used by the parser.
+        """
+        return {
+            "fields": ['id', 'summary', 'start', 'end', 'description'],
+            "sample": {
+                'id': 'sample_uid',
+                'summary': 'Sample Event',
+                'start': '2024-01-01 10:00:00',
+                'end': '2024-01-01 11:00:00',
+                'description': ''
+            }
+        }

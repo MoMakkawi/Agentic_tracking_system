@@ -48,3 +48,11 @@ class FileRepository(ABC):
         Assumes records have an 'id' field.
         """
         pass
+
+    @abstractmethod
+    def get_schema_info(self) -> Dict[str, Any]:
+        """
+        Get schema information about the file.
+        Returns a dictionary containing schema details, typically 'fields' and 'sample'.
+        """
+        pass
