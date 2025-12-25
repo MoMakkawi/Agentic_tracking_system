@@ -13,7 +13,7 @@ def pipeline_agent_tool(task: str = None) -> str:
 
     Workflow:
         1. Runs the DataPipelineAgent end-to-end.
-        2. Fetches, preprocesses, and groups data.
+        2. Fetches, preprocesses.
         3. Returns the final processed dataset path or summary.
 
     Args:
