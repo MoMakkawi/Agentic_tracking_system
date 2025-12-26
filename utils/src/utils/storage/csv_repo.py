@@ -69,21 +69,74 @@ class CsvRepository(FileRepository):
     def get_schema_info(self) -> Dict[str, Any]:
         """
         Get schema information about the CSV file.
-        Returns the fieldnames as 'fields' and the first row as 'sample'.
+        Returns fieldnames as 'fields', type schema as 'schema', and a sample row.
+        Types are inferred by analyzing all rows.
         """
         try:
             self.ensure_exists()
-            with open(self.file_path, 'r', newline='', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                fieldnames = reader.fieldnames if reader.fieldnames else []
-                try:
-                    sample = next(reader)
-                except StopIteration:
-                    sample = None
-                
-                return {
-                    "fields": fieldnames,
-                    "sample": sample
-                }
+            data = self.read_all()
+            
+            if not data:
+                return {"fields": [], "schema": {}, "sample": None}
+            
+            # Get field names from the first record
+            fieldnames = list(data[0].keys()) if data else []
+            
+            # Analyze all records to determine types
+            schema = {}
+            for field in fieldnames:
+                schema[field] = {"type": "unknown"}
+            
+            for record in data:
+                for field, value in record.items():
+                    if field in schema:
+                        inferred_type = self._infer_type(value)
+                        # Update type if we find a more specific type
+                        if schema[field]["type"] == "unknown" or inferred_type != "str":
+                            schema[field] = {"type": inferred_type}
+            
+            # Find the best sample (row with most non-empty values)
+            best_sample = data[0]
+            max_populated = 0
+            
+            for record in data:
+                populated = sum(1 for v in record.values() if v and str(v).strip())
+                if populated > max_populated:
+                    max_populated = populated
+                    best_sample = record
+            
+            return {
+                "fields": fieldnames,
+                "schema": schema,
+                "sample": best_sample
+            }
         except Exception:
-            return {"fields": [], "sample": None}
+            return {"fields": [], "schema": {}, "sample": None}
+
+    def _infer_type(self, value: str) -> str:
+        """
+        Infer the type of a CSV value (all CSV values are strings).
+        Returns: 'int', 'float', 'bool', 'null', or 'str'
+        """
+        if value is None or value == "":
+            return "null"
+        
+        # Check for boolean
+        if value.lower() in ("true", "false"):
+            return "bool"
+        
+        # Check for integer
+        try:
+            int(value)
+            return "int"
+        except ValueError:
+            pass
+        
+        # Check for float
+        try:
+            float(value)
+            return "float"
+        except ValueError:
+            pass
+        
+        return "str"
