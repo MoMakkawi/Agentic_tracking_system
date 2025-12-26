@@ -3,7 +3,7 @@ from utils import logger, get_config
 from utils import JsonRepository, CsvRepository
 from .executor import CodeExecutor, CodeValidator
 
-class CleanDataInsighter(CodeExecutor):
+class DataInsighter(CodeExecutor):
 
     def __init__(self, validator: Optional[CodeValidator] = None):
         config = get_config()
