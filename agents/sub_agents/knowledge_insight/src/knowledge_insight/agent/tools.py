@@ -2,14 +2,15 @@ import json
 from typing import Dict, List, Any
 from smolagents import tool
 from utils import logger
-from ..core.clean_data_insighter import CleanDataInsighter
+from ..core.data_insighter import DataInsighter
 from ..core.groups_insighter import GroupInsighter
+from ..core.alerts_insighter import AlertsInsighter
 
 # =========================================================
 # Clean Data Insight Tool
 # =========================================================
 @tool
-def clean_data_insighter_tool(code: str) -> str:
+def data_insighter_tool(code: str) -> str:
     """
     Execute Python analysis code in a controlled environment.
 
@@ -30,18 +31,18 @@ def clean_data_insighter_tool(code: str) -> str:
         filtered = [s for s in attendance_data if s.get('status') == 'late']
         result = len(filtered)
         '''
-        clean_data_insighter_tool(code)
+        data_insighter_tool(code)
     """
     try:
         logger.info("Starting Clean Data Insight Tool...")
-        executor = CleanDataInsighter()
+        executor = DataInsighter()
         result = executor.execute(code)
         logger.info("Clean Data Insight Tool finished successfully!")
         return str(result)
 
     except Exception as e:
         logger.error("Error in Clean Data Insight Tool", exc_info=True)
-        return f"Error in clean_data_insighter_tool: {e}"
+        return f"Error in data_insighter_tool: {e}"
 
 
 # =========================================================
@@ -80,3 +81,44 @@ def groups_insighter_tool(code: str) -> str:
     except Exception as e:
         logger.error("Error in Groups Insight Tool", exc_info=True)
         return f"Error in groups_insighter_tool: {e}"
+
+
+# =========================================================
+# Alerts Insight Tool
+# =========================================================
+@tool
+def alerts_insighter_tool(code: str) -> str:
+    """
+    Execute Python analysis code on security alerts in a controlled environment.
+
+    This tool receives Python code as a string and executes it safely.
+    The execution environment provides:
+    - identity_alerts: identity-related security events
+    - timestamp_alerts: timing-based anomaly events
+    - device_alerts: device-related security issues
+
+    Pre-imported modules: statistics, collections, datetime, json
+
+    Args:
+        code (str): Python code string to execute. Must assign result to `result`.
+
+    Returns:
+        str: Execution result or error message
+
+    Example:
+        code = '''
+        anomalies = [a for a in identity_alerts if a["repeated_anomaly_count"] > 2]
+        result = anomalies
+        '''
+        alerts_insighter_tool(code)
+    """
+    try:
+        logger.info("Starting Alerts Insight Tool...")
+        executor = AlertsInsighter()
+        result = executor.execute(code)
+        logger.info("Alerts Insight Tool finished successfully!")
+        return str(result)
+
+    except Exception as e:
+        logger.error("Error in Alerts Insight Tool", exc_info=True)
+        return f"Error in alerts_insighter_tool: {e}"

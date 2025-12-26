@@ -2,8 +2,8 @@ from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
 from utils import RagrennModel
-from .tools import clean_data_insighter_tool, groups_insighter_tool#, alerts_insighter_tool
-from utils import RepositoryFactory
+from .tools import data_insighter_tool, groups_insighter_tool, alerts_insighter_tool
+from utils import CsvRepository, JsonRepository
 
 class KnowledgeInsightAgent:
     """
@@ -33,7 +33,7 @@ class KnowledgeInsightAgent:
         self.verbosity_level = config.SETTINGS.VERBOSITY_LEVEL
 
         # Register tools
-        self.tools = [clean_data_insighter_tool, groups_insighter_tool]#, alerts_insighter_tool]
+        self.tools = [data_insighter_tool, groups_insighter_tool, alerts_insighter_tool]
 
     # ---------------------------------------------------------
     # Execute Task
@@ -68,19 +68,19 @@ class KnowledgeInsightAgent:
         config_paths = get_config().PATHS
         
         # Initialize data schemas
-        clean_data_schema = RepositoryFactory.get_repository(config_paths.PREPROCESSED).get_schema_info()
-        groups_data_schema = RepositoryFactory.get_repository(config_paths.GROUPS).get_schema_info()
-        timestamp_alerts_data_schema = RepositoryFactory.get_repository(config_paths.ALERTS.VALIDATION.TIMESTAMP).get_schema_info()
-        identity_alerts_data_schema = RepositoryFactory.get_repository(config_paths.ALERTS.VALIDATION.IDENTITY).get_schema_info()
-        device_alerts_data_schema = RepositoryFactory.get_repository(config_paths.ALERTS.VALIDATION.DEVICE).get_schema_info()
+        clean_data_schema = JsonRepository(config_paths.PREPROCESSED).get_schema_info()
+        groups_data_schema = JsonRepository(config_paths.GROUPS).get_schema_info()
+        identity_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.IDENTITY).get_schema_info()
+        timestamp_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.TIMESTAMP).get_schema_info()
+        device_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.DEVICE).get_schema_info()
         
         # build task instructions
         instructions = get_config().LLM_MODULES.KNOWLEDGE_INSIGHT.INSTRUCTIONS.format(
             clean_data_schema=clean_data_schema,
             groups_data_schema=groups_data_schema,
-            timestamp_alerts_data_schema=timestamp_alerts_data_schema,
-            identity_alerts_data_schema=identity_alerts_data_schema,
-            device_alerts_data_schema=device_alerts_data_schema,
+            timestamp_alerts_schema=timestamp_alerts_schema,
+            identity_alerts_schema=identity_alerts_schema,
+            device_alerts_schema=device_alerts_schema,
             task=task)
         return instructions
 
