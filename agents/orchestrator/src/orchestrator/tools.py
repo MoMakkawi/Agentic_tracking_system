@@ -82,12 +82,12 @@ def group_identifier_agent_tool(task: str = None) -> str:
         return f"Error in group_identification_agent_tool: {e}"
 
 @tool
-def behavior_modeling_agent_tool(task: str = None) -> str:
+def insightater_agent_tool(task: str = None) -> str:
     """
-    Orchestrates the BehaviorAnalyzerAgent.
+    Orchestrates the KnowledgeInsightAgent.
 
     Workflow:
-        1. Runs the BehaviorAnalyzerAgent to analyze attendance behavior.
+        1. Runs the KnowledgeInsightAgent to analyze attendance behavior.
         2. Generates python code to analyze data.
         3. Returns the analysis result or summary.
 
@@ -98,10 +98,10 @@ def behavior_modeling_agent_tool(task: str = None) -> str:
         str: Result of behavior analysis or summary message.
     """
     try:
-        logger.info("[Orchestrator] Invoking BehaviorAnalyzerAgent...")
-        result = behavior_modeling_main(task)
-        logger.info("BehaviorAnalyzerAgent completed successfully.")
+        logger.info("[Orchestrator] Invoking KnowledgeInsightAgent...")
+        result = knowledge_insight_main(task)
+        logger.info("KnowledgeInsightAgent completed successfully.")
         return str(result) if result is not None else "Task completed but returned no result."
     except Exception as e:
         logger.exception("Behavior modeling agent tool failed.")
-        return f"Error in behavior_modeling_agent_tool: {e}"
+        return f"Error in insightater_agent_tool: {e}"
