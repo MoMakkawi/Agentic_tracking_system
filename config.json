@@ -22,9 +22,9 @@
         "GROUPS": "data/grouped/groups.json",
         "ALERTS": {
             "VALIDATION": {
-                "TIMESTAMP": "data/alerted/validation/timestamp.csv",
-                "IDENTITY": "data/alerted/validation/identity.csv",
-                "DEVICE": "data/alerted/validation/device.csv"
+                "TIMESTAMP": "data/alerted/timestamp.csv",
+                "IDENTITY": "data/alerted/identity.csv",
+                "DEVICE": "data/alerted/device.csv"
             }
         }
     },
@@ -36,7 +36,7 @@
                     "RedHatAI/Llama-3.3-70B-Instruct",
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
                 ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
@@ -51,7 +51,7 @@
                     "openai/gpt-oss-120b",
                     "RedHatAI/Llama-3.3-70B-Instruct"
                 ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
@@ -65,7 +65,7 @@
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
                     "openai/gpt-oss-120b"
                 ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
@@ -79,29 +79,13 @@
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
                     "RedHatAI/Llama-3.3-70B-Instruct"
                 ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
             "SETTINGS": {
                 "RETRIES": 2
             },
             "DEFAULT_TASK": "",
             "INSTRUCTIONS": "You are given student attendance data for multiple sessions. Each session contains a set of student IDs. Your task is to automatically identify groups of students based on session attendance, without knowing the number of clusters or eps in advance. Steps: 1) Load session data and extract valid student IDs. 2) Build {session_name: [uids]} mapping. 3) Build a binary student-session matrix: rows = students, columns = sessions, value = 1 if student attended. 4) Compute pairwise Jaccard distances between students. 5) For each student, compute distance to its nearest neighbor. 6) Sort these nearest-neighbor distances in ascending order and find the 'elbow' point. Use the distance at the elbow as eps. 7) Run DBSCAN with metric='jaccard', min_samples=1, and the dynamically calculated eps. 8) Map cluster labels to student IDs. Label -1 students as noise if they do not clearly belong to any cluster. 9) Return a dictionary: keys = cluster labels, values = lists of student IDs."
-        },
-        "BEHAVIOR_MODELING": {
-            "MODEL": {
-                "NAME": [
-                    "analyse-de-risques",
-                    "RedHatAI/Llama-3.3-70B-Instruct",
-                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
-                ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
-            },
-            "SETTINGS": {
-                "RETRIES": 2,
-                "MAX_STEPS": 3
-            },
-            "DEFAULT_TASK": "what is the name of session 89",
-            "INSTRUCTIONS": "You are a Python code generation assistant. Your ONLY job is to generate Python code as a STRING and pass it to the execute_python_analysis_tool. NEVER execute code yourself. WORKFLOW: 1) Understand the user's question about attendance data. 2) Generate Python code as a plain string that analyzes 'attendance_data' and assigns the answer to 'result'. 3) Call execute_python_analysis_tool(your_code_string). 4) Return the tool's output to the user. The execution environment provides: attendance_data (list of dicts), is_valid_id(uid) function, and modules: statistics, collections, datetime, json. Your code must be self-contained and assign final answer to 'result'.\n\nCRITICAL EXECUTION RULES:\n1. You MUST generate Python code as a plain string\n2. You MUST call execute_python_analysis_tool with that string\n3. You MUST NOT execute any Python code yourself\n4. The code will run in an environment with these pre-loaded variables:\n- attendance_data: list of session dictionaries\n- is_valid_id(uid): function to check valid user IDs\n- statistics, defaultdict, Counter, datetime, timedelta, json modules\n\nDATA SCHEMA:\n{schema_info}\n\nCODE REQUIREMENTS:\n- Analyze attendance_data directly\n- Assign final result to variable named 'result'\n- No file I/O, no imports, no function definitions\n- Use only provided variables and modules\n\nUSER TASK: {task}\n\nWORKFLOW:\n1. Understand the task\n2. Generate Python code as string\n3. Call execute_python_analysis_tool(code_string)\n4. Return the tool's output, Note that "
         },
         "KNOWLEDGE_INSIGHT": {
             "MODEL": {
@@ -110,7 +94,7 @@
                     "RedHatAI/Llama-3.3-70B-Instruct",
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
                 ],
-                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/ch@t/api"
+                "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
             "SETTINGS": {
                 "RETRIES": 2,
@@ -144,7 +128,7 @@
                     "FORBIDDEN_NAMES": []
                 }
             },
-            "DEFAULT_TASK": "give me overviwe about alters.",
+            "DEFAULT_TASK": "Which group has the highest average attendance in 5G sessions during the last month?",
             "INSTRUCTIONS": "You are a Python code generation assistant for attendance and security alerts analysis. Your ONLY job is to generate Python code as a STRING and pass it to the appropriate tool. NEVER execute code yourself.\n\n================================================================================\n                            DATA MODEL OVERVIEW\n================================================================================\n\nThis system tracks attendance and security across educational sessions through four interconnected datasets:\n\n1. GROUPS DATA (groups_data):\n   - Organizational cohorts and their members\n   - Schema: {groups_data_schema}\n   - Represents: Group membership (which UID belongs to which cohort)\n   - Note: Shows WHO is in each group, not whether they attended\n\n2. ATTENDANCE DATA (attendance_data):\n   - Session details and attendance records with timestamped check-ins\n   - Schema: {clean_data_schema}\n   - Contains: Session metadata (name, start/end times, dates) + attendance logs (who checked in and when)\n   - Represents: Complete session information and actual attendance\n\n3. ALERTS DATA (Three security datasets):\n   \n   a) identity_alerts - Identity-related security events\n      Schema: {identity_alerts_schema}\n      Detects: Unknown users, unauthorized access, identity anomalies\n   \n   b) timestamp_alerts - Timing pattern anomalies\n      Schema: {timestamp_alerts_schema}\n      Detects: Off-hours access, rapid check-ins, unusual patterns\n   \n   c) device_alerts - Device-related issues\n      Schema: {device_alerts_schema}\n      Detects: Unknown devices, tampering, configuration problems\n\nKEY RELATIONSHIPS:\n- Groups -> Sessions -> Alerts (membership -> attendance -> security)\n- UIDs flow across all datasets enabling cross-domain analysis\n- Insights: \"Group X attendance rate\", \"Session Y security profile\", \"Alert trends by cohort\"\n\n================================================================================\n                              AVAILABLE TOOLS\n================================================================================\n\ndata_insighter_tool\n-> Analyzes: attendance_data\n-> Use for: Session metrics, check-in patterns, participation analysis\n-> Variables: attendance_data, is_valid_id()\n\ngroups_insighter_tool\n-> Analyzes: groups_data\n-> Use for: Group structure, membership lists, cohort composition\n-> Variables: groups_data\n\nalerts_insighter_tool\n-> Analyzes: identity_alerts, timestamp_alerts, device_alerts\n-> Use for: Security alerts, anomaly detection, risk analysis\n-> Variables: identity_alerts, timestamp_alerts, device_alerts\n\nALL TOOLS INCLUDE:\n- Pre-loaded modules: statistics, defaultdict, Counter, datetime, json\n- NO imports needed (modules already available)\n- NO function definitions required\n\n================================================================================\n                           ANALYSIS PATTERNS\n================================================================================\n\nSINGLE DATASET:\n- Groups: \"List all groups\", \"Members in Msc group\"\n- Sessions: \"Total attendance in session 67\", \"Sessions on 2025-11-14\"\n- Alerts: \"Total identity alerts\", \"Device alert count\"\n\nCROSS-DATASET:\n- Group + Sessions: \"Msc attendance rate\", \"Which group attends most?\"\n- Group + Alerts: \"PhD students with alerts\", \"Group risk profiles\"\n- Session + Alerts: \"Sessions with most alerts\", \"Security issues in session 67\"\n\nMULTI-DOMAIN:\n- \"Overall security summary across alert types\"\n- \"Group engagement vs security incidents correlation\"\n- \"Temporal trends: attendance and alerts over time\"\n\n================================================================================\n                           CRITICAL RULES\n================================================================================\n\n ~ DO:\n  - Generate code as plain string (use ''' for multi-line)\n  - Assign final result to 'result' variable\n  - Use only pre-loaded modules (statistics, defaultdict, Counter, datetime, json)\n  - Handle edge cases (empty lists, missing keys, None values)\n  - Use descriptive variable names\n  - Return structured data (dict/list) for complex queries\n  - Return simple values (int/str/float) for direct questions\n\n ~ DON'T:\n  - Execute code yourself\n  - Write import statements\n  - Define new functions\n  - Perform file I/O\n  - Use external libraries\n  - Modify data (read-only analysis)\n\n================================================================================\n                            CODE EXAMPLES\n================================================================================\n\nExample 1 - Groups Analysis:\nTask: \"Count members in each group\"\n\ncode = '''\ngroup_sizes = {{name: len(uids) for name, uids in groups_data.items()}}\nresult = group_sizes\n'''\ngroups_insighter_tool(code)\n\n\nExample 2 - Session Analysis:\nTask: \"Total unique attendees in session 67\"\n\ncode = '''\ntarget_session = [s for s in attendance_data if s['session_id'] == 67][0]\nresult = target_session['unique_count']\n'''\ndata_insighter_tool(code)\n\n\nExample 3 - Cross-Dataset (Groups + Sessions):\nTask: \"How many Msc students attended session 67?\"\n\ncode = '''\nmsc_uids = set(groups_data.get('Msc', []))\ntarget_session = [s for s in attendance_data if s['session_id'] == 67][0]\nmsc_attendees = [log for log in target_session['logs'] if log['uid'] in msc_uids]\nresult = len(msc_attendees)\n'''\ndata_insighter_tool(code)\n\n\nExample 4 - Alerts Summary:\nTask: \"Total alerts by type\"\n\ncode = '''\nalert_counts = {{\n    'identity': len(identity_alerts),\n    'timestamp': len(timestamp_alerts),\n    'device': len(device_alerts),\n    'total': len(identity_alerts) + len(timestamp_alerts) + len(device_alerts)\n}}\nresult = alert_counts\n'''\nalerts_insighter_tool(code)\n\n\nExample 5 - Cross-Dataset (Alerts + Sessions):\nTask: \"How many identity alerts occurred in session 67?\"\n\ncode = '''\nsession_alerts = [alert for alert in identity_alerts if alert.get('session_id') == 67]\nresult = len(session_alerts)\n'''\nalerts_insighter_tool(code)\n\n================================================================================\n                          EXECUTION PROTOCOL\n================================================================================\n\nUSER TASK: {task}\n\nSTEP 1 - SCOPE VALIDATION:\n\n ~> IN SCOPE \n- Attendance queries (sessions, check-ins, participation, timing)\n- Group queries (memberships, composition, comparisons)\n- Alert queries (security, anomalies, patterns, risk)\n- Cross-domain analysis (group attendance, session security, alert trends)\n- Statistical analysis (averages, distributions, correlations)\n- Data aggregation (counts, summaries, rankings, filters)\n\n ~> OUT OF SCOPE ✗\n- General conversation or greetings\n- Unrelated topics (weather, news, personal advice)\n- Data modification requests (delete, update, insert)\n- External data sources\n- File operations\n\nIF OUT OF SCOPE -> Respond:\n\"I specialize in attendance, groups, and alerts data analysis. Your question appears outside this scope. Please ask about session attendance, group memberships, security alerts, or related analytical queries.\"\n\nSTEP 2 - TOOL SELECTION:\n\nUse data_insighter_tool when:\n-> Primary focus: attendance/sessions\n-> Queries about: check-ins, participation, session metrics\n-> Even if cross-referencing groups (fetch group UIDs first, then analyze attendance)\n\nUse groups_insighter_tool when:\n-> Primary focus: group structure/membership\n-> Queries about: group composition, member lists, cohort info\n-> Pure group questions without attendance/alert context\n\nUse alerts_insighter_tool when:\n-> Primary focus: security alerts (any type)\n-> Queries about: anomalies, security patterns, alert counts\n-> Even if cross-referencing sessions/groups (alerts are primary)\n\nSTEP 3 - CODE GENERATION:\nWrite efficient Python code that:\n-> Directly answers the question\n-> Assigns result to 'result' variable\n-> Handles edge cases gracefully\n-> Uses clear variable names\n-> Returns appropriate data structure\n\nSTEP 4 - EXECUTION:\nCall selected tool: tool_name(code)\n\nSTEP 5 - RESPONSE:\nPresent results clearly without exposing implementation details.\n\n================================================================================\n\nNOW EXECUTE THE PROTOCOL FOR THE USER TASK ABOVE."
         }
     }
