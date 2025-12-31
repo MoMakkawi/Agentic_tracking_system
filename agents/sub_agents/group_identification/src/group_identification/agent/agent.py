@@ -2,7 +2,7 @@ from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
 from utils import RagrennModel
-from .tools import cluster_tool ,save_tool
+from .tools import louvain_clustering_tool, save_tool
 
 class GroupIdentifierAgent:
     """
@@ -29,7 +29,7 @@ class GroupIdentifierAgent:
         self.retries = config.SETTINGS.RETRIES
 
         # Register tools
-        self.tools = [cluster_tool, save_tool]
+        self.tools = [louvain_clustering_tool, save_tool]
 
     # ---------------------------------------------------------
     # Execute Task
@@ -63,7 +63,7 @@ class GroupIdentifierAgent:
         """
         Run task with retry logic.
         """
-        
+
         task = task or self.default_task
         logger.info(f"Executing orchestrator task: {task}")
 

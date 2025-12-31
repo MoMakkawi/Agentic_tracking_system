@@ -1,49 +1,16 @@
 from smolagents import tool
-from utils import logger, get_config
+from utils import logger
 from typing import List, Dict
-from ..core.group_identifier import GroupIdentifier
+from ..identifier.louvain import LouvainGroupIdentifier
+from ..identifier.saver import GroupSaver
 
 # ---------------------------------------------------------
-# Attendance Mapper Tool
-# ---------------------------------------------------------
-@tool
-def attendance_mapper_tool() -> Dict[str, List[str]]:
-    """
-    Map attendance based on session names.
-
-    Returns:
-        Dict[str, List[str]]: A mapping of session/session names to lists of UIDs.
-
-        Example output:
-        {
-            "Coaching professionnel (R)": ["uid1", "uid2", "uid3"],
-            "Communications et Réseaux pour l’IoT": ["uid1", "uid2", "uid4"]
-        }
-
-    Notes:
-        - Aggregates UIDs from all sessions.
-        - Splits multi-session sessions (comma-separated).
-        - Ensures unique UIDs per session.
-        - Sorted UIDs for consistency.
-    """
-    try:
-        logger.info("Starting Attendance Mapper Tool...")
-        identifier = GroupIdentifier()
-        sessions_attendence = identifier.mapping_students_by_sessions_names()
-        logger.info("Attendance Mapper Tool finished successfully!")
-        return sessions_attendence
-
-    except Exception as e:
-        logger.error("Error in Attendance Mapper Tool", exc_info=True)
-        return f"Error in attendance_mapper_tool: {e}"
-
-# ---------------------------------------------------------
-# Cluster Tool
+#  Louvain Clustering Tool
 # ---------------------------------------------------------
 @tool
-def cluster_tool() -> Dict[str, List[str]]:
+def louvain_clustering_tool() -> Dict[str, List[str]]:
     """
-    Cluster attendance based on session names.
+    Cluster attendance based on session names using Louvain clustering.
 
     Returns:
         Dict[str, List[str]]: A mapping of session/session names to lists of UIDs.
@@ -53,23 +20,17 @@ def cluster_tool() -> Dict[str, List[str]]:
             "Group 1": ["uid1", "uid2", "uid3"],
             "Group 2": ["uid1", "uid2", "uid4"]
         }
-
-    Notes:
-        - Aggregates UIDs from all sessions.
-        - Splits multi-session sessions (comma-separated).
-        - Ensures unique UIDs per session.
-        - Sorted UIDs for consistency.
     """
     try:
-        logger.info("Starting Cluster Tool...")
-        identifier = GroupIdentifier()
-        groups = identifier.cluster_students()
-        logger.info("Cluster Tool finished successfully!")
+        logger.info("Starting Louvain Clustering Tool...")
+        identifier = LouvainGroupIdentifier()
+        groups = identifier.run_pipeline()
+        logger.info("Louvain Clustering Tool finished successfully!")
         return groups
 
     except Exception as e:
-        logger.error("Error in Cluster Tool", exc_info=True)
-        return f"Error in cluster_tool: {e}"
+        logger.error("Error in Louvain Clustering Tool", exc_info=True)
+        return f"Error in Louvain_clustering_tool: {e}"
 
 # ---------------------------------------------------------
 # Save Tool
@@ -99,11 +60,11 @@ def save_tool(groups: dict[str, List[str]]) -> str:
     try:
         logger.info("Starting Save Tool...")
         logger.info(f"Groups to save: {groups}")
-        identifier = GroupIdentifier()
-        output_path = identifier.save_groups(groups)
+
+        output_path = GroupSaver().save(groups)
 
         logger.info(f"Groups saved successfully to {output_path}")
-        return str(output_path)
+        return output_path
 
     except Exception as e:
         logger.error("Error in Save Tool", exc_info=True)
