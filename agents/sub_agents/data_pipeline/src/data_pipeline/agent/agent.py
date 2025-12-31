@@ -64,7 +64,8 @@ class DataPipelineAgent:
         """
 
         task = task or self.default_task
-
+        logger.info(f"Executing orchestrator task: {task}")
+        
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)

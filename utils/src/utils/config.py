@@ -1,10 +1,7 @@
 import json
 import os
 from dataclasses import dataclass
-from dotenv import load_dotenv
 from logger import *
-
-load_dotenv()
 
 # -----------------------------
 # Recursive wrapper for any dict
@@ -58,7 +55,7 @@ def load_config(path="config.json") -> Config:
     if _config_instance is None:
         try:
             logger.info(f"Loading configuration from {path}")
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             # Override top-level keys with environment variables if they exist

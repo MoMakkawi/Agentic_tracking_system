@@ -1,4 +1,5 @@
 from smolagents.agents import ToolCallingAgent
+from typing import Optional
 from utils import logger, get_config, load_config
 from utils import RagrennModel
 from .tools import pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, insighter_agent_tool 
@@ -27,6 +28,9 @@ class Orchestrator:
         self.instructions = config.INSTRUCTIONS
         self.retries = config.SETTINGS.RETRIES
 
+        # Initialize default task
+        self.default_task = config.DEFAULT_TASK
+
         # Register tools
         self.tools = [pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, insighter_agent_tool]
 
@@ -45,7 +49,7 @@ class Orchestrator:
             instructions=self.instructions,
             add_base_tools=False
         )
-
+        
         result = agent.run(task)
         logger.info("Orchestrator task completed successfully. Result: %s", result)
         return result
@@ -53,7 +57,13 @@ class Orchestrator:
     # ---------------------------------------------------------
     # Run with Retries
     # ---------------------------------------------------------
-    def run(self, task: str):
+    def run(self, task: Optional[str] = None):
+        """
+        Run task with retry logic.
+        """
+        task = task or self.default_task
+        logger.info(f"Executing orchestrator task: {task}")
+
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)
@@ -70,15 +80,5 @@ class Orchestrator:
 # ----------------------------
 def main(task: str = None):
     orchestrator = Orchestrator()
-    task = task or "Run full data pipeline and validate the results."
     result = orchestrator.run(task)
     return result
-
-
-# ----------------------------
-# CLI Usage
-# ----------------------------
-if __name__ == "__main__":
-    output = main()
-    print("\n=== Orchestrator Result ===")
-    print(output)

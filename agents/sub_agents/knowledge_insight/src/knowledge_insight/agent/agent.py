@@ -2,8 +2,8 @@ from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
 from utils import RagrennModel
-from .tools import data_insighter_tool, groups_insighter_tool, alerts_insighter_tool
 from utils import CsvRepository, JsonRepository
+from .tools import data_insighter_tool, groups_insighter_tool, alerts_insighter_tool
 
 class KnowledgeInsightAgent:
     """
@@ -38,11 +38,11 @@ class KnowledgeInsightAgent:
     # ---------------------------------------------------------
     # Execute Task
     # ---------------------------------------------------------
-    def _execute(self, task: Optional[str] = None):
+    def _execute(self, task: str):
         """
         Execute the given task using SmolAgent's CodeAgent.
         Args:
-            task (Optional[str]): High-level instruction/question from orchestrator.
+            task (str): High-level instruction/question from orchestrator.
         """
         logger.info(f"Executing task: {task}")
 
@@ -56,14 +56,13 @@ class KnowledgeInsightAgent:
 
 
         # Run the task
-        task = task or self.default_task
         instructions = self._build_task_instructions(task)
 
         result = agent.run(instructions)
         logger.info("Task execution completed successfully. Result: %s", result)
         return result
 
-    def _build_task_instructions(self, task: Optional[str] = None):
+    def _build_task_instructions(self, task: str):
         """Builds the agent instructions by fetching schemas from repositories."""
         config_paths = get_config().PATHS
         
@@ -87,10 +86,14 @@ class KnowledgeInsightAgent:
     # ---------------------------------------------------------
     # Run with Retries (Used by Orchestrator)
     # ---------------------------------------------------------
-    def run(self, task: str):
+    def run(self, task: Optional[str] = None):
         """
         Run task with retry logic.
         """
+
+        task = task or self.default_task
+        logger.info(f"Executing orchestrator task: {task}")
+
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)

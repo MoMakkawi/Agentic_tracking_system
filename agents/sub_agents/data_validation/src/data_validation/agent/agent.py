@@ -1,6 +1,7 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
 from utils import RagrennModel
+from typing import Optional
 from data_validation.agent.tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
 
 
@@ -60,12 +61,13 @@ class DataValidationAgent:
     # ---------------------------------------------------------
     # Run with Retries (Used by Orchestrator)
     # ---------------------------------------------------------
-    def run(self, task: str):
+    def run(self, task: Optional[str] = None):
         """
         Run validation task with retry logic.
         """
 
         task = task or self.default_task
+        logger.info(f"Executing orchestrator task: {task}")
 
         for attempt in range(1, self.retries + 1):
             try:
@@ -83,7 +85,7 @@ class DataValidationAgent:
 # ----------------------------
 # Callable main() for CLI or ToolCallAgent
 # ----------------------------
-def main(task: str = None):
+def main(task: Optional[str] = None):
     """
     Entry point for DataValidationAgent.
     Args:

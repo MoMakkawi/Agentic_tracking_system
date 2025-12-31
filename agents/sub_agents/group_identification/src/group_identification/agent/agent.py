@@ -34,7 +34,7 @@ class GroupIdentifierAgent:
     # ---------------------------------------------------------
     # Execute Task
     # ---------------------------------------------------------
-    def _execute(self, task: Optional[str] = None):
+    def _execute(self, task: str):
         """
         Execute the given task using SmolAgent's CodeAgent.
         Args:
@@ -59,10 +59,14 @@ class GroupIdentifierAgent:
     # ---------------------------------------------------------
     # Run with Retries (Used by Orchestrator)
     # ---------------------------------------------------------
-    def run(self, task: str):
+    def run(self, task: Optional[str] = None):
         """
         Run task with retry logic.
         """
+        
+        task = task or self.default_task
+        logger.info(f"Executing orchestrator task: {task}")
+
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)
