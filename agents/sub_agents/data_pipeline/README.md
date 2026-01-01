@@ -23,16 +23,43 @@ It **ingests raw attendance logs & calendars**, cleans them, and returns a singl
 ## Tools
 
 ### fetch_tool
-- Downloads `.ics` + `.logs` from configured source (URLs).  
+- Downloads `.ics` + `.logs` from configured source (URLs) and store them in the configured paths, internally uses the `DataFetcher` class (see details below).
 - Returns `{"logs":"<path>","ics":"<path>"}` or raises.
 
+<details>
+<summary>DataFetcher internals (click to expand)</summary>
+
+The **DataFetcher** class handles the actual download and persistence.
+
+| Step | What it does |
+|------|--------------|
+| **Validate** | Check that all required URLs & target paths are present |
+| **Download** | Fetch JSONL logs & ICS calendars with timeout / retry logic |
+| **Store** | Write bytes to disk via `RepositoryFactory` (JSONL → logs, ICS → calendar) |
+| **Return** | `{"logs":"<path>","ics":"<path>"}` on success, raises on any failure |
+
+Entry point: `DataFetcher.run()` executes download + save and returns the path dict.
+</details>
+
 ### preprocess_tool
-- Cleans, timestamps, de-duplicates, standardizes records.  
+- Internally uses the `Preprocessor` class (see details below).  
 - Returns `<clean_dataset_path>` or raises.
 
-## Workflow
-1. `fetch_tool()`  → acquire raw data  
-2. `preprocess_tool()` → produce clean dataset  
+<details>
+<summary>Preprocessor internals (click to expand)</summary>
+
+The **Preprocessor** loads raw attendance logs & ICS calendars, cleans and deduplicates scans, builds session objects, enriches them with overlapping calendar events, and writes the final structured dataset to JSON.
+
+| Step | What it does |
+|------|--------------|
+| **Load** | Read JSONL logs + ICS events from configured paths |
+| **Clean** | Drop redundant badge scans per UID, store redundancy stats |
+| **Sessionise** | Aggregate logs into sessions (counts, timestamps, metadata) |
+| **Enrich** | Match each session with overlapping ICS event(s) and attach titles |
+| **Save** | Persist enriched sessions to a JSON file for downstream agents |
+
+Entry point: `Preprocessor.run()` executes the full chain and returns the output path.
+</details>
 
 Executed **exactly** in this order; any failure **halts immediately**.
 
