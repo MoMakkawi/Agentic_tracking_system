@@ -1,4 +1,4 @@
-# Knowledge Insight Agent – Analytical Stage
+# Knowledge Insight Agent – Stage 4
 ------------------------------------------------
 
 ## Table of Contents
@@ -17,13 +17,13 @@
 `knowledge_insight` is the **analytical insight agent** of the Agentic Tracking System.  
 It **generates Python analysis code** for attendance sessions, group memberships, and alerts, sends it to the proper execution tool, and returns only the computed result.  
 
-It **does not fetch, preprocess, validate, or modify data**; it only analyzes in-memory datasets.
+It **does not fetch, preprocess, validate, or modify data**; it only analyzes datasets.
 
 ---
 
 ## Agent Scope
-- **Role**: Analytical insights from existing datasets only.  
-- **Forbidden**: data fetching, preprocessing, validation, persistence, or reporting.  
+- **Role**: Analytical insights from existing datasets only.   
+- **Input**: preprocessed sessions and groups datasets and alerts datasets.
 - **Output**: a single computed result assigned to `result`; no code, paths, or intermediate variables.
 
 ---
@@ -46,7 +46,6 @@ __init__:
   - Initialize executor environment with datasets and helpers
 ```
 *Entry point*: `DataInsighter.init() → ready-to-analyze environment`
-
 </details>
 
 ### groups_insighter_tool
@@ -65,7 +64,6 @@ __init__:
   - Initialize executor environment
 ```
 *Entry point*: `GroupInsighter.init() → ready-to-analyze environment`
-
 </details>
 
 ### alerts_insighter_tool
@@ -84,7 +82,6 @@ __init__:
   - Initialize executor environment
 ```
 *Entry point*: `AlertsInsighter.init() → ready-to-analyze environment`
-
 </details>
 
 ## Executor Package
@@ -98,10 +95,10 @@ The **executor** provides a secure, sandboxed Python execution engine used by al
 | File | Responsibility |
 |------|----------------|
 | `executor.py` | Implements **CodeExecutor** to validate and execute Python code, returning results |
+| `validator.py` | **CodeValidator** parses AST to block unsafe imports, dangerous functions, and dunder attributes |
 | `namespace.py` | Builds a restricted execution namespace from datasets and helper functions |
 | `defaults.py` | Defines default modules, execution timeouts, and safety limits |
 | `exceptions.py` | Custom exceptions for validation or runtime errors |
-| `validator.py` | **CodeValidator** parses AST to block unsafe imports, dangerous functions, and dunder attributes |
 
 ---
 

@@ -1,4 +1,4 @@
-# Data Validation Agent – Stage-2  
+# Data Validation Agent – Stage 2  
 ------------------------------------------------
 
 ## Table of Contents

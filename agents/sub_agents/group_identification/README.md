@@ -1,4 +1,4 @@
-# Group Identifier Agent – Stage-3  
+# Group Identifier Agent – Stage 3  
 ------------------------------------------------
 
 ## Table of Contents
@@ -19,8 +19,7 @@ The agent does **not** perform data exploration, anomaly validation, reporting, 
 
 ## Agent Scope
 - **Role**: Stage-3 grouping/clustering only.  
-- **Input**: preprocessed session dataset and optional identity alerts.  
-- **Forbidden**: data analysis, anomaly detection, explanation, intermediate outputs, or file paths.  
+- **Input**: preprocessed session dataset and optional identity alerts.
 - **Output**: confirmation message after groups are saved.
 
 ## Tools
