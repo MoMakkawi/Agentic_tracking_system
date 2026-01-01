@@ -172,11 +172,11 @@ task4 = "Stage 4: Generate insights"
 insights = knowledge_insight_main(task4)
 ```
 
-## Data Flow
+## Default Data Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   Input: .ics & .logs URLs                      │
+│             Input: .ics & .logs URLs from Configs               │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -213,7 +213,7 @@ insights = knowledge_insight_main(task4)
 
 Agent configuration is handled through:
 - Environment variables
-- Config files (`pyproject.toml`, `.env`)
+- Config files (`config.json`, `.env`, `pyproject.toml`)
 - Runtime parameters passed from the orchestrator
 
 See individual agent READMEs for configuration details.
@@ -228,29 +228,6 @@ To extend the sub-agents system:
 4. **Update Configs**: Update configuration file
 5. **Document thoroughly**: README explaining purpose and usage
 6. **Integrate**: Register in the parent orchestrator
-
-
-## Recommended LLM Models
-
-For optimal agent performance, use these models:
-
-- **`codestral:latest`**: Best for deterministic pipeline tasks
-- **`mistralai/Mistral-Small-3.2-24B-Instruct`**: Good balance for all stages
-- **`RedHatAI/Llama-3.3-70B-Instruct`**: For complex insight generation
-
-Model selection depends on:
-- Task complexity (pipeline < insight generation)
-- Available compute resources
-- Required reasoning depth
-
-## Contributing
-
-When modifying agents:
-1. Maintain single responsibility principle
-2. Update documentation
-3. Add/update tests
-4. Follow existing code style
-5. Test the entire pipeline
 
 ## License
 
