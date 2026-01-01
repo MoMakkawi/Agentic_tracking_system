@@ -1,62 +1,64 @@
-# data_pipeline
-
-[![PyPI - Version](https://img.shields.io/pypi/v/data-pipeline.svg)](https://pypi.org/project/data-pipeline)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/data-pipeline.svg)](https://pypi.org/project/data-pipeline)
-
------
+# Data Pipeline Agent – Stage-1 
+------------------------------------------------
 
 ## Table of Contents
-
-- [Overview](#overview)
-- [Data Pipeline Agent](#data-pipeline-agent)
-- [Tools and Functionalities](#tools-and-functionalities)
-- [Workflow](#workflow)
-- [Installation](#installation)
+- [Overview](#overview)  
+- [Agent Scope](#agent-scope)  
+- [Tools](#tools)  
+- [Workflow](#workflow)  
+- [Hard Rules](#hard-rules)  
+- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)  
+- [Installation](#installation)  
 - [License](#license)
 
 ## Overview
+`data_pipeline` is the **first-stage agent** of the Agentic Tracking System.  
+It **ingests raw attendance logs & calendars**, cleans them, and returns a single pre-processed dataset—nothing more.
 
-`data_pipeline` is the foundational component of the Agentic Tracking System.  
-It provides automated data ingestion, preprocessing, and grouping through modular agents and toolsets, enabling accurate analysis and flexible downstream integration for student/session tracking.
+## Agent Scope
+- **Role**: Stage-1 data ingestion & cleaning only.  
+- **Forbidden**: validation, clustering, insight, retries, wrappers, conditionals.  
+- **Output**: one plain confirmation sentence after successful run.
 
-## Data Pipeline Agent
-
-The **Data Pipeline Agent** manages the lifecycle of attendance or activity datasets, operating in `data_pipeline/src/agent/`.  
-It automates the early stages of tracking and analysis by invoking a sequence of specialized tools.
-
-## Tools and Functionalities
+## Tools
 
 ### fetch_tool
-- Downloads ics + logs data from configured sources (URL, path, database).
-- Saves the data to disk or designated cloud storage.
-- Handles errors in connectivity or data retrieval, logging issues for transparency.
+- Downloads `.ics` + `.logs` from configured source (URL, path, DB).  
+- Returns `{"logs":"&lt;path&gt;","ics":"&lt;path&gt;"}` or raises.
 
 ### preprocess_tool
-- Cleans and structures logs sessions into standardized formats.
-- Parses timestamps and verifies device/student identity attributes.
-- Filters redundant or malformed records.
-- Outputs validated session objects for analysis.
-
-### group_tool
-- Analyzes sessions to identify and group students or users by attendance/activity.
-- Uses configured rules to organize and name groups.
-- Saves groupings for further processing or reporting.
+- Cleans, timestamps, de-duplicates, standardizes records.  
+- Returns `&lt;clean_dataset_path&gt;` or raises.
 
 ## Workflow
+1. `fetch_tool()`  → acquire raw data  
+2. `preprocess_tool()` → produce clean dataset  
 
-1. **Fetch**: Acquire the ics + logs dataset using `fetch_tool`.
-2. **Preprocess**: Clean and normalize the collected data with `preprocess_tool`.
-3. **Group**: Organize and classify participants via `group_tool`.
+Executed **exactly** in this order; any failure **halts immediately**.
 
-Steps are executed sequentially; any error halts the workflow to ensure consistency.  
-The agent provides data summaries, grouping statistics, and preprocessing insights on completion.
+## Hard Rules
+- Emit **only** the mandatory 4-line block:
+  ```python
+  fetched_file_paths = fetch_tool()
+  print(fetched_file_paths)
+
+  clean_data_path = preprocess_tool()
+  print(clean_data_path)
+  ```
+- No extra logic, loops, logs, or exposed paths.  
+- Agent answer with one sentence like: “Fetch and preprocess completed.”
+
+## Recommended Models (Ragarenn)
+| Model | Stars | Notes |
+|-------|-------|-------|
+| `codestral:latest` | ⭐⭐⭐ | Built for pipelines, tools, deterministic execution |
+| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐⭐ | Solid instruction following + tool usage |
+| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐ | Use only if pipeline logic grows complex |
 
 ## Installation
-
 ```console
-pip install data-pipeline
+pip install data_pipeline
 ```
 
 ## License
-
-`data-pipeline` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+MIT © 2026 Agentic Tracking System
