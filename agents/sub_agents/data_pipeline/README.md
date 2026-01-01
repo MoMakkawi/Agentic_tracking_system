@@ -71,6 +71,8 @@ Executed **exactly** in this order; any failure **halts immediately**.
 
   clean_data_path = preprocess_tool()
   print(clean_data_path)
+
+  final_answer("Fetch and preprocess completed.")
   ```
 - No extra logic, loops, logs, or exposed paths.  
 - Agent answer with one sentence like: “Fetch and preprocess completed.”
