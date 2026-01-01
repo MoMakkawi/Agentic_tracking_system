@@ -1,7 +1,7 @@
 from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
-from utils import RagrennModel
+from utils import RagrennModel, JsonRepository, CsvRepository
 from .tools import louvain_clustering_tool, save_tool
 
 class GroupIdentifierAgent:
@@ -31,6 +31,22 @@ class GroupIdentifierAgent:
         # Register tools
         self.tools = [louvain_clustering_tool, save_tool]
 
+    
+    def _build_task_instructions(self, task: str):
+        """Builds the agent instructions by fetching schemas from repositories."""
+        config_paths = get_config().PATHS
+        
+        # Initialize data schemas
+        clean_data_schema = JsonRepository(config_paths.PREPROCESSED).get_schema_info()
+        identity_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.IDENTITY).get_schema_info()
+          
+        # build task instructions
+        instructions = get_config().LLM_MODULES.GROUP_IDENTIFIER.INSTRUCTIONS.format(
+            clean_data_schema=clean_data_schema,
+            identity_alerts_schema=identity_alerts_schema,
+            task=task)
+        return instructions
+
     # ---------------------------------------------------------
     # Execute Task
     # ---------------------------------------------------------
@@ -46,13 +62,13 @@ class GroupIdentifierAgent:
         agent = CodeAgent(
             tools=self.tools,
             model=self.model,
-            instructions=self.instructions,
             add_base_tools=False
         )
 
         # Run the task
         task = task or self.default_task
-        result = agent.run(task)
+        task_instructions=self._build_task_instructions(task)
+        result = agent.run(task_instructions)
         logger.info("Task execution completed successfully. Result: %s", result)
         return result
 
