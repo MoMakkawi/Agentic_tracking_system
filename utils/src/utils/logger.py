@@ -7,7 +7,7 @@ import pathlib
 LOG_DIR = "logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 
-LOG_FILE = os.path.join(LOG_DIR, "attendance_ai.log")
+LOG_FILE = os.path.join(LOG_DIR, "agentic_tracking_system.log")
 LOG_LEVEL = logging.INFO
 
 # Formatter
