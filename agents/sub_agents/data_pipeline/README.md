@@ -17,7 +17,7 @@ It **ingests raw attendance logs & calendars**, cleans them, and returns a singl
 
 ## Agent Scope
 - **Role**: Stage-1 data ingestion & cleaning only.  
-- **Forbidden**: validation, clustering, insight, retries, wrappers, conditionals.  
+- **input**: from config files URLs to raw attendance logs & calendars.  
 - **Output**: one plain confirmation sentence after successful run.
 
 ## Tools
