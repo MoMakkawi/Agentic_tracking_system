@@ -192,7 +192,7 @@ class LouvainGroupIdentifier:
             for gid, members in self.groups.items()
         }
 
-    def run_pipeline(self) -> Dict[str, List[str]]:
+    def run(self) -> Dict[str, List[str]]:
         self._explore_data()
         self._extract_features()
         self._build_network()

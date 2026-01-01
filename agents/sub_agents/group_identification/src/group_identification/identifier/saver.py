@@ -12,7 +12,7 @@ class GroupSaver:
         config = get_config()
         self.output_path = config.PATHS.GROUPS
 
-    def save_groups(self, groups: Dict[str, List[str]]) -> str:
+    def save(self, groups: Dict[str, List[str]]) -> str:
         """
         Save the groups to a JSON file.
 

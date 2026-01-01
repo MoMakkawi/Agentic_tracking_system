@@ -24,7 +24,7 @@ def louvain_clustering_tool() -> Dict[str, List[str]]:
     try:
         logger.info("Starting Louvain Clustering Tool...")
         identifier = LouvainGroupIdentifier()
-        groups = identifier.run_pipeline()
+        groups = identifier.run()
         logger.info("Louvain Clustering Tool finished successfully!")
         return groups
 
