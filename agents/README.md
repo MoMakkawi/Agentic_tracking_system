@@ -1,0 +1,165 @@
+# Agents
+
+Core multi-agent system that orchestrates data processing, validation, grouping, and analytical insights for student attendance tracking.
+
+## Index
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Components](#components)
+  - [orchestrator](#orchestrator)
+  - [sub_agents](#sub_agents)
+    - [data_pipeline](#data_pipeline)
+    - [data_validation](#data_validation)
+    - [group_identifier](#group_identifier)
+    - [knowledge_insight](#knowledge_insight)
+- [Workflow Example](#workflow-example)
+- [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+  - [Running Tests](#running-tests)
+- [Configuration](#configuration)
+- [Error Handling](#error-handling)
+- [Monitoring & Logging](#monitoring--logging)
+- [License](#license)
+
+
+## Overview
+
+The agents module implements a hierarchical agent architecture where:
+- **Orchestrator Agent** acts as the central controller, parsing user requests and delegating tasks
+- **Sub-agents** handle specialized responsibilities with narrow, well-defined scopes
+- Each agent is modular, testable, and reusable across different contexts
+
+## Architecture
+
+```
+Orchestrator Agent (Entry Point)
+└── Sub Agents
+    ├── Data Pipeline Agent
+    │   ├── Data Fetcher
+    │   ├── Preprocessor
+    │   └── Session Builder
+    ├── Data Validation Agent
+    │   ├── Device Validator
+    │   ├── Timestamp Validator
+    │   └── Identity Validator
+    ├── Group Identifier Agent
+    │   ├── Feature Engineer
+    │   ├── Louvain Clustering
+    │   └── Group Analyzer
+    └── Knowledge Insight Agent
+        ├── Query Analyzer
+        ├── Code Generator
+        └── Safe Executor
+```
+
+## Components
+
+### orchestrator/
+
+Central entry point that receives user queries and coordinates execution across sub-agents.
+
+**Responsibilities:**
+- Parse and classify user requests
+- Design execution workflows
+- Aggregate results into coherent responses
+- Handle errors and graceful degradation
+
+### sub_agents/
+
+Specialized agents, each handling a specific domain of the tracking system.
+
+#### data_pipeline/
+
+Handles raw data ingestion, cleaning, and preprocessing.
+
+- **Fetch**: Retrieves attendance records and schedules from data sources
+- **Clean**: Removes duplicates, handles missing values, normalizes formats
+- **Build Sessions**: Constructs cleaned session objects with metadata
+
+#### data_validation/
+
+Runs multi-layer validation to detect anomalies and inconsistencies.
+
+- **Device Validation**: Checks for suspicious device patterns
+- **Timestamp Validation**: Identifies impossible or illogical timestamps
+- **Identity Validation**: Verifies student identity consistency
+
+#### group_identifier/
+
+Build behavioral groups through clustering analysis.
+
+- **Feature Engineering**: Creates behavioral features from sessions
+- **Clustering**: Applies Louvain algorithm to identify student communities
+- **Group Analysis**: Characterizes groups by patterns and attributes
+
+#### knowledge_insight/
+
+Generates custom analytical insights through safe code execution.
+
+- **Query Understanding**: Parses natural language analysis requests
+- **Code Generation**: Creates safe Python analysis snippets
+- **Execution**: Runs code with resource limits and safety checks
+
+## Workflow Example
+
+### User Query: "What are the attendance patterns of students in group 2?"
+
+1. **Orchestrator** receives query
+2. Classifies intent as "insight + grouping"
+3. Calls **group_identifier** → update groups
+4. Calls **knowledge_insight** → generate analysis code
+5. Code executed on filtered attendance data
+6. Results aggregated and returned to user
+
+
+## Getting Started
+
+### Basic Usage
+
+```python
+from agents.orchestrator import OrchestratorAgent
+
+orchestrator = OrchestratorAgent()
+response = orchestrator.process_query("Show me abnormal attendance patterns")
+print(response)
+```
+## Configuration
+
+Each agent reads from `config.json`:
+
+## Error Handling
+
+Agents implement graceful degradation:
+
+- **Critical Errors**: Stop execution, return error details
+- **Warning Errors**: Continue with partial results, log warning
+- **Data Errors**: Fallback to cached data or defaults
+
+All errors are logged with full context for debugging.
+
+## Monitoring & Logging
+
+All agents log to `logs/agents.log`:
+
+```
+2025-12-02 10:11:47 | utils | jsonl_repo | INFO | JSONL content saved successfully.
+2025-12-02 10:12:48 | utils | jsonl_repo | INFO | JSONL content saved successfully.
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Loading ICS data from: data/test_enrichment/calendar.ics
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Loading logs data from: data/test_enrichment/logs.jsonl
+2025-12-02 10:12:49 | utils | jsonl_repo | INFO | JSONL loaded successfully.
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Running preprocessing pipeline...
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Separating redundant logs within each record...
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Detected 0 redundant logs in total
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Generating structured sessions...
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | 1 structured sessions generated.
+2025-12-02 10:12:49 | data_pipeline | processor | INFO | Pipeline completed: 1 sessions created
+2025-12-02 10:22:04 | utils | ragrenn | INFO | Selected model: openai/gpt-oss-120b
+2025-12-02 10:22:05 | utils | ragrenn | INFO | RagrennModel initialized with model 'openai/gpt-oss-120b'
+2025-12-02 10:22:06 | agents | agent | INFO | Starting Orchestrator Task: Run full data pipeline and validate the results.
+```
+
+## License
+
+MIT - See LICENSE in project root
