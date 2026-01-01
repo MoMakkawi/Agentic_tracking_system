@@ -47,8 +47,8 @@
         "DATA_PIPELINE": {
             "MODEL": {
                 "NAME": [
+                    "codestral:latest",
                     "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
-                    "openai/gpt-oss-120b",
                     "RedHatAI/Llama-3.3-70B-Instruct"
                 ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
@@ -62,8 +62,9 @@
         "DATA_VALIDATION": {
             "MODEL": {
                 "NAME": [
-                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
-                    "openai/gpt-oss-120b"
+                    "analyse-de-risques",
+                    "RedHatAI/Llama-3.3-70B-Instruct",
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
                 ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
@@ -76,8 +77,9 @@
         "GROUP_IDENTIFIER": {
             "MODEL": {
                 "NAME": [
-                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
-                    "RedHatAI/Llama-3.3-70B-Instruct"
+                    "RedHatAI/Llama-3.3-70B-Instruct",
+                    "openai/gpt-oss-120b",
+                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
                 ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
@@ -99,8 +101,8 @@
             "MODEL": {
                 "NAME": [
                     "analyse-de-risques",
-                    "RedHatAI/Llama-3.3-70B-Instruct",
-                    "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+                    "analyse-swot",
+                    "RedHatAI/Llama-3.3-70B-Instruct"
                 ],
                 "BASE_URL": "https://ragarenn.eskemm-numerique.fr/sso/chat/api"
             },
