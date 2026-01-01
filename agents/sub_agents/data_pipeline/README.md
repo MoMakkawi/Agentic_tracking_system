@@ -23,12 +23,12 @@ It **ingests raw attendance logs & calendars**, cleans them, and returns a singl
 ## Tools
 
 ### fetch_tool
-- Downloads `.ics` + `.logs` from configured source (URL, path, DB).  
-- Returns `{"logs":"&lt;path&gt;","ics":"&lt;path&gt;"}` or raises.
+- Downloads `.ics` + `.logs` from configured source (URLs).  
+- Returns `{"logs":"<path>","ics":"<path>"}` or raises.
 
 ### preprocess_tool
 - Cleans, timestamps, de-duplicates, standardizes records.  
-- Returns `&lt;clean_dataset_path&gt;` or raises.
+- Returns `<clean_dataset_path>` or raises.
 
 ## Workflow
 1. `fetch_tool()`  → acquire raw data  
