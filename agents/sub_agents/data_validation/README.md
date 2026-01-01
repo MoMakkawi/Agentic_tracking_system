@@ -18,8 +18,8 @@ It **validates preprocessed attendance sessions**, runs **three anomaly-focused 
 ## Agent Scope
 - **Role**: Stage-2 anomaly validation only.  
 - **Input**: preprocessed session dataset.  
-- **Forbidden**: preprocessing, clustering, grouping, insights, retries, wrappers, conditionals.  
-- **Output**: printed anomaly report paths + one fixed final confirmation message.
+- **Forbidden**: clustering, grouping, insights.  
+- **Output**: one fixed final confirmation message.
 
 ## Tools
 
@@ -109,7 +109,7 @@ print("Timestamp anomalies report path:", timestamp_report_path)
 identity_report_path = identity_validation_tool()
 print("Identity anomalies report path:", identity_report_path)
 
-final_answer("Validation complete. Check the printed paths for the generated anomaly reports.")
+final_answer("Device & Timestamp & Identity Validations complete.")
 ```
 
 ## Hard Rules
@@ -118,12 +118,12 @@ final_answer("Validation complete. Check the printed paths for the generated ano
   - `timestamp_validation_tool()`
   - `identity_validation_tool()`
 - Unless explicitly restricted by the task, **all three tools must be executed**.
-- Each tool’s returned value **must be printed** using the exact descriptive prefixes defined in the workflow.
+- Each tool’s returned value **will be printed** using the exact descriptive prefixes defined in the workflow.
 - The agent **must not fabricate** file paths or infer tool outputs.
 - No additional logic is permitted, including loops, retries, conditionals, wrappers, or helper functions.
 - The final agent response **must be exactly**:
 
-Validation finished successfully. All anomaly reports have been generated and their paths printed above.
+Device & Timestamp & Identity Validations complete.
 
 ## Recommended Models (Ragarenn)
 | Model | Stars | Notes |
