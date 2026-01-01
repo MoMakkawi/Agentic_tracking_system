@@ -1,59 +1,140 @@
-# data_validation
-
-[![PyPI - Version](https://img.shields.io/pypi/v/data-validation.svg)](https://pypi.org/project/data-validation)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/data-validation.svg)](https://pypi.org/project/data-validation)
-
------
+# Data Validation Agent – Stage-2  
+------------------------------------------------
 
 ## Table of Contents
-
-- [Overview](#overview)
-- [Data Validation Agent](#data-validation-agent)
-- [Tools and Functionalities](#tools-and-functionalities)
-- [Usage and Workflow](#usage-and-workflow)
-- [Installation](#installation)
+- [Overview](#overview)  
+- [Agent Scope](#agent-scope)  
+- [Tools](#tools)  
+- [Workflow](#workflow)  
+- [Hard Rules](#hard-rules)  
+- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)  
+- [Installation](#installation)  
 - [License](#license)
 
 ## Overview
+`DATA_VALIDATION` is the **second-stage agent** of the Agentic Tracking System.  
+It **validates preprocessed attendance sessions**, runs **three anomaly-focused checks** (device, timestamp, identity), and **reports where the anomaly reports were saved—nothing else**.
 
-`data_validation` is a core module of the Agentic Tracking System, providing robust automated validation processes for session, device, timestamp, and identity data. It is designed to ensure data integrity and consistency before analytics or reporting.
+## Agent Scope
+- **Role**: Stage-2 anomaly validation only.  
+- **Input**: preprocessed session dataset.  
+- **Forbidden**: preprocessing, clustering, grouping, insights, retries, wrappers, conditionals.  
+- **Output**: printed anomaly report paths + one fixed final confirmation message.
 
-## Data Validation Agent
-
-The **Data Validation Agent** (located in `data_validation/src/agent/`) offers a suite of independent validation tools.  
-Each tool can be executed individually in any order according to the user's needs—there is no required sequential workflow.
-
-## Tools and Functionalities
+## Tools
 
 ### device_validation_tool
-- Validates device information within session data.
-- Checks device consistency across all sessions.
-- Verifies that device records align with stored configurations.
+- Internally uses the **DeviceValidator** class (see details below).  
+- Returns `<device_anomaly_report_path>` or raises.
+
+<details>
+<summary>DeviceValidator internals (click to expand)</summary>
+
+The **DeviceValidator** analyzes device-level behavior across sessions and produces device–session anomaly alerts.
+
+| Step | What it does |
+|------|--------------|
+| **Load** | Read preprocessed session JSON |
+| **Flatten** | Build per-log DataFrame with `session_id`, `device_id`, timestamps |
+| **Detect missing data** | Flag missing `device_id`, `session_id`, or `received_at` |
+| **Detect clock resets** | Flag date mismatches between log date and received date |
+| **Detect long sessions** | Flag device–session durations exceeding configured hours |
+| **Collect alerts** | Aggregate issues per device–session |
+| **Save** | Persist alerts to CSV |
+
+Entry point: `DeviceValidator.run()` → alerts, then `save()` → CSV path.
+</details>
+
+---
 
 ### timestamp_validation_tool
-- Ensures all timestamps have correct format and logical consistency.
-- Checks the chronological ordering of sessions.
-- Detects and flags invalid or anomalous timestamps.
+- Internally uses the **TimestampValidator** class (see details below).  
+- Returns `<timestamp_anomaly_report_path>` or raises.
+
+<details>
+<summary>TimestampValidator internals (click to expand)</summary>
+
+The **TimestampValidator** checks time-based correctness of check-ins.
+
+| Step | What it does |
+|------|--------------|
+| **Load** | Read preprocessed session JSON |
+| **Flatten** | Build timestamped table with `uid`, `timestamp`, `session_id`, `device_id` |
+| **Validate dates** | Flag check-ins outside semester range |
+| **Validate hours** | Flag check-ins outside daily allowed time window |
+| **Detect invalid days** | Flag weekend and holiday check-ins |
+| **Collect alerts** | Group reasons per UID–timestamp–session–device |
+| **Save** | Persist alerts to CSV |
+
+Entry point: `TimestampValidator.run()` then `save()` returns CSV path.
+</details>
+
+---
 
 ### identity_validation_tool
-- Validates student or user identity data in the dataset.
-- Verifies identity consistency across multiple sessions.
-- Checks identities against stored or expected records.
-- Flags duplicate, missing, or conflicting identity entries.
+- Internally uses the **IdentityValidator** class (see details below).  
+- Returns `<identity_anomaly_report_path>` or raises.
 
-## Usage and Workflow
+<details>
+<summary>IdentityValidator internals (click to expand)</summary>
 
-All validation tools are independent:  
-- **You can execute any tool or combination of tools based on your validation requirements.**
-- There is **no mandatory execution order**; run only what you need for your use case.
-- After running one or more tools, a validation results summary will be provided, highlighting any errors, anomalies, or flagged inconsistencies.
+The **IdentityValidator** analyzes UID behavior across sessions and devices.
 
-## Installation
+| Step | What it does |
+|------|--------------|
+| **Load** | Read preprocessed session JSON |
+| **Flatten** | Build DataFrame with `uid`, `session_id`, `device_id`, `redundant_count` |
+| **Flag patterns** | Detect UIDs not matching expected hex-like format |
+| **Detect redundancy** | Flag highly redundant UIDs within sessions |
+| **Detect rarity** | Flag globally rare or single-occurrence UIDs |
+| **Track history** | Record per-UID anomaly sessions and repeat counts |
+| **Collect alerts** | Build UID–device alert rows with reasons |
+| **Save** | Persist alerts to CSV |
 
-```console
-pip install data-validation
+Entry point: `IdentityValidator.run()` → alerts, then `save()` → CSV path.
+</details>
+
+---
+
+## Workflow
+Executed **exactly** as follows; any failure **halts immediately**.
+
+```python
+device_report_path = device_validation_tool()
+print("Device anomalies report path:", device_report_path)
+
+timestamp_report_path = timestamp_validation_tool()
+print("Timestamp anomalies report path:", timestamp_report_path)
+
+identity_report_path = identity_validation_tool()
+print("Identity anomalies report path:", identity_report_path)
+
+final_answer("Validation complete. Check the printed paths for the generated anomaly reports.")
 ```
 
-## License
+## Hard Rules
+- The agent is authorized to execute **only** the following tools:
+  - `device_validation_tool()`
+  - `timestamp_validation_tool()`
+  - `identity_validation_tool()`
+- Unless explicitly restricted by the task, **all three tools must be executed**.
+- Each tool’s returned value **must be printed** using the exact descriptive prefixes defined in the workflow.
+- The agent **must not fabricate** file paths or infer tool outputs.
+- No additional logic is permitted, including loops, retries, conditionals, wrappers, or helper functions.
+- The final agent response **must be exactly**:
 
-`data-validation` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+Validation finished successfully. All anomaly reports have been generated and their paths printed above.
+
+## Recommended Models (Ragarenn)
+| Model | Stars | Notes |
+|-------|-------|-------|
+| `analyse-de-risques` | ⭐⭐⭐ | Optimal for anomaly detection and validation workflows |
+| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐⭐ | Reliable for structured reasoning and complex instruction handling |
+| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐ | Best suited for lightweight validation tasks |
+
+## Installation
+```console
+pip install data_validation
+```
+## License
+MIT © 2026 Agentic Tracking System
