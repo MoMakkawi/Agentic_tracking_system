@@ -100,6 +100,8 @@ class IdentityValidator:
         alerts = []
         grouped = self.df.groupby(["uid", "device_id"])
 
+        alert_id = 1 
+
         for (uid, device_id), group in grouped:
             all_sessions = sorted(set(group["session_id"].astype(str)))
             meta = self.uid_meta.get(uid, {})
@@ -119,13 +121,15 @@ class IdentityValidator:
 
             if reasons:
                 alerts.append([
+                    alert_id,                          
                     uid,
                     device_id,
                     normal_sessions_count,
                     repeated_count,
                     ";".join(anomaly_sessions),
-                    "; ".join(sorted(reasons))
+                    ";".join(sorted(reasons))
                 ])
+                alert_id += 1
 
         self.alerts = alerts
         logger.info(f"Collected {len(alerts)} UID-device level identity alerts")
@@ -150,12 +154,13 @@ class IdentityValidator:
 
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.IDENTITY
         header = [
+            "id",
             "uid",
             "device_id",
             "normal_sessions_count",
             "repeated_anomaly_count",
             "anomaly_sessions",
-            "reason"
+            "reasons"
         ]
         
         data = [dict(zip(header, alert)) for alert in self.alerts]

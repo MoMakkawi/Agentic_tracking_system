@@ -117,14 +117,18 @@ class TimestampValidator:
             if row.get("invalid_day_checkin"):
                 grouped_alerts[key].add("Weekend or holiday check-in")
 
-        self.alerts = [
-            {
+        self.alerts = []
+        alert_id = 1  
+
+        for (uid, ts, session_id, device_id), reasons in grouped_alerts.items():
+            self.alerts.append({
+                "id": alert_id,          
                 "uid": uid,
                 "timestamp": ts,
                 "session_id": session_id,
                 "device_id": device_id,
-                "reason": "; ".join(sorted(reasons))
-            }
-            for (uid, ts, session_id, device_id), reasons in grouped_alerts.items()
-        ]
+                "reasons": ";".join(sorted(reasons))
+            })
+            alert_id += 1
+
         logger.info(f"Collected {len(self.alerts)} unique alerts (grouped by UID & session)")

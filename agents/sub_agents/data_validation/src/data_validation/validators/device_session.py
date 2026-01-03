@@ -119,6 +119,9 @@ class DeviceValidator:
         """Aggregate alerts per device-session."""
         alerts = []
         grouped = self.df.groupby(["session_id", "device_id"])
+
+        alert_id = 1
+
         for (session_id, device_id), group in grouped:
             reasons = set()
             if group["is_active_continuous"].any():
@@ -133,7 +136,13 @@ class DeviceValidator:
                 reasons.add("Missing received_at datetime")
 
             if reasons:
-                alerts.append([session_id, device_id, "; ".join(sorted(reasons))])
+                alerts.append([
+                    alert_id,
+                    session_id,
+                    device_id,
+                    ";".join(sorted(reasons))
+                ])
+                alert_id += 1
 
         self.alerts = alerts
         logger.info(f"Collected {len(alerts)} device-session level alerts")
@@ -160,9 +169,10 @@ class DeviceValidator:
         # Convert alerts from list format to dict format
         alert_dicts = [
             {
-                "session_id": alert[0],
-                "device_id": alert[1],
-                "reason": alert[2]
+                "id": alert[0],
+                "session_id": alert[1],
+                "device_id": alert[2],
+                "reasons": alert[3]
             }
             for alert in self.alerts
         ]
