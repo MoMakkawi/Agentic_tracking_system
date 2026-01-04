@@ -12,6 +12,7 @@ from .alert_filters import (
     TimestampAlertFilters
 )
 from .group_filters import GroupFilters, PaginatedGroupResponse
+from .agent import AgentRequest, AgentResponse
 
 __all__ = [
     "SessionFilters",
@@ -22,5 +23,7 @@ __all__ = [
     "IdentityAlertFilters",
     "TimestampAlertFilters",
     "GroupFilters",
-    "PaginatedGroupResponse"
+    "PaginatedGroupResponse",
+    "AgentRequest",
+    "AgentResponse"
 ]

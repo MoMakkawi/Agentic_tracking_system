@@ -3,7 +3,7 @@ import os
 import json
 from pathlib import Path
 
-from .routers import attendance_router, alerts_router, groups_router
+from .routers import attendance_router, alerts_router, groups_router, agent_router
 from utils import load_config, get_config
 
 app = FastAPI(title="Agentic Tracking System API", version="0.2.0")
@@ -12,6 +12,7 @@ app = FastAPI(title="Agentic Tracking System API", version="0.2.0")
 app.include_router(attendance_router, prefix="/attendance", tags=["Attendance"])
 app.include_router(alerts_router, prefix="/alerts", tags=["Alerts"])
 app.include_router(groups_router, prefix="/groups", tags=["Groups"])
+app.include_router(agent_router, prefix="/agent", tags=["Agent"])
 
 @app.get("/")
 def root():
