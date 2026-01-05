@@ -1,6 +1,6 @@
 from typing import List, Dict
 from utils import JsonRepository 
-from utils import logger
+from utils import logger, get_config
 
 class GroupSaver:
     """Class responsible for saving group data to a JSON repository."""

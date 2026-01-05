@@ -40,15 +40,16 @@ class LouvainGroupIdentifier:
         logger.info(f"Loading invalid uids from: {id_alerts_path}")
         csv_repo = CsvRepository(id_alerts_path)
         csv_repo.ensure_exists()
-        self.invalid_uids = csv_repo.read_all()
+        alerts = csv_repo.read_all()
+        self.invalid_uids = {row["uid"] for row in alerts if "uid" in row}
         logger.info(f"Loaded {len(self.invalid_uids)} invalid uids successfully!")
 
         # Louvain
         louvain_config = config.LLM_MODULES.GROUP_IDENTIFIER.LOUVAIN
         self.similarity_threshold = louvain_config.SIMILARITY_THRESHOLD
         self.random_state = louvain_config.RANDOM_STATE
-        self.small_group_size = louvain_config.SMALL_GROUP_SIZE
-        self.large_group_size = louvain_config.LARGE_GROUP_SIZE
+        self.small_group_size = louvain_config.FEATURES.SMALL_GROUP_SIZE
+        self.large_group_size = louvain_config.FEATURES.LARGE_GROUP_SIZE
 
         # -----------------------------
         # Data containers

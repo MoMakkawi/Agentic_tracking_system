@@ -59,7 +59,6 @@ def save_tool(groups: dict[str, List[str]]) -> str:
     """
     try:
         logger.info("Starting Save Tool...")
-        logger.info(f"Groups to save: {groups}")
 
         output_path = GroupSaver().save(groups)
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import json
 from pathlib import Path
@@ -7,6 +8,15 @@ from .routers import attendance_router, alerts_router, groups_router, agent_rout
 from utils import load_config, get_config
 
 app = FastAPI(title="Agentic Tracking System API", version="0.2.0")
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include Routers
 app.include_router(attendance_router, prefix="/attendance", tags=["Attendance"])
