@@ -48,8 +48,6 @@ class LouvainGroupIdentifier:
         louvain_config = config.LLM_MODULES.GROUP_IDENTIFIER.LOUVAIN
         self.similarity_threshold = louvain_config.SIMILARITY_THRESHOLD
         self.random_state = louvain_config.RANDOM_STATE
-        self.small_group_size = louvain_config.FEATURES.SMALL_GROUP_SIZE
-        self.large_group_size = louvain_config.FEATURES.LARGE_GROUP_SIZE
 
         # -----------------------------
         # Data containers
@@ -109,33 +107,29 @@ class LouvainGroupIdentifier:
         logger.info(f"Unique students: {len(self.student_list)}")
 
     def _extract_features(self) -> None:
+        """
+        Extract per-student features for Louvain clustering.
+        Each feature represents attendance in a session (1 = attended, 0 = not attended).
+        """
+        # Get all session IDs sorted (for consistent feature ordering)
+        session_ids = sorted(self.session_info.keys())
+        self.feature_names = session_ids
+
         for student in self.student_list:
-            sessions = self.student_sessions[student]
+            attended_sessions = set(self.student_sessions[student])
+            # Create a binary vector: 1 if student attended this session, 0 otherwise
+            self.features[student] = {sid: 1.0 if sid in attended_sessions else 0.0 for sid in session_ids}
 
-            dates = [
-                self.session_info[s]["date"]
-                for s in sessions
-                if self.session_info[s].get("date")
-            ]
-
-            sizes = [self.session_info[s]["size"] for s in sessions]
-
-            self.features[student] = {
-                "total_sessions": len(sessions),
-                "unique_dates": len(set(dates)),
-                "avg_session_size": float(np.mean(sizes)) if sizes else 0.0,
-                "small_group_ratio": sum(s < self.small_group_size for s in sizes) / max(len(sizes), 1),
-                "large_group_ratio": sum(s > self.large_group_size for s in sizes) / max(len(sizes), 1)
-            }
-
-        self.feature_names = list(next(iter(self.features.values())).keys())
-
+        # Build feature matrix (students x sessions)
         raw_matrix = np.array(
-            [[self.features[s][f] for f in self.feature_names] for s in self.student_list]
+            [[self.features[s][f] for f in session_ids] for s in self.student_list]
         )
 
+        # Optional: scale features
         self.feature_matrix = self.scaler.fit_transform(raw_matrix)
+
         logger.info(f"Feature matrix shape: {self.feature_matrix.shape}")
+        logger.info(f"Features extracted for {len(self.student_list)} students over {len(session_ids)} sessions.")
 
     def _build_network(self) -> None:
         self.G.add_nodes_from(self.student_list)
