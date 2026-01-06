@@ -152,7 +152,7 @@ class Preprocessor:
                 if event.get("id") in seen_session_ids:
                     continue
                 
-                if TimestampHelper.is_overlap(log_dt, event.get("start"), event.get("end")):
+                if TimestampHelper.is_overlap(log_dt, event.get("start"), event.get("end"), end_offset_minutes = 15):
                     event_copy = self._prepare_event_copy(event)
                     matched_sessions.append(event_copy)
                     seen_session_ids.add(event.get("id"))
