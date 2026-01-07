@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { groupService } from '../../services/api'; // Ensure this service exists and works
 import Card from '../../components/Common/Card';
+import PageHeader from '../../components/Common/PageHeader';
 import Modal from '../../components/Common/Modal';
 import { Users, User, ArrowRight, Layers, Search, Filter, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
 import './Groups.css';
@@ -70,30 +71,29 @@ const Groups = () => {
 
     return (
         <div className="groups-page animate-fade-in">
-            <div className="page-header">
-                <div>
-                    <h1>
-                        Student Groupings
-                    </h1>
-                    <p>
-                        Identified clusters of students based on attendance patterns.
-                    </p>
-                </div>
-
-                <div className="search-container">
-                    <Filter style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search groups..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setPage(1); // Reset to page 1 on search
-                        }}
-                        className="search-input"
-                    />
-                </div>
-            </div>
+            <PageHeader
+                title="Student Groupings"
+                icon={Users}
+                description="Identified clusters of students based on attendance patterns."
+                gradient="linear-gradient(to right, #10b981, #34d399)"
+                iconColor="#10b981"
+                iconBgColor="rgba(16, 185, 129, 0.1)"
+                actions={
+                    <div className="search-container">
+                        <Filter style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search groups..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1); // Reset to page 1 on search
+                            }}
+                            className="search-input"
+                        />
+                    </div>
+                }
+            />
 
             <Card
                 className="glass overflow-hidden"

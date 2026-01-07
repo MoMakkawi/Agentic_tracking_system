@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { agentService } from '../../services/api';
 import { Bot, Send, User, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import PageHeader from '../../components/Common/PageHeader';
 import './Agent.css';
 
 const Agent = () => {
@@ -48,10 +49,14 @@ const Agent = () => {
 
     return (
         <div className="agent-page">
-            <div className="page-header">
-                <h1>Orchestration Agent</h1>
-                <p>Harness the power of AI to analyze your tracking data through natural language.</p>
-            </div>
+            <PageHeader
+                title="Orchestration Agent"
+                icon={Bot}
+                description="Harness the power of AI to analyze your tracking data through natural language."
+                gradient="linear-gradient(to right, #a78bfa, #c084fc)"
+                iconColor="#a78bfa"
+                iconBgColor="rgba(167, 139, 250, 0.1)"
+            />
 
             <div className="chat-container glass">
                 <div className="chat-messages">

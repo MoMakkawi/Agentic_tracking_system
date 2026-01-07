@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { attendanceService, groupService } from '../../services/api';
 import Card from '../../components/Common/Card';
+import PageHeader from '../../components/Common/PageHeader';
 import Table from '../../components/Common/Table';
 import Badge from '../../components/Common/Badge';
 import Modal from '../../components/Common/Modal';
@@ -198,38 +199,26 @@ const Attendance = () => {
 
     return (
         <div className="attendance-page animate-fade-in">
-            <div className="page-header" style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                    <h1 style={{ fontSize: '3rem', marginBottom: '0.5rem', background: 'linear-gradient(to right, var(--text-primary), var(--accent-primary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: '800' }}>
-                        Attendance Insights
-                    </h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>
-                        Monitor session participation and system health anomalies.
-                    </p>
-                </div>
-
-                <div className="search-container" style={{ position: 'relative' }}>
-                    <Filter style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search sessions..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            padding: '1rem 1rem 1rem 3.5rem',
-                            borderRadius: '16px',
-                            border: '1px solid var(--border-primary)',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-primary)',
-                            width: '350px',
-                            transition: 'all 0.3s ease',
-                            outline: 'none',
-                            fontSize: '1rem'
-                        }}
-                        className="search-input"
-                    />
-                </div>
-            </div>
+            <PageHeader
+                title="Attendance Insights"
+                icon={Calendar}
+                description="Monitor session participation and system health anomalies."
+                gradient="linear-gradient(to right, #6366f1, #818cf8)"
+                iconColor="#6366f1"
+                iconBgColor="rgba(99, 102, 241, 0.1)"
+                actions={
+                    <div className="search-container">
+                        <Filter style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search sessions..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
+                }
+            />
 
             <div className="attendance-content-header" style={{ marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

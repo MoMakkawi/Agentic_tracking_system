@@ -7,6 +7,7 @@ import Attendance from './pages/Attendance';
 import Alerts from './pages/Alerts';
 import Groups from './pages/Groups';
 import Agent from './pages/Agent';
+import About from './pages/About';
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                             <Route path="/alerts" element={<Alerts />} />
                             <Route path="/groups" element={<Groups />} />
                             <Route path="/agent" element={<Agent />} />
+                            <Route path="/about" element={<About />} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </div>

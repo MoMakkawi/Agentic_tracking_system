@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { attendanceService, alertService, groupService } from '../../services/api';
 import Card from '../../components/Common/Card';
+import PageHeader from '../../components/Common/PageHeader';
 import {
     Calendar,
     AlertTriangle,
     Layers,
     TrendingUp,
     ArrowUpRight,
-    Sparkles
+    LayoutDashboard,
+    Sparkles,
+    Activity,
+    Users
 } from 'lucide-react';
 import {
     AreaChart,
@@ -204,7 +208,7 @@ const Overview = () => {
         {
             title: 'Student Groups',
             value: stats.groups,
-            icon: <Layers />,
+            icon: <Users />,
             color: 'success',
             trend: 'Classified',
             desc: 'Pattern-based identifiers',
@@ -225,15 +229,14 @@ const Overview = () => {
 
     return (
         <div className="overview-container">
-            <header className="overview-header v2">
-                <div className="header-main">
-                    <div className="header-info">
-                        <h1>System Dashboard</h1>
-                        <p>Overview of the Tracking System</p>
-                    </div>
-
-                </div>
-            </header>
+            <PageHeader
+                title="System Overview"
+                icon={Activity}
+                description="Real-time insights and monitoring status."
+                gradient="linear-gradient(to right, #8b5cf6, #ec4899)"
+                iconColor="#8b5cf6"
+                iconBgColor="rgba(139, 92, 246, 0.1)"
+            />
 
             <div className="professional-stats-grid">
                 {statCards.map((stat, index) => (

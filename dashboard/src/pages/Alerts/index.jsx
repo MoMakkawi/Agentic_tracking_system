@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { alertService, attendanceService } from '../../services/api';
 import Card from '../../components/Common/Card';
+import PageHeader from '../../components/Common/PageHeader';
 import Table from '../../components/Common/Table';
 import Badge from '../../components/Common/Badge';
 import Modal from '../../components/Common/Modal';
@@ -184,46 +185,29 @@ const Alerts = () => {
 
     return (
         <div className="alerts-page animate-fade-in">
-            <div className="page-header" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                        <div className="header-icon-container">
-                            <AlertTriangle size={32} color="var(--accent-warning)" />
-                        </div>
-                        <h1 style={{ fontSize: '2.5rem', margin: 0, background: 'linear-gradient(to right, var(--text-primary), var(--accent-warning))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            Alerts
-                        </h1>
+            <PageHeader
+                title="Alerts"
+                icon={AlertTriangle}
+                description="Automated anomaly detection and multi-factor tracking alerts."
+                gradient="linear-gradient(to right, #f59e0b, #fbbf24)"
+                iconColor="#f59e0b"
+                iconBgColor="rgba(245, 158, 11, 0.1)"
+                actions={
+                    <div className="search-container">
+                        <Search style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search alerts..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPage(1);
+                            }}
+                            className="search-input"
+                        />
                     </div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginLeft: '3.5rem' }}>
-                        Automated anomaly detection and multi-factor tracking alerts.
-                    </p>
-                </div>
-
-                <div className="search-container" style={{ position: 'relative' }}>
-                    <Search style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search alerts..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setPage(1);
-                        }}
-                        style={{
-                            padding: '1rem 1rem 1rem 3.5rem',
-                            borderRadius: '16px',
-                            border: '1px solid var(--border-primary)',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-primary)',
-                            width: '350px',
-                            transition: 'all 0.3s ease',
-                            outline: 'none',
-                            fontSize: '1rem'
-                        }}
-                        className="search-input"
-                    />
-                </div>
-            </div>
+                }
+            />
 
             <div className="alerts-tabs glass">
                 <button

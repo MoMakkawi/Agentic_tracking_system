@@ -5,29 +5,7 @@
     gap: 1.5rem;
 }
 
-/* Page Header - Standardized */
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 2rem;
-}
 
-.page-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(to right, var(--text-primary), var(--accent-primary));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800;
-}
-
-.page-header p {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    max-width: 600px;
-}
 
 /* Search Container - Standardized */
 .search-container {
