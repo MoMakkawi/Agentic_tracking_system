@@ -37,6 +37,10 @@ class SessionFilters(BaseModel):
     
     # Text search
     session_context_contains: Optional[str] = Field(None, description="Filter by session context containing this text")
+    search: Optional[str] = Field(None, description="Generic search term impacting multiple fields")
+    
+    # Boolean toggles
+    has_alerts: Optional[bool] = Field(None, description="Filter sessions that have at least one alert")
     
     def has_filters(self) -> bool:
         """
@@ -56,6 +60,8 @@ class SessionFilters(BaseModel):
             self.unique_count_min is not None,
             self.unique_count_max is not None,
             self.session_context_contains is not None,
+            self.search is not None,
+            self.has_alerts is not None,
         ])
 
 
@@ -67,7 +73,7 @@ class PaginationParams(BaseModel):
     """
     
     page: int = Field(1, ge=1, description="Page number (starts from 1)")
-    page_size: int = Field(10, ge=1, le=100, description="Number of items per page")
+    page_size: int = Field(10, ge=1, le=1000, description="Number of items per page")
     
     def get_slice_indices(self) -> tuple[int, int]:
         """

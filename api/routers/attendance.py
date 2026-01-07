@@ -10,7 +10,7 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from utils import JsonRepository, SessionDTO, get_config, load_config, logger
+from utils import JsonRepository, CsvRepository, SessionDTO, get_config, load_config, logger
 from api.services import SessionService
 from api.models import SessionFilters, PaginationParams, SortParams
 from api.constants import (
@@ -34,6 +34,8 @@ router = APIRouter()
 class PaginatedResponse(BaseModel):
     """Response model for paginated data."""
     
+    model_config = {"arbitrary_types_allowed": True}
+    
     items: List[SessionDTO]
     total: int = Field(description="Total number of items")
     page: int = Field(description="Current page number")
@@ -46,11 +48,20 @@ def get_session_service() -> SessionService:
     Dependency injection for SessionService.
     
     Returns:
-        SessionService instance configured with the appropriate repository
+        SessionService instance configured with the appropriate repository and alert repos
     """
     load_config()
-    repo = JsonRepository(get_config().PATHS.PREPROCESSED)
-    return SessionService(repo)
+    conf = get_config()
+    repo = JsonRepository(conf.PATHS.PREPROCESSED)
+    
+    # Initialize alert repositories for aggregation
+    alert_repos = {
+        'timestamp': CsvRepository(conf.PATHS.ALERTS.VALIDATION.TIMESTAMP),
+        'identity': CsvRepository(conf.PATHS.ALERTS.VALIDATION.IDENTITY),
+        'device': CsvRepository(conf.PATHS.ALERTS.VALIDATION.DEVICE)
+    }
+    
+    return SessionService(repo, alert_repos=alert_repos)
 
 
 def parse_date_filter(value: Optional[str], field_name: str, end_of_day: bool = False) -> Optional[datetime]:
@@ -96,7 +107,7 @@ def get_sessions(
     service: SessionService = Depends(get_session_service)
 ):
     """
-    Get sessions with pagination and ordering support.
+    Get sessions with pagination, ordering support, and optional group filtering.
     
     This endpoint retrieves all attendance sessions with optional sorting
     and pagination applied.
@@ -179,6 +190,10 @@ def filter_sessions(
     
     # Text search
     session_context_contains: Optional[str] = Query(None, description="Filter by session context containing this text (case-insensitive)"),
+    search: Optional[str] = Query(None, description="Generic search term impacting multiple fields"),
+    
+    # Boolean toggles
+    has_alerts: Optional[bool] = Query(None, description="Filter sessions that have at least one alert"),
     
     # Pagination and ordering
     page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)"),
@@ -208,6 +223,7 @@ def filter_sessions(
     
     **Text Search:**
     - **session_context_contains**: Search for text in session context (case-insensitive)
+    - **search**: Generic search term impacting multiple fields
     
     **Pagination & Ordering:**
     - **page**: Page number (starts from 1)
@@ -234,7 +250,9 @@ def filter_sessions(
             recorded_count_max=recorded_count_max,
             unique_count_min=unique_count_min,
             unique_count_max=unique_count_max,
-            session_context_contains=session_context_contains
+            session_context_contains=session_context_contains,
+            search=search,
+            has_alerts=has_alerts
         )
         
         # Create parameter objects
@@ -285,3 +303,25 @@ def filter_sessions(
             status_code=500,
             detail=ERROR_FILTERING_SESSIONS.format(error=str(e))
         )
+
+
+@router.get("/stats")
+def get_session_stats(service: SessionService = Depends(get_session_service)):
+    """
+    Get summary statistics for attendance sessions.
+    
+    Returns:
+        JSON object with total counts and alert counts.
+    """
+    try:
+        sessions = service.get_all_sessions()
+        total = len(sessions)
+        with_alerts = len([s for s in sessions if s.alert_count > 0])
+        
+        return {
+            "total": total,
+            "with_alerts": with_alerts
+        }
+    except Exception as e:
+        logger.error(f"Error getting session stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

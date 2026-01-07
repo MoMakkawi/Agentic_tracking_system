@@ -5,10 +5,10 @@ This module contains the SessionService class which handles all business
 logic related to session data retrieval, filtering, sorting, and pagination.
 """
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from datetime import datetime
 
-from utils import JsonRepository, SessionDTO, logger, map_to_session_dtos
+from utils import JsonRepository, CsvRepository, SessionDTO, logger, map_to_session_dto
 from api.models import SessionFilters, PaginationParams, SortParams
 from api.constants import SORTABLE_FIELDS
 from api.exceptions import (
@@ -26,18 +26,100 @@ class SessionService:
     including data retrieval, filtering, sorting, and pagination.
     """
     
-    def __init__(self, repository: JsonRepository):
+    def __init__(
+        self, 
+        repository: JsonRepository, 
+        alert_repos: Optional[Dict[str, CsvRepository]] = None
+    ):
         """
         Initialize the SessionService.
         
         Args:
             repository: JsonRepository instance for data access
+            alert_repos: Optional dictionary of CsvRepository instances for alerts
         """
         self.repository = repository
+        self.alert_repos = alert_repos
     
+    def _get_session_alerts(self) -> Dict[int, List[Dict[str, Any]]]:
+        """
+        Aggregate full alert details from all alert repositories.
+        
+        Returns:
+            Dictionary mapping session_id to list of alert detail dictionaries
+        """
+        session_alerts = {}
+        if not self.alert_repos:
+            return session_alerts
+
+        try:
+            # Device alerts
+            if 'device' in self.alert_repos:
+                device_data = self.alert_repos['device'].read_all()
+                for item in device_data:
+                    sid = item.get('session_id')
+                    if sid:
+                        sid_int = int(sid)
+                        if sid_int not in session_alerts:
+                            session_alerts[sid_int] = []
+                        alert_info = item.copy()
+                        alert_info['type'] = 'Device'
+                        # Normalize reasons
+                        reasons = alert_info.get('reasons', '')
+                        if isinstance(reasons, str):
+                            alert_info['reasons'] = [r.strip() for r in reasons.split(';') if r.strip()]
+                        
+                        session_alerts[sid_int].append(alert_info)
+            
+            # Timestamp alerts
+            if 'timestamp' in self.alert_repos:
+                ts_data = self.alert_repos['timestamp'].read_all()
+                for item in ts_data:
+                    sid = item.get('session_id')
+                    if sid:
+                        sid_int = int(sid)
+                        if sid_int not in session_alerts:
+                            session_alerts[sid_int] = []
+                        alert_info = item.copy()
+                        alert_info['type'] = 'Timestamp'
+                        # Normalize reasons
+                        reasons = alert_info.get('reasons', '')
+                        if isinstance(reasons, str):
+                            alert_info['reasons'] = [r.strip() for r in reasons.split(';') if r.strip()]
+                            
+                        session_alerts[sid_int].append(alert_info)
+            
+            # Identity alerts (aggregate from anomaly_sessions list)
+            if 'identity' in self.alert_repos:
+                id_data = self.alert_repos['identity'].read_all()
+                for item in id_data:
+                    # identity alerts store anomaly_sessions as a semicolon-separated string in CSV
+                    sessions_str = item.get('anomaly_sessions', '')
+                    if sessions_str:
+                        sids = [s.strip() for s in sessions_str.split(';') if s.strip()]
+                        for sid in sids:
+                            try:
+                                sid_int = int(sid)
+                                if sid_int not in session_alerts:
+                                    session_alerts[sid_int] = []
+                                alert_info = item.copy()
+                                alert_info['type'] = 'Identity'
+                                # Normalize reasons
+                                reasons = alert_info.get('reasons', '')
+                                if isinstance(reasons, str):
+                                    alert_info['reasons'] = [r.strip() for r in reasons.split(';') if r.strip()]
+                                    
+                                session_alerts[sid_int].append(alert_info)
+                            except ValueError:
+                                continue
+        except Exception as e:
+            logger.error(f"Error aggregating alert details: {e}")
+            
+        return session_alerts
+
     def get_all_sessions(self) -> List[SessionDTO]:
         """
-        Retrieve all sessions from the repository.
+        Retrieve all sessions from the repository and enrich with alert data.
         
         Returns:
             List of SessionDTO instances
@@ -46,10 +128,17 @@ class SessionService:
             SessionNotFoundError: If the data file is not found
         """
         try:
-            logger.info("Loading all sessions from repository")
+            logger.info("Loading all sessions and detailed alerts")
             raw_data = self.repository.read_all()
-            sessions = map_to_session_dtos(raw_data)
-            logger.info(f"Loaded {len(sessions)} sessions successfully")
+            session_alerts = self._get_session_alerts()
+            
+            sessions = []
+            for item in raw_data:
+                sid = item.get('session_id')
+                alerts = session_alerts.get(sid, [])
+                sessions.append(map_to_session_dto(item, alert_count=len(alerts), alerts=alerts))
+                
+            logger.info(f"Loaded {len(sessions)} sessions with detailed alerts successfully")
             return sessions
         except FileNotFoundError as e:
             logger.warning(f"Session data file not found: {e}")
@@ -119,6 +208,37 @@ class SessionService:
                 if session.session_context is None:
                     continue
                 if filters.session_context_contains.lower() not in session.session_context.lower():
+                    continue
+            
+            # Generic search filter
+            if filters.search is not None:
+                search_term = filters.search.lower()
+                matches = False
+                
+                # Check session ID
+                if str(session.session_id).lower().find(search_term) != -1:
+                    matches = True
+                
+                # Check device ID
+                elif session.device_id and search_term in session.device_id.lower():
+                    matches = True
+                
+                # Check session context
+                elif session.session_context and search_term in session.session_context.lower():
+                    matches = True
+                
+                # Check logs date
+                elif session.logs_date and search_term in session.logs_date:
+                    matches = True
+                    
+                if not matches:
+                    continue
+            
+            # Boolean filters
+            if filters.has_alerts is not None:
+                if filters.has_alerts and session.alert_count == 0:
+                    continue
+                if not filters.has_alerts and session.alert_count > 0:
                     continue
             
             # If all filters pass, add to results
@@ -221,7 +341,7 @@ class SessionService:
         paginated, total_pages = self.paginate_sessions(sorted_sessions, pagination)
         
         return paginated, len(sessions), total_pages
-    
+
     def get_filtered_sessions_with_pagination(
         self,
         filters: SessionFilters,

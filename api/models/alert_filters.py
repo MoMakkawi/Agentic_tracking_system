@@ -32,12 +32,15 @@ class DeviceAlertFilters(BaseModel):
     device_id: Optional[str] = Field(None, description="Filter by device ID (partial match)")
     reason_contains: Optional[str] = Field(None, description="Filter by reason containing this text")
     
+    search: Optional[str] = Field(None, description="Generic search (ID, device, reason)")
+    
     def has_filters(self) -> bool:
         """Check if any filters are set."""
         return any([
             self.session_id is not None,
             self.device_id is not None,
             self.reason_contains is not None,
+            self.search is not None,
         ])
 
 
@@ -54,6 +57,8 @@ class IdentityAlertFilters(BaseModel):
     min_anomaly_count: Optional[int] = Field(None, ge=0, description="Minimum repeated anomaly count")
     max_anomaly_count: Optional[int] = Field(None, ge=0, description="Maximum repeated anomaly count")
     
+    search: Optional[str] = Field(None, description="Generic search (ID, UID, device, reason)")
+    
     def has_filters(self) -> bool:
         """Check if any filters are set."""
         return any([
@@ -62,6 +67,7 @@ class IdentityAlertFilters(BaseModel):
             self.reason_contains is not None,
             self.min_anomaly_count is not None,
             self.max_anomaly_count is not None,
+            self.search is not None,
         ])
 
 
@@ -77,6 +83,8 @@ class TimestampAlertFilters(BaseModel):
     device_id: Optional[str] = Field(None, description="Filter by device ID (partial match)")
     reason_contains: Optional[str] = Field(None, description="Filter by reason containing this text")
     
+    search: Optional[str] = Field(None, description="Generic search (ID, UID, session, device, reason)")
+    
     def has_filters(self) -> bool:
         """Check if any filters are set."""
         return any([
@@ -84,4 +92,5 @@ class TimestampAlertFilters(BaseModel):
             self.session_id is not None,
             self.device_id is not None,
             self.reason_contains is not None,
+            self.search is not None,
         ])

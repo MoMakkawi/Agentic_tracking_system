@@ -12,13 +12,14 @@ SORTABLE_FIELDS = [
     "received_at",
     "logs_date",
     "recorded_count",
-    "unique_count"
+    "unique_count",
+    "alert_count"
 ]
 
 # Pagination defaults
 DEFAULT_PAGE = 1
 DEFAULT_PAGE_SIZE = 10
-MAX_PAGE_SIZE = 100
+MAX_PAGE_SIZE = 1000
 
 # Sort directions
 SORT_ASC = "asc"

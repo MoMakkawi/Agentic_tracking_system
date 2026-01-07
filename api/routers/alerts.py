@@ -49,6 +49,7 @@ def get_device_alerts(
     session_id: Optional[int] = Query(None, description="Filter by exact session ID"),
     device_id: Optional[str] = Query(None, description="Filter by device ID (partial match)"),
     reason_contains: Optional[str] = Query(None, description="Filter by reason containing this text"),
+    search: Optional[str] = Query(None, description="Generic search across fields"),
     page: int = Query(DEFAULT_PAGE, ge=1, description="Page number"),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Items per page"),
     order_by: Optional[str] = Query(None, description=f"Sort field: {', '.join(DEVICE_ALERT_SORTABLE_FIELDS)}"),
@@ -59,7 +60,8 @@ def get_device_alerts(
         filters = DeviceAlertFilters(
             session_id=session_id,
             device_id=device_id,
-            reason_contains=reason_contains
+            reason_contains=reason_contains,
+            search=search
         )
         pagination = PaginationParams(page=page, page_size=page_size)
         sort_params = SortParams(order_by=order_by, order_direction=order_direction)
@@ -86,6 +88,7 @@ def get_identity_alerts(
     uid: Optional[str] = Query(None, description="Filter by UID (partial match)"),
     device_id: Optional[str] = Query(None, description="Filter by device ID (partial match)"),
     reason_contains: Optional[str] = Query(None, description="Filter by reason containing this text"),
+    search: Optional[str] = Query(None, description="Generic search across fields"),
     min_anomaly_count: Optional[int] = Query(None, ge=0),
     max_anomaly_count: Optional[int] = Query(None, ge=0),
     page: int = Query(DEFAULT_PAGE, ge=1),
@@ -100,7 +103,8 @@ def get_identity_alerts(
             device_id=device_id,
             reason_contains=reason_contains,
             min_anomaly_count=min_anomaly_count,
-            max_anomaly_count=max_anomaly_count
+            max_anomaly_count=max_anomaly_count,
+            search=search
         )
         pagination = PaginationParams(page=page, page_size=page_size)
         sort_params = SortParams(order_by=order_by, order_direction=order_direction)
@@ -128,6 +132,7 @@ def get_timestamp_alerts(
     session_id: Optional[int] = Query(None),
     device_id: Optional[str] = Query(None),
     reason_contains: Optional[str] = Query(None),
+    search: Optional[str] = Query(None, description="Generic search across fields"),
     page: int = Query(DEFAULT_PAGE, ge=1),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     order_by: Optional[str] = Query(None, description=f"Sort field: {', '.join(TIMESTAMP_ALERT_SORTABLE_FIELDS)}"),
@@ -139,7 +144,8 @@ def get_timestamp_alerts(
             uid=uid,
             session_id=session_id,
             device_id=device_id,
-            reason_contains=reason_contains
+            reason_contains=reason_contains,
+            search=search
         )
         pagination = PaginationParams(page=page, page_size=page_size)
         sort_params = SortParams(order_by=order_by, order_direction=order_direction)

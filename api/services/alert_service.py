@@ -71,6 +71,7 @@ class AlertService:
             
             # Filtering
             filtered = []
+            
             for alert in alerts:
                 if filters.session_id is not None and alert.session_id != filters.session_id:
                     continue
@@ -80,6 +81,20 @@ class AlertService:
                     found = any(filters.reason_contains.lower() in r.lower() for r in alert.reasons)
                     if not found:
                         continue
+                
+                # Generic search
+                if filters.search is not None:
+                    s_term = filters.search.lower()
+                    # Check ID, Session ID, Device ID, or Reasons
+                    found_search = (
+                        s_term in str(alert.id) or
+                        s_term in str(alert.session_id) or
+                        s_term in alert.device_id.lower() or
+                        any(s_term in r.lower() for r in alert.reasons)
+                    )
+                    if not found_search:
+                        continue
+                
                 filtered.append(alert)
                 
             sorted_alerts = self._sort(filtered, sort_params, DEVICE_ALERT_SORTABLE_FIELDS)
@@ -101,6 +116,7 @@ class AlertService:
             
             # Filtering
             filtered = []
+            
             for alert in alerts:
                 if filters.uid is not None and filters.uid.lower() not in alert.uid.lower():
                     continue
@@ -110,10 +126,25 @@ class AlertService:
                     found = any(filters.reason_contains.lower() in r.lower() for r in alert.reasons)
                     if not found:
                         continue
+                
+                # Generic search
+                if filters.search is not None:
+                    s_term = filters.search.lower()
+                    # Check ID, UID, Device ID, Reasons, or Anomaly Sessions
+                    found_search = (
+                        s_term in str(alert.id) or
+                        s_term in alert.uid.lower() or
+                        s_term in alert.device_id.lower() or
+                        any(s_term in r.lower() for r in alert.reasons) or
+                        (alert.anomaly_sessions and any(s_term in str(s) for s in alert.anomaly_sessions))
+                    )
+                    if not found_search:
+                        continue
                 if filters.min_anomaly_count is not None and alert.repeated_anomaly_count < filters.min_anomaly_count:
                     continue
                 if filters.max_anomaly_count is not None and alert.repeated_anomaly_count > filters.max_anomaly_count:
                     continue
+                
                 filtered.append(alert)
                 
             sorted_alerts = self._sort(filtered, sort_params, IDENTITY_ALERT_SORTABLE_FIELDS)
@@ -135,6 +166,7 @@ class AlertService:
             
             # Filtering
             filtered = []
+            
             for alert in alerts:
                 if filters.uid is not None and filters.uid.lower() not in alert.uid.lower():
                     continue
@@ -146,6 +178,21 @@ class AlertService:
                     found = any(filters.reason_contains.lower() in r.lower() for r in alert.reasons)
                     if not found:
                         continue
+                
+                # Generic search
+                if filters.search is not None:
+                    s_term = filters.search.lower()
+                    # Check ID, UID, Session ID, Device ID, or Reasons
+                    found_search = (
+                        s_term in str(alert.id) or
+                        s_term in alert.uid.lower() or
+                        s_term in str(alert.session_id) or
+                        s_term in alert.device_id.lower() or
+                        any(s_term in r.lower() for r in alert.reasons)
+                    )
+                    if not found_search:
+                        continue
+                
                 filtered.append(alert)
                 
             sorted_alerts = self._sort(filtered, sort_params, TIMESTAMP_ALERT_SORTABLE_FIELDS)
