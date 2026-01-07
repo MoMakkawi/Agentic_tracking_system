@@ -16,3 +16,9 @@ class SessionDTO:
     unique_count: int
     redundant_uids: Dict[str, Any]
     logs: List[LogEntryDTO]
+    alert_count: int = 0
+    alerts: List[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        if self.alerts is None:
+            self.alerts = []

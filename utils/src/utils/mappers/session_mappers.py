@@ -72,7 +72,7 @@ def map_to_log_entry_dto(data: Dict[str, Any]) -> LogEntryDTO:
     )
 
 
-def map_to_session_dto(data: Dict[str, Any]) -> SessionDTO:
+def map_to_session_dto(data: Dict[str, Any], alert_count: int = 0, alerts: List[Dict[str, Any]] = None) -> SessionDTO:
     """
     Map raw dictionary data to SessionDTO.
     
@@ -81,6 +81,8 @@ def map_to_session_dto(data: Dict[str, Any]) -> SessionDTO:
     
     Args:
         data: Raw dictionary containing session data
+        alert_count: Number of alerts related to this session
+        alerts: Detailed alert information
         
     Returns:
         SessionDTO instance
@@ -93,8 +95,11 @@ def map_to_session_dto(data: Dict[str, Any]) -> SessionDTO:
     logs_raw = data.get("logs", [])
     logs_dtos = [map_to_log_entry_dto(log) for log in logs_raw]
     
-    # Parse received_at datetime
-    received_at = parse_datetime(data.get("received_at"))
+    # Parse received_at datetime, fallback to 'logs_date' if missing
+    received_at_val = data.get("received_at")
+    if not received_at_val:
+        received_at_val = data.get("logs_date")
+    received_at = parse_datetime(received_at_val)
     
     # Create and return DTO
     return SessionDTO(
@@ -107,7 +112,9 @@ def map_to_session_dto(data: Dict[str, Any]) -> SessionDTO:
         recorded_count=data.get("recorded_count"),
         unique_count=data.get("unique_count"),
         redundant_uids=data.get("redundant_uids", {}),
-        logs=logs_dtos
+        logs=logs_dtos,
+        alert_count=alert_count,
+        alerts=alerts or []
     )
 
 
