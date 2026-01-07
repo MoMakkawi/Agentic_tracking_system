@@ -1,0 +1,82 @@
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table th {
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border-primary);
+    transition: var(--transition-base);
+}
+
+.custom-table th:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+.custom-table th.active-sort {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.th-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sort-icon {
+    transition: var(--transition-base);
+}
+
+.sort-icon.placeholder {
+    opacity: 0;
+}
+
+th:hover .sort-icon.placeholder {
+    opacity: 0.5;
+}
+
+.sort-icon.active {
+    opacity: 1;
+    color: var(--accent-primary);
+}
+
+.custom-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-primary);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.custom-table tr.clickable {
+    cursor: pointer;
+    transition: var(--transition-base);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.custom-table tr.clickable:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.table-loading,
+.table-empty {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}
