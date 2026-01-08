@@ -12,6 +12,7 @@ from api.models.chat import (
     ChatConversation,
     ChatCreateRequest,
     ChatMessageRequest,
+    ChatUpdateTitleRequest,
     ChatListResponse,
     ChatStatsResponse
 )
@@ -132,3 +133,24 @@ async def delete_conversation(
         raise HTTPException(status_code=404, detail="Conversation not found")
     
     return {"status": "deleted", "conversation_id": conversation_id}
+
+
+@router.patch("/{conversation_id}/title", response_model=ChatConversation)
+async def update_conversation_title(
+    conversation_id: str,
+    request: ChatUpdateTitleRequest,
+    service: ChatService = Depends(get_chat_service)
+):
+    """
+    Update a conversation title.
+    
+    Returns the updated conversation with the new title.
+    """
+    logger.info(f"Updating title for conversation {conversation_id} to: {request.title}")
+    
+    conversation = service.update_title(conversation_id, request.title)
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return conversation

@@ -133,6 +133,38 @@
     gap: 0.25rem;
 }
 
+.title-edit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.title-edit-wrapper input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    width: 100%;
+    outline: none;
+}
+
+.save-title-btn {
+    background: var(--accent-success);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 .conversation-title {
     font-size: 0.875rem;
     font-weight: 500;
@@ -147,7 +179,13 @@
     color: var(--text-muted);
 }
 
-.conversation-item .delete-btn {
+.conversation-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+}
+
+.conversation-item .action-btn {
     opacity: 0;
     width: 24px;
     height: 24px;
@@ -162,11 +200,16 @@
     transition: var(--transition-base);
 }
 
-.conversation-item:hover .delete-btn {
+.conversation-item:hover .action-btn {
     opacity: 1;
 }
 
-.conversation-item .delete-btn:hover {
+.action-btn.edit-btn:hover {
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent-primary);
+}
+
+.action-btn.delete-btn:hover {
     background: rgba(248, 81, 73, 0.1);
     color: var(--accent-danger);
 }

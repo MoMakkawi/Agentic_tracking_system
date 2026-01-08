@@ -38,6 +38,11 @@ class ChatMessageRequest(BaseModel):
     status: Optional[str] = Field(None, description="Optional status")
 
 
+class ChatUpdateTitleRequest(BaseModel):
+    """Request to update a conversation title."""
+    title: str = Field(..., description="The new conversation title")
+
+
 class ChatListResponse(BaseModel):
     """Response for listing conversations."""
     conversations: List[ChatConversation] = Field(..., description="List of conversations")

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { agentService, chatService } from '../../services/api';
-import { Bot, Send, User, Sparkles, Loader2, MessageSquare, Plus, Trash2, X } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Loader2, MessageSquare, Plus, Trash2, X, Edit2, Check } from 'lucide-react';
 import PageHeader from '../../components/Common/PageHeader';
 import './Agent.css';
 
@@ -12,6 +12,8 @@ const Agent = () => {
     const [loading, setLoading] = useState(false);
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [editingTitleId, setEditingTitleId] = useState(null);
+    const [tempTitle, setTempTitle] = useState('');
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -98,6 +100,30 @@ const Agent = () => {
             }
         } catch (error) {
             console.error('Error deleting conversation:', error);
+        }
+    };
+
+    const startEditingTitle = (conv, e) => {
+        e.stopPropagation();
+        setEditingTitleId(conv.id);
+        setTempTitle(conv.title);
+    };
+
+    const handleUpdateTitle = async (conversationId, e) => {
+        if (e) e.stopPropagation();
+        if (!tempTitle.trim()) {
+            setEditingTitleId(null);
+            return;
+        }
+
+        try {
+            await chatService.updateConversationTitle(conversationId, tempTitle.trim());
+            setConversations(prev => prev.map(c =>
+                c.id === conversationId ? { ...c, title: tempTitle.trim() } : c
+            ));
+            setEditingTitleId(null);
+        } catch (error) {
+            console.error('Error updating title:', error);
         }
     };
 
@@ -212,16 +238,45 @@ const Agent = () => {
                                     onClick={() => loadConversation(conv.id)}
                                 >
                                     <div className="conversation-info">
-                                        <span className="conversation-title">{conv.title}</span>
-                                        <span className="conversation-date">{formatDate(conv.updated_at)}</span>
+                                        {editingTitleId === conv.id ? (
+                                            <div className="title-edit-wrapper" onClick={e => e.stopPropagation()}>
+                                                <input
+                                                    type="text"
+                                                    value={tempTitle}
+                                                    onChange={e => setTempTitle(e.target.value)}
+                                                    onKeyPress={e => e.key === 'Enter' && handleUpdateTitle(conv.id)}
+                                                    onBlur={() => handleUpdateTitle(conv.id)}
+                                                    autoFocus
+                                                />
+                                                <button onClick={() => handleUpdateTitle(conv.id)} className="save-title-btn">
+                                                    <Check size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <span className="conversation-title">{conv.title}</span>
+                                                <span className="conversation-date">{formatDate(conv.updated_at)}</span>
+                                            </>
+                                        )}
                                     </div>
-                                    <button
-                                        className="delete-btn"
-                                        onClick={(e) => deleteConversation(conv.id, e)}
-                                        title="Delete conversation"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
+                                    <div className="conversation-actions">
+                                        {editingTitleId !== conv.id && (
+                                            <button
+                                                className="action-btn edit-btn"
+                                                onClick={(e) => startEditingTitle(conv, e)}
+                                                title="Edit title"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                        )}
+                                        <button
+                                            className="action-btn delete-btn"
+                                            onClick={(e) => deleteConversation(conv.id, e)}
+                                            title="Delete conversation"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         )}

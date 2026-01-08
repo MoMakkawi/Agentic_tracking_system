@@ -39,6 +39,7 @@ export const chatService = {
     listConversations: (page = 1, limit = 20) => client.get('/chat/', { params: { page, limit } }),
     getConversation: (id) => client.get(`/chat/${id}`),
     addMessage: (id, role, content, status = null) => client.post(`/chat/${id}/message`, { role, content, status }),
+    updateConversationTitle: (id, title) => client.patch(`/chat/${id}/title`, { title }),
     deleteConversation: (id) => client.delete(`/chat/${id}`),
     getStats: () => client.get('/chat/stats'),
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { attendanceService, alertService, groupService } from '../../services/api';
+import { attendanceService, alertService, groupService, chatService } from '../../services/api';
 import Card from '../../components/Common/Card';
 import PageHeader from '../../components/Common/PageHeader';
 import {
@@ -35,6 +35,7 @@ const Overview = () => {
         sessions: 0,
         alerts: 0,
         groups: 0,
+        chats: 0,
         loading: true
     });
     const [dateRange, setDateRange] = useState(() => {
@@ -125,12 +126,13 @@ const Overview = () => {
         setStats(prev => ({ ...prev, loading: true }));
         try {
             // Fetch all required data
-            const [sessionsRes, deviceAlertsRes, identityAlertsRes, timestampAlertsRes, groupsRes] = await Promise.all([
-                attendanceService.getStats(), // Use dedicated stats endpoint if available or just get totals
+            const [sessionsRes, deviceAlertsRes, identityAlertsRes, timestampAlertsRes, groupsRes, chatStatsRes] = await Promise.all([
+                attendanceService.getStats(),
                 alertService.getDeviceAlerts({ page_size: 5 }),
                 alertService.getIdentityAlerts({ page_size: 5 }),
                 alertService.getTimestampAlerts({ page_size: 5 }),
-                groupService.getGroups({ page_size: 1 }) // Just for total
+                groupService.getGroups({ page_size: 1 }),
+                chatService.getStats().catch(() => ({ data: { total_conversations: 0 } }))
             ]);
 
             // Backend totals for count accuracy
@@ -138,6 +140,7 @@ const Overview = () => {
                 sessions: sessionsRes.data.total,
                 alerts: deviceAlertsRes.data.total + identityAlertsRes.data.total + timestampAlertsRes.data.total,
                 groups: groupsRes.data.total,
+                chats: chatStatsRes.data.total_conversations,
                 loading: false
             });
 
@@ -245,11 +248,11 @@ const Overview = () => {
         },
         {
             title: 'AI Agent',
-            value: 'Ready',
+            value: stats.chats,
             icon: <Sparkles />,
             color: 'primary',
             trend: 'Online',
-            desc: 'Ask Agent for insights',
+            desc: 'Total chat conversations',
             link: '/agent',
             linkText: 'Ask AI'
         },

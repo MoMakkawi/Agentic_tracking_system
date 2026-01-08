@@ -238,6 +238,27 @@ class ChatService:
         except Exception as e:
             logger.error(f"Error deleting conversation {conversation_id}: {e}")
             return False
+
+    def update_title(self, conversation_id: str, title: str) -> Optional[ChatConversation]:
+        """
+        Update a conversation title.
+        
+        Args:
+            conversation_id: The conversation ID
+            title: The new title
+            
+        Returns:
+            The updated conversation or None if not found
+        """
+        conversation = self.get_conversation(conversation_id)
+        if not conversation:
+            return None
+        
+        conversation.title = title
+        conversation.updated_at = datetime.now()
+        self._save_conversation(conversation)
+        logger.info(f"Updated conversation title: {conversation_id} -> {title}")
+        return conversation
     
     def get_stats(self) -> ChatStatsResponse:
         """
