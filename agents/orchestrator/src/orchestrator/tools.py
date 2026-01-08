@@ -9,11 +9,11 @@ from utils import logger
 @tool
 def pipeline_agent_tool(task: str = None) -> str:
     """
-    Orchestrates the DataPipelineAgent.
+    Orchestrates the Data Pipeline Agent by fetching and preprocessing data.
 
     Workflow:
-        1. Runs the DataPipelineAgent end-to-end.
-        2. Fetches, preprocesses.
+        1. Runs the Data Pipeline Agent end-to-end.
+        2. Only fetches, preprocesses data.
         3. Returns confirmation message if every thing done correctly (Dont mention to the paths that we save the data in).
 
     Args:
@@ -34,10 +34,10 @@ def pipeline_agent_tool(task: str = None) -> str:
 @tool
 def validation_agent_tool(task: str = None) -> str:
     """
-    Orchestrates the DataValidationAgent.
+    Orchestrates the Data Validation Agent to validate the data.
 
     Workflow:
-        1. Runs the DataValidationAgent on processed data.
+        1. Runs the Data Validation Agent end-to-end.
         2. Performs timestamp, device, and identity validation.
         3. Returns confirmation message if every thing done correctly (Dont mention to the paths that we save the data in).
 
@@ -59,12 +59,11 @@ def validation_agent_tool(task: str = None) -> str:
 @tool
 def group_identifier_agent_tool(task: str = None) -> str:
     """
-    Orchestrates the GroupIdentifierAgent.
+    Orchestrates the Group Identifier Agent to identify student groups and usually dont used for the queries about groups.
 
     Workflow:
-        1. Runs the GroupIdentifierAgent to identify student groups.
-        2. Can answer questions like "Find the IoT MSc group".
-        3. Returns confirmation message if every thing done correctly (Dont mention to the paths that we save the data in).
+        1. Runs the Group Identifier Agent end-to-end.
+        2. Returns confirmation message if every thing done correctly (Dont mention to the paths that we save the data in).
 
     Args:
         task (str, optional): Task description (default task will be used if None).
@@ -85,11 +84,11 @@ def group_identifier_agent_tool(task: str = None) -> str:
 @tool
 def insighter_agent_tool(task: str = None) -> str:
     """
-    Orchestrates the KnowledgeInsightAgent.
+    Orchestrates the Knowledge Insight Agent to analyze attendance behavior / groups / alerts / etc.
 
     Workflow:
-        1. Runs the KnowledgeInsightAgent to analyze attendance behavior.
-        2. Generates python code to analyze data.
+        1. Runs the Knowledge Insight Agent end-to-end.
+        2. Generates python code to answer any queries.
         3. Returns the analysis result or summary.
 
     Args:

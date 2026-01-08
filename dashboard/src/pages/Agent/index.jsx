@@ -6,7 +6,7 @@ import './Agent.css';
 
 const Agent = () => {
     const [messages, setMessages] = useState([
-        { role: 'assistant', text: "Hello! I'm your Orchestration Agent. How can I help you analyze the tracking data today?" }
+        { role: 'assistant', text: "Hello! I'm your assistant AI Agent. How can I help you analyze the tracking data today?" }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -50,7 +50,7 @@ const Agent = () => {
     return (
         <div className="agent-page">
             <PageHeader
-                title="Orchestration Agent"
+                title="AI Agent"
                 icon={Bot}
                 description="Harness the power of AI to analyze your tracking data through natural language."
                 gradient="linear-gradient(to right, #a78bfa, #c084fc)"
@@ -90,7 +90,7 @@ const Agent = () => {
                         <Sparkles size={18} className="input-decorator" />
                         <input
                             type="text"
-                            placeholder="Ask me anything (e.g., 'Identify groups in Coaching session')"
+                            placeholder="Ask me anything (e.g., 'Who is the most frequently late?')"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
@@ -103,7 +103,7 @@ const Agent = () => {
                             <Send size={18} />
                         </button>
                     </div>
-                    <p className="input-hint">Enter your task and the agent will coordinate sub-agents to provide results.</p>
+                    <p className="input-hint">LLMs can make your life easier by automating tasks and providing insights but also can make mistakes.</p>
                 </div>
             </div>
         </div>
