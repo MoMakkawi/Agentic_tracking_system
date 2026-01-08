@@ -71,3 +71,77 @@
         transform: translateY(0);
     }
 }
+
+/* Cycles Column Styling */
+.cycle-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.cycle-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: rgba(var(--accent-danger-rgb, 248, 81, 73), 0.15);
+    color: var(--accent-danger);
+    border: 1px solid rgba(var(--accent-danger-rgb, 248, 81, 73), 0.3);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(var(--accent-danger-rgb, 248, 81, 73), 0.2);
+}
+
+
+.cycle-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Anomaly Sessions Layout */
+.session-badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    max-width: 500px;
+}
+
+.session-badge {
+    transition: all 0.2s ease;
+    background: rgba(56, 139, 253, 0.08) !important;
+    border: 1px solid rgba(56, 139, 253, 0.25) !important;
+    color: #58a6ff !important;
+    padding: 0.15rem 0.75rem !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.02em;
+}
+
+.session-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(56, 139, 253, 0.25);
+    border-color: rgba(56, 139, 253, 0.5) !important;
+    background: rgba(56, 139, 253, 0.15) !important;
+}
+
+
+
+.more-badge {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-secondary) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+    font-size: 0.7rem !important;
+    transition: all 0.2s ease;
+}
+
+.more-badge:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: var(--text-primary) !important;
+}

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { attendanceService, alertService, groupService } from '../../services/api';
 import Card from '../../components/Common/Card';
 import PageHeader from '../../components/Common/PageHeader';
 import {
     Calendar,
+    Filter,
     AlertTriangle,
     Layers,
     TrendingUp,
@@ -36,9 +37,22 @@ const Overview = () => {
         groups: 0,
         loading: true
     });
-    const [dateRange, setDateRange] = useState({
-        from: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        to: new Date().toISOString().split('T')[0]
+    const [dateRange, setDateRange] = useState(() => {
+        const now = new Date();
+        const fromDate = new Date();
+        fromDate.setDate(now.getDate() - 6);
+
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        return {
+            from: formatDate(fromDate),
+            to: formatDate(now)
+        };
     });
     // Separate state for inputs to allow manual filtering
     const [inputDateRange, setInputDateRange] = useState(dateRange);
@@ -56,6 +70,18 @@ const Overview = () => {
     useEffect(() => {
         fetchTrendData();
     }, [dateRange]);
+
+    const showYear = useMemo(() => {
+        const fromYear = dateRange.from ? dateRange.from.split('-')[0] : null;
+        const toYear = dateRange.to ? dateRange.to.split('-')[0] : null;
+        return fromYear !== toYear;
+    }, [dateRange]);
+
+    const formatDate = (isoDate) => {
+        if (!isoDate) return '';
+        const [year, month, day] = isoDate.split('-');
+        return showYear ? `${month}/${day}/${year}` : `${month}/${day}`;
+    };
 
     const validateDates = (from, to) => {
         const fromDate = new Date(from);
@@ -141,16 +167,18 @@ const Overview = () => {
 
             const filteredSessions = sessionsRes.data.items || [];
 
-            // Generate labels for each day in the range
             const days = [];
-            const startDate = new Date(dateRange.from + 'T00:00:00');
-            const endDate = new Date(dateRange.to + 'T00:00:00');
+            const [fromYear, fromMonth, fromDay] = dateRange.from.split('-').map(Number);
+            const [toYear, toMonth, toDay] = dateRange.to.split('-').map(Number);
 
-            const oneDay = 24 * 60 * 60 * 1000;
-            for (let ts = startDate.getTime(); ts <= endDate.getTime(); ts += oneDay) {
-                const d = new Date(ts);
-                const isoDate = d.toISOString().split('T')[0];
-                days.push(isoDate);
+            const start = new Date(fromYear, fromMonth - 1, fromDay);
+            const end = new Date(toYear, toMonth - 1, toDay);
+
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                days.push(`${year}-${month}-${day}`);
             }
 
             const trend = days.map(isoDate => {
@@ -165,11 +193,11 @@ const Overview = () => {
                 const totalRecorded = daySessions.reduce((sum, s) => sum + (s.recorded_count || 0), 0);
                 const sessionCount = daySessions.length;
 
-                const [year, month, day] = isoDate.split('-');
-                const displayLabel = `${day}/${month}`;
+                const displayLabel = formatDate(isoDate);
 
                 return {
                     name: displayLabel,
+                    fullDate: isoDate,
                     attendance: totalAttendance,
                     recorded: totalRecorded,
                     sessions: sessionCount
@@ -282,30 +310,37 @@ const Overview = () => {
                                     </div>
                                 )}
                                 <div className="date-inputs-row">
-                                    <div className="date-input-group">
-                                        <span className="date-label">From:</span>
-                                        <input
-                                            type="date"
-                                            className={`date-input ${validationError ? 'error' : ''}`}
-                                            value={inputDateRange.from}
-                                            onChange={(e) => handleInputChange('from', e.target.value)}
-                                        />
+                                    <div className="premium-date-input">
+                                        <Calendar size={14} className="input-icon" />
+                                        <div className="input-content">
+                                            <span className="input-label">From</span>
+                                            <input
+                                                type="date"
+                                                className={`date-input ${validationError ? 'error' : ''}`}
+                                                value={inputDateRange.from}
+                                                onChange={(e) => handleInputChange('from', e.target.value)}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="date-input-group">
-                                        <span className="date-label">To:</span>
-                                        <input
-                                            type="date"
-                                            className={`date-input ${validationError ? 'error' : ''}`}
-                                            value={inputDateRange.to}
-                                            onChange={(e) => handleInputChange('to', e.target.value)}
-                                        />
+                                    <div className="premium-date-input">
+                                        <Calendar size={14} className="input-icon" />
+                                        <div className="input-content">
+                                            <span className="input-label">To</span>
+                                            <input
+                                                type="date"
+                                                className={`date-input ${validationError ? 'error' : ''}`}
+                                                value={inputDateRange.to}
+                                                onChange={(e) => handleInputChange('to', e.target.value)}
+                                            />
+                                        </div>
                                     </div>
                                     <button
-                                        className="filter-btn"
+                                        className="filter-btn-premium"
                                         onClick={handleFilterClick}
                                         disabled={!!validationError}
                                     >
-                                        Filter
+                                        <Filter size={14} />
+                                        <span>Apply Filter</span>
                                     </button>
                                 </div>
                             </div>
@@ -324,6 +359,12 @@ const Overview = () => {
                                     <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
                                     <Tooltip
+                                        labelFormatter={(label, payload) => {
+                                            if (payload && payload.length > 0 && payload[0].payload.fullDate) {
+                                                return formatDate(payload[0].payload.fullDate);
+                                            }
+                                            return label;
+                                        }}
                                         contentStyle={{ backgroundColor: '#1a1b1e', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}
                                         itemStyle={{ color: '#fff' }}
                                         formatter={(value) => [value, 'Participants']}

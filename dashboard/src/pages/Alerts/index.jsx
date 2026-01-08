@@ -12,6 +12,49 @@ import {
 } from 'lucide-react';
 import './Alerts.css';
 
+const AnomalySessionsCell = ({ sessions, onSessionClick }) => {
+    const [expanded, setExpanded] = useState(false);
+    const limit = 5;
+
+    if (!sessions || sessions.length === 0) return null;
+
+    const sortedSessions = [...sessions].sort((a, b) => b - a); // Descending order
+    const hasMore = sortedSessions.length > limit;
+    const displayedSessions = expanded ? sortedSessions : sortedSessions.slice(0, limit);
+
+    return (
+        <div className="session-badges-container">
+            {displayedSessions.map((sid) => (
+                <Badge
+                    key={sid}
+                    type="info"
+                    className="session-badge"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onSessionClick({ session_id: sid });
+                    }}
+                    style={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                >
+                    ID: {sid}
+                </Badge>
+            ))}
+            {hasMore && (
+                <Badge
+                    type="default"
+                    className="more-badge"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(!expanded);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                >
+                    {expanded ? 'Show Less' : `+${sortedSessions.length - limit} more`}
+                </Badge>
+            )}
+        </div>
+    );
+};
+
 const Alerts = () => {
     const [activeTab, setActiveTab] = useState('device');
     const [alerts, setAlerts] = useState([]);
@@ -119,48 +162,47 @@ const Alerts = () => {
 
         if (activeTab === 'device') {
             return [
-                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{val}</span> },
                 { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
                 { title: 'Device Fingerprint', key: 'device_id', width: '250px', render: (val) => <code className="glass-code">{val}</code> },
                 ...common
             ];
         } else if (activeTab === 'identity') {
             return [
-                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{val}</span> },
                 { title: 'Identity UID', key: 'uid', width: '150px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
+                {
+                    title: 'Cycles',
+                    key: 'repeated_anomaly_count',
+                    width: '100px',
+                    render: (val) => (
+                        <div className="cycle-indicator">
+                            <div className="cycle-count">{val}</div>
+                            {val > 1 && <span className="cycle-label">Repeats</span>}
+                        </div>
+                    )
+                },
                 {
                     title: 'Anomaly Sessions',
                     key: 'anomaly_sessions',
                     sortable: false,
                     render: (sessions) => (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                            {sessions?.map((sid) => (
-                                <Badge
-                                    key={sid}
-                                    type="danger"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRowClick({ session_id: sid });
-                                    }}
-                                    style={{ cursor: 'pointer', fontSize: '0.75rem' }}
-                                >
-                                    ID: {sid}
-                                </Badge>
-                            ))}
-                        </div>
+                        <AnomalySessionsCell
+                            sessions={sessions}
+                            onSessionClick={handleRowClick}
+                        />
                     )
                 },
                 { title: 'Device', key: 'device_id', width: '200px', render: (val) => <code className="glass-code">{val}</code> },
-                { title: 'Cycles', key: 'repeated_anomaly_count', width: '100px', render: (val) => <Badge type="danger">{val}</Badge> },
                 ...common
             ];
         } else {
             return [
-                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{val}</span> },
                 { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
-                { title: 'Identity UID', key: 'uid', width: '150px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
+                { title: 'Attendance ID', key: 'uid', width: '195px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
                 {
-                    title: 'Temporal Record', key: 'timestamp', width: '180px', render: (val) => (
+                    title: 'Recorded At', key: 'timestamp', width: '180px', render: (val) => (
                         <div className="timestamp-cell" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem' }}>
                                 <Calendar size={12} color="var(--accent-warning)" />
@@ -383,7 +425,7 @@ const Alerts = () => {
                                                         <Badge type="warning" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                                             {alert.type} Anomaly
                                                         </Badge>
-                                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>ID: {alert.id}</span>
+                                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>ID: {alert.id}</span>
                                                     </div>
                                                     <div style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                                                         {alert.type === 'Device' && `Device: ${alert.device_id}`}

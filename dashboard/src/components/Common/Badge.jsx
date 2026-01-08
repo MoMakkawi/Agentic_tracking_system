@@ -1,9 +1,9 @@
 import React from 'react';
 import './Badge.css';
 
-const Badge = ({ children, type = 'default', style, ...props }) => {
+const Badge = ({ children, type = 'default', style, className = '', ...props }) => {
     return (
-        <span className={`badge-comp badge-${type}`} style={style} {...props}>
+        <span className={`badge-comp badge-${type} ${className}`} style={style} {...props}>
             {children}
         </span>
     );
