@@ -56,12 +56,15 @@ class TimestampValidator:
         for session in sessions:
             session_id = session.get("session_id")
             device_id = session.get("device_id")
-            logs_date = session.get("logs_date")
+            
+            received_at = session.get("received_at")
+            received_date = TimestampHelper.to_date(received_at) if received_at else None
+            recorded_date = received_date or session.get("logs_date")
 
             for log in session.get("logs", []):
                 records.append({
                     "uid": log["uid"],
-                    "timestamp": TimestampHelper.to_datetime(logs_date + " " + log["ts"]),
+                    "timestamp": TimestampHelper.to_datetime(recorded_date + " " + log["ts"]),
                     "session_id": session_id,
                     "device_id": device_id
                 })
