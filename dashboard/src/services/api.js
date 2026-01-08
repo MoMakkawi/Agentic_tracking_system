@@ -33,4 +33,15 @@ export const agentService = {
     runTask: (task) => client.post('/agent/run', { task }),
 };
 
+// Chat Services
+export const chatService = {
+    createConversation: (title = null) => client.post('/chat/', title ? { title } : {}),
+    listConversations: (page = 1, limit = 20) => client.get('/chat/', { params: { page, limit } }),
+    getConversation: (id) => client.get(`/chat/${id}`),
+    addMessage: (id, role, content, status = null) => client.post(`/chat/${id}/message`, { role, content, status }),
+    deleteConversation: (id) => client.delete(`/chat/${id}`),
+    getStats: () => client.get('/chat/stats'),
+};
+
 export default client;
+

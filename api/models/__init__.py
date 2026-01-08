@@ -13,6 +13,14 @@ from .alert_filters import (
 )
 from .group_filters import GroupFilters, PaginatedGroupResponse
 from .agent import AgentRequest, AgentResponse
+from .chat import (
+    ChatMessage,
+    ChatConversation,
+    ChatCreateRequest,
+    ChatMessageRequest,
+    ChatListResponse,
+    ChatStatsResponse
+)
 
 __all__ = [
     "SessionFilters",
@@ -25,5 +33,12 @@ __all__ = [
     "GroupFilters",
     "PaginatedGroupResponse",
     "AgentRequest",
-    "AgentResponse"
+    "AgentResponse",
+    "ChatMessage",
+    "ChatConversation",
+    "ChatCreateRequest",
+    "ChatMessageRequest",
+    "ChatListResponse",
+    "ChatStatsResponse"
 ]
+
