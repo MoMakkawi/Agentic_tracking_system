@@ -230,6 +230,25 @@ class SessionService:
                 # Check logs date
                 elif session.logs_date and search_term in session.logs_date:
                     matches = True
+                
+                # Check formatted dates and times from received_at
+                elif session.received_at:
+                    # Comprehensive list of formats to match against
+                    formats = [
+                        "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d",
+                        "%d-%m-%Y", "%m-%d-%Y", "%Y-%m-%d",
+                        "%d.%m.%Y", "%m.%d.%Y", "%Y.%m.%d",
+                        "%H:%M", "%I:%M %p",
+                        "%d %B %Y", "%d %b %Y", "%A", "%B", "%b"
+                    ]
+                    for fmt in formats:
+                        try:
+                            formatted = session.received_at.strftime(fmt)
+                            if search_term in formatted.lower():
+                                matches = True
+                                break
+                        except Exception:
+                            continue
                     
                 if not matches:
                     continue
