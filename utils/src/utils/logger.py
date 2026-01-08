@@ -4,24 +4,21 @@ from logging.handlers import RotatingFileHandler
 import inspect
 import pathlib
 
-LOG_DIR = "logs"
-os.makedirs(LOG_DIR, exist_ok=True)
-
-LOG_FILE = os.path.join(LOG_DIR, "agentic_tracking_system.log")
+ROOT_DIR = pathlib.Path(__file__).resolve().parents[3]
+LOG_DIR = ROOT_DIR / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_FILE = LOG_DIR / "agentic_tracking_system.log"
 LOG_LEVEL = logging.INFO
 
 # Formatter
 formatter = logging.Formatter(
-    fmt="%(asctime)s | %(package_file)s | %(levelname)s | %(message)s",
+    fmt="%(asctime)s | %(caller_path)s | %(levelname)s | %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-# File and console handlers
-file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5*1024*1024, backupCount=5)
-file_handler.setFormatter(formatter)
-
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
+# -------------------------------
+# Filter to add package | file
+# -------------------------------
 
 # -------------------------------
 # Filter to add package | file
@@ -32,24 +29,20 @@ class PackageFileFilter(logging.Filter):
             filename = frame_info.filename
             if filename.endswith("logger.py") or "logging" in filename:
                 continue
-            file_name = pathlib.Path(filename).stem
-            module_name = frame_info.frame.f_globals.get("__name__", "")
-            if module_name == "__main__":
-                try:
-                    rel_path = pathlib.Path(filename).resolve().relative_to(pathlib.Path.cwd())
-                    package = rel_path.parts[0] if len(rel_path.parts) > 1 else "__main__"
-                except ValueError:
-                    package = "__main__"
-            else:
-                package = module_name.split(".")[0] if module_name else "__unknown__"
-            record.package_file = f"{package} | {file_name}"
+            
+            # Calculate relative path from ROOT_DIR
+            p = pathlib.Path(filename).resolve()
+            try:
+                rel_path = p.relative_to(ROOT_DIR)
+            except ValueError:
+                rel_path = p
+            
+            record.caller_path = str(rel_path)
             break
         else:
-            record.package_file = "__unknown__ | __unknown__"
+            record.caller_path = "__unknown__"
         return True
 
-file_handler.addFilter(PackageFileFilter())
-console_handler.addFilter(PackageFileFilter())
 
 # -------------------------------
 # Single logger instance
@@ -59,6 +52,22 @@ logger.setLevel(LOG_LEVEL)
 
 # Add handlers only once
 if not logger.handlers:
+    # File handler with robust settings
+    file_handler = RotatingFileHandler(
+        str(LOG_FILE), 
+        mode='a', 
+        maxBytes=50*1024*1024, 
+        backupCount=5,
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.addFilter(PackageFileFilter())
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    console_handler.addFilter(PackageFileFilter())
+
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
 

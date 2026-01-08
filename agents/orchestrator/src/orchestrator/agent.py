@@ -84,7 +84,7 @@ class Orchestrator:
         # self.memory_manager.register(SemanticMemory(...))
         # ==============================================
 
-        logger.info("OrchestratorAgent initialized with tools: %s", [t.name for t in self.tools])
+        logger.info("OrchestratorAgent initialized with tools.")
         logger.info("Memory system initialized: %s", self.memory_manager.list_memories())
 
     # ---------------------------------------------------------
@@ -106,7 +106,7 @@ class Orchestrator:
         # Get memory stats before execution
         stm = self.get_memory("short_term")
         if stm:
-            logger.info(f"Memory reset: {reset_memory}, Current stats: {stm.get_stats()}")
+            logger.info(f"Memory reset: {reset_memory}")
 
         # Execute with smolagents (reset=False preserves history)
         result = self._agent.run(task, reset=reset_memory)
@@ -117,7 +117,7 @@ class Orchestrator:
         
         logger.info("Orchestrator task completed successfully")
         if stm:
-            logger.info(f"Memory stats after execution: {stm.get_stats()}")
+            logger.info(f"Memory stats after execution: {stm.get_stats()["enabled"]}")
         
         return result
 
