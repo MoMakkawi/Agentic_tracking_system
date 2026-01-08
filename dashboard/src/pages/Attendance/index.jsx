@@ -110,6 +110,7 @@ const Attendance = () => {
         {
             title: 'Session ID',
             key: 'session_id',
+            width: '150px',
             render: (val) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Hash size={14} color="var(--accent-primary)" />
@@ -121,7 +122,7 @@ const Attendance = () => {
             title: 'Context',
             key: 'session_context',
             render: (val) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', maxWidth: '200px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Info size={14} color='var(--text-secondary)' style={{ flexShrink: 0 }} />
                     <span className="truncate" title={val} style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                         {val || 'Unknown'}
@@ -132,6 +133,7 @@ const Attendance = () => {
         {
             title: 'Date',
             key: 'received_at',
+            width: '180px',
             render: (val) => {
                 if (!val) return '-';
                 const date = new Date(val);
@@ -161,6 +163,7 @@ const Attendance = () => {
         {
             title: 'Attendance',
             key: 'unique_count',
+            width: '140px',
             render: (val) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Users size={14} color={val > 50 ? 'var(--accent-success)' : 'var(--text-secondary)'} />
@@ -171,6 +174,7 @@ const Attendance = () => {
         {
             title: 'Alerts',
             key: 'alert_count',
+            width: '120px',
             render: (val) => (
                 <div
                     style={{
@@ -220,28 +224,25 @@ const Attendance = () => {
                 }
             />
 
-            <div className="attendance-content-header" style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button
-                            className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
-                            onClick={() => setActiveFilter('all')}
-                        >
-                            All Sessions
-                        </button>
-                        <button
-                            className={`filter-tab ${activeFilter === 'alerts' ? 'active' : ''}`}
-                            onClick={() => toggleFilter('alerts')}
-                        >
-                            <AlertCircle size={14} /> Critical Only
-                        </button>
-                    </div>
-                </div>
+            <div className="glass-tabs">
+                <button
+                    className={`tab-btn ${activeFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('all')}
+                >
+                    <Layers size={16} /> All Sessions
+                </button>
+                <button
+                    className={`tab-btn ${activeFilter === 'alerts' ? 'active' : ''}`}
+                    onClick={() => toggleFilter('alerts')}
+                >
+                    <AlertCircle size={16} /> Critical Only
+                </button>
             </div>
 
             <Card
                 className="glass overflow-hidden"
                 style={{ padding: '0', border: '1px solid var(--border-primary)' }}
+                theme="primary"
                 title="Attendance Sessions"
                 subtitle={`Total ${total} records found`}
                 extra={

@@ -3,7 +3,9 @@ import { groupService } from '../../services/api'; // Ensure this service exists
 import Card from '../../components/Common/Card';
 import PageHeader from '../../components/Common/PageHeader';
 import Modal from '../../components/Common/Modal';
-import { Users, User, ArrowRight, Layers, Search, Filter, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
+import { Users, User, ArrowRight, Layers, Search, Filter, ChevronLeft, ChevronRight, LayoutGrid, Info } from 'lucide-react';
+import Table from '../../components/Common/Table';
+import Badge from '../../components/Common/Badge';
 import './Groups.css';
 
 const Groups = () => {
@@ -69,6 +71,71 @@ const Groups = () => {
         page * pageSize
     );
 
+    const columns = [
+        {
+            title: 'Group Name',
+            key: 'name',
+            render: (val) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Layers size={16} color="var(--accent-success)" />
+                    <span style={{ fontWeight: '700', fontSize: '1rem' }}>{val}</span>
+                </div>
+            )
+        },
+        {
+            title: 'Members',
+            key: 'members',
+            render: (members) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Users size={14} color="var(--text-secondary)" />
+                    <Badge type="info">{members.length} Identifiers</Badge>
+                </div>
+            )
+        },
+        {
+            title: 'Composition Preview',
+            key: 'members',
+            sortable: false,
+            render: (members) => (
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', maxWidth: '400px' }}>
+                    {members.slice(0, 3).map((m, idx) => (
+                        <div key={idx} style={{
+                            fontSize: '0.8rem',
+                            padding: '0.2rem 0.5rem',
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '4px',
+                            color: 'var(--text-secondary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem'
+                        }}>
+                            <User size={10} />
+                            {m}
+                        </div>
+                    ))}
+                    {members.length > 3 && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>+{members.length - 3} more</span>}
+                </div>
+            )
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            sortable: false,
+            render: (_, group) => (
+                <button
+                    className="view-detail-btn"
+                    style={{ marginTop: 0, padding: '0.5rem 1rem', width: 'auto' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewComposition(group);
+                    }}
+                >
+                    Details <ArrowRight size={14} />
+                </button>
+            )
+        }
+    ];
+
     return (
         <div className="groups-page animate-fade-in">
             <PageHeader
@@ -98,6 +165,7 @@ const Groups = () => {
             <Card
                 className="glass overflow-hidden"
                 style={{ padding: '0', border: '1px solid var(--border-primary)', display: 'flex', flexDirection: 'column', height: '100%' }}
+                theme="success"
                 title="Active Groups"
                 subtitle={`Total ${filteredGroups.length} groups found`}
                 extra={
@@ -113,47 +181,14 @@ const Groups = () => {
                     </div>
                 ) : (
                     <>
-                        {paginatedGroups.length > 0 ? (
-                            <div className="groups-grid">
-                                {paginatedGroups.map((group, index) => (
-                                    <div
-                                        key={index}
-                                        className="group-card glass"
-                                    >
-                                        <div style={{ padding: '1.25rem' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>{group.name}</h3>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                    <Users size={14} />
-                                                    {group.members.length}
-                                                </div>
-                                            </div>
+                        <Table
+                            columns={columns}
+                            data={paginatedGroups}
+                            loading={loading}
+                            onRowClick={handleViewComposition}
+                        />
 
-                                            <div className="member-list">
-                                                {group.members.slice(0, 3).map((member, mIdx) => (
-                                                    <div key={mIdx} className="member-item">
-                                                        <User size={14} className="member-icon" />
-                                                        <span className="truncate">{member}</span>
-                                                    </div>
-                                                ))}
-                                                {group.members.length > 3 && (
-                                                    <div className="more-members">
-                                                        +{group.members.length - 3} others
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <button
-                                                className="view-detail-btn"
-                                                onClick={() => handleViewComposition(group)}
-                                            >
-                                                View Composition <ArrowRight size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
+                        {paginatedGroups.length === 0 && (
                             <div className="no-results">
                                 <Search size={48} />
                                 <p style={{ fontSize: '1.1rem' }}>No groups found for "{searchTerm}"</p>

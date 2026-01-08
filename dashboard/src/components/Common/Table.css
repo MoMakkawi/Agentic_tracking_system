@@ -10,14 +10,14 @@
 }
 
 .custom-table th {
-    padding: 1rem 1.5rem;
-    background: var(--bg-secondary);
+    padding: 1.25rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
     color: var(--text-secondary);
-    font-weight: 600;
-    font-size: 0.85rem;
+    font-weight: 700;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--border-primary);
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border-primary);
     transition: var(--transition-base);
 }
 
@@ -27,8 +27,8 @@
 }
 
 .custom-table th.active-sort {
-    color: var(--accent-primary);
-    border-bottom-color: var(--accent-primary);
+    color: var(--page-accent, var(--accent-primary));
+    border-bottom: 2px solid var(--page-accent, var(--accent-primary));
 }
 
 .th-content {
@@ -71,6 +71,28 @@ th:hover .sort-icon.placeholder {
 
 .custom-table tr.clickable:hover {
     background: rgba(255, 255, 255, 0.03);
+}
+
+.custom-table tr {
+    position: relative;
+    transition: var(--transition-base);
+}
+
+.custom-table tr::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--page-accent, var(--accent-primary));
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
+    z-index: 20;
+}
+
+.custom-table tr:hover::before {
+    transform: scaleY(1);
 }
 
 .table-loading,

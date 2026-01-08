@@ -119,15 +119,15 @@ const Alerts = () => {
 
         if (activeTab === 'device') {
             return [
-                { title: 'ID', key: 'id', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
-                { title: 'Session', key: 'session_id', render: (val) => <Badge type="info">ID: {val}</Badge> },
-                { title: 'Device Fingerprint', key: 'device_id', render: (val) => <code className="glass-code">{val}</code> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
+                { title: 'Device Fingerprint', key: 'device_id', width: '250px', render: (val) => <code className="glass-code">{val}</code> },
                 ...common
             ];
         } else if (activeTab === 'identity') {
             return [
-                { title: 'ID', key: 'id', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
-                { title: 'Identity UID', key: 'uid', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'Identity UID', key: 'uid', width: '150px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
                 {
                     title: 'Anomaly Sessions',
                     key: 'anomaly_sessions',
@@ -150,17 +150,17 @@ const Alerts = () => {
                         </div>
                     )
                 },
-                { title: 'Device', key: 'device_id', render: (val) => <code className="glass-code">{val}</code> },
-                { title: 'Anomaly Cycles', key: 'repeated_anomaly_count', render: (val) => <Badge type="danger">{val}</Badge> },
+                { title: 'Device', key: 'device_id', width: '200px', render: (val) => <code className="glass-code">{val}</code> },
+                { title: 'Cycles', key: 'repeated_anomaly_count', width: '100px', render: (val) => <Badge type="danger">{val}</Badge> },
                 ...common
             ];
         } else {
             return [
-                { title: 'ID', key: 'id', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
-                { title: 'Session', key: 'session_id', render: (val) => <Badge type="info">ID: {val}</Badge> },
-                { title: 'Identity UID', key: 'uid', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
+                { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{val}</span> },
+                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
+                { title: 'Identity UID', key: 'uid', width: '150px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
                 {
-                    title: 'Temporal Record', key: 'timestamp', render: (val) => (
+                    title: 'Temporal Record', key: 'timestamp', width: '180px', render: (val) => (
                         <div className="timestamp-cell" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem' }}>
                                 <Calendar size={12} color="var(--accent-warning)" />
@@ -177,7 +177,7 @@ const Alerts = () => {
                         </div>
                     )
                 },
-                { title: 'Device', key: 'device_id', render: (val) => <code className="glass-code">{val}</code> },
+                { title: 'Device', key: 'device_id', width: '200px', render: (val) => <code className="glass-code">{val}</code> },
                 ...common
             ];
         }
@@ -209,9 +209,9 @@ const Alerts = () => {
                 }
             />
 
-            <div className="alerts-tabs glass">
+            <div className="alerts-tabs glass-tabs">
                 <button
-                    className={`tab-item ${activeTab === 'device' ? 'active' : ''}`}
+                    className={`tab-btn ${activeTab === 'device' ? 'active' : ''}`}
                     onClick={() => {
                         setActiveTab('device');
                         setPage(1);
@@ -223,7 +223,7 @@ const Alerts = () => {
                     Device Alerts
                 </button>
                 <button
-                    className={`tab-item ${activeTab === 'identity' ? 'active' : ''}`}
+                    className={`tab-btn ${activeTab === 'identity' ? 'active' : ''}`}
                     onClick={() => {
                         setActiveTab('identity');
                         setPage(1);
@@ -235,7 +235,7 @@ const Alerts = () => {
                     Identity Mismatch
                 </button>
                 <button
-                    className={`tab-item ${activeTab === 'timestamp' ? 'active' : ''}`}
+                    className={`tab-btn ${activeTab === 'timestamp' ? 'active' : ''}`}
                     onClick={() => {
                         setActiveTab('timestamp');
                         setPage(1);
@@ -251,6 +251,7 @@ const Alerts = () => {
             <Card
                 className="alerts-card glass overflow-hidden"
                 style={{ padding: '0' }}
+                theme="warning"
                 title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')} Anomalies`}
                 subtitle={`Total ${total} security incidents identified`}
                 extra={

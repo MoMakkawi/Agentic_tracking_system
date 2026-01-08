@@ -34,3 +34,20 @@
     display: flex;
     align-items: center;
 }
+
+/* Card Themes */
+.card.theme-warning {
+    border-top: 4px solid var(--accent-warning) !important;
+}
+
+.card.theme-primary {
+    border-top: 4px solid var(--accent-primary) !important;
+}
+
+.card.theme-success {
+    border-top: 4px solid var(--accent-success) !important;
+}
+
+.card.theme-danger {
+    border-top: 4px solid var(--accent-danger) !important;
+}
