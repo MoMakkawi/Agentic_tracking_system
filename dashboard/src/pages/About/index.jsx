@@ -20,34 +20,33 @@ const About = () => {
     const projectInfo = {
         name: "Agentic Tracking System",
         version: "1.0.0",
-        description: "An advanced student tracking and monitoring system leveraging agentic AI behaviors to ensure academic integrity and provide real-time insights.",
-        university: "University Name",
-        universityUrl: "#"
+        description: "An advanced student tracking and monitoring system leveraging agentic AI behaviors to ensure academic integrity and provide deep insights.",
+        university: "IMT Atlantique",
+        universityUrl: "https://www.imt-atlantique.fr/fr"
     };
 
     const team = {
         student: {
-            name: "Student Name",
-            role: "Frontend Engineer & Researcher",
-            github: "https://github.com/yourusername",
-            email: "student@university.edu"
+            name: "Mohamad Faraj MAKKAWI",
+            role: "Software Engineer",
+            github: "https://github.com/MoMakkawi",
+            email: "MoMakkawi@hotmail.com"
         },
         supervisors: [
-            { name: "Supervisor Name 1", title: "Project Supervisor" },
-            { name: "Supervisor Name 2", title: "Technical Advisor" }
+            { name: "Laurent TOUTAIN", title: "IoT Professor." },
+            { name: "Baptiste GAULTIER", title: "Research Support Engineer." }
         ]
     };
 
     const techStack = [
         { icon: Layout, name: "React + Vite", type: "Frontend" },
-        { icon: Code2, name: "Modern JavaScript", type: "Language" },
+        { icon: Code2, name: "Python + JavaScript", type: "Language" },
         { icon: Server, name: "Python FastAPI", type: "Backend" },
-        { icon: Database, name: "Data Processing", type: "Analytics" }
+        { icon: Database, name: "SmoalAgent HuggingFace", type: "AI" }
     ];
 
     return (
         <div className="about-container fade-in">
-            {/* Hero Section */}
             {/* Hero Section */}
             <PageHeader
                 title={projectInfo.name}
@@ -129,7 +128,7 @@ const About = () => {
                             <h2>Project Resources</h2>
                         </div>
                         <div className="links-list">
-                            <a href={team.student.github} target="_blank" rel="noopener noreferrer" className="resource-link">
+                            <a href="https://github.com/MoMakkawi/Agentic_tracking_system" target="_blank" rel="noopener noreferrer" className="resource-link">
                                 <Github size={20} />
                                 <div>
                                     <span className="link-title">Source Code</span>
@@ -141,7 +140,7 @@ const About = () => {
                                 <GraduationCap size={20} />
                                 <div>
                                     <span className="link-title">{projectInfo.university}</span>
-                                    <span className="link-desc">University details</span>
+                                    <span className="link-desc">A top-10 engineering school, part of the Mines-Telecom Institute.</span>
                                 </div>
                                 <ExternalLink size={16} className="arrow-icon" />
                             </a>
