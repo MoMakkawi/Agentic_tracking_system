@@ -7,7 +7,10 @@ import './Agent.css';
 const Agent = () => {
     const [conversations, setConversations] = useState([]);
     const [activeConversationId, setActiveConversationId] = useState(null);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([{
+        role: 'assistant',
+        text: "Hello! I'm your assistant AI Agent. How can I help you analyze the tracking data today?"
+    }]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [loadingConversations, setLoadingConversations] = useState(true);
@@ -34,10 +37,7 @@ const Agent = () => {
             const response = await chatService.listConversations();
             setConversations(response.data.conversations);
 
-            // If there are conversations and none selected, select the most recent
-            if (response.data.conversations.length > 0 && !activeConversationId) {
-                loadConversation(response.data.conversations[0].id);
-            }
+
         } catch (error) {
             console.error('Error loading conversations:', error);
         } finally {
