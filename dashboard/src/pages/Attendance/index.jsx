@@ -142,7 +142,7 @@ const Attendance = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: '600' }}>
                             <Calendar size={13} color="var(--accent-primary)" />
-                            {date.toLocaleDateString('fr-FR', {
+                            {date.toLocaleDateString([], {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit'
@@ -150,7 +150,7 @@ const Attendance = () => {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                             <Clock size={12} color="var(--accent-primary)" />
-                            {date.toLocaleTimeString('fr-FR', {
+                            {date.toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
                                 hour12: false
