@@ -40,8 +40,13 @@ class LouvainGroupIdentifier:
         csv_repo = CsvRepository(id_alerts_path)
         csv_repo.ensure_exists()
         alerts = csv_repo.read_all()
-        self.invalid_uids = {row["uid"] for row in alerts if "uid" in row}
-        logger.info(f"Loaded {len(self.invalid_uids)} invalid uids successfully!")
+        self.disallowed_uids = {
+            row["uid"]
+            for row in alerts
+            if int(row["allow_clustering"]) == 0
+        }
+
+        logger.info(f"Loaded {len(self.disallowed_uids)} disallowed uids successfully!")
 
         # Louvain
         louvain_config = config.LLM_MODULES.GROUP_IDENTIFIER.LOUVAIN
@@ -71,7 +76,7 @@ class LouvainGroupIdentifier:
     # ------------------------------------------------------------------
 
     def _valid_uid(self, uid: Optional[str]) -> bool:
-        return bool(uid) and uid not in self.invalid_uids
+        return bool(uid) and uid not in self.disallowed_uids
 
     # ------------------------------------------------------------------
     # Pipeline steps

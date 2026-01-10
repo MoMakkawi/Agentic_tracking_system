@@ -109,13 +109,16 @@ class IdentityValidator:
             repeated_count = int(meta.get("repeated_anomaly_count", 0))
             normal_sessions_count = len(set(all_sessions) - set(anomaly_sessions))
 
+            allow_clustering = 1
             reasons = set()
             if group["uid_suspicious_pattern"].any():
                 reasons.add("Suspicious UID pattern")
-            if group["uid_redundant"].any():
-                reasons.add("Redundant UID in sessions")
+                allow_clustering = 0
             if group["uid_rare_global"].any():
                 reasons.add("Globally rare UID")
+                allow_clustering = 0
+            if group["uid_redundant"].any():
+                reasons.add("Redundant UID in sessions")
             if repeated_count > 1:
                 reasons.add("Repeated anomaly across sessions")
 
@@ -123,6 +126,7 @@ class IdentityValidator:
                 alerts.append([
                     alert_id,                          
                     uid,
+                    allow_clustering,
                     device_id,
                     normal_sessions_count,
                     repeated_count,
@@ -156,6 +160,7 @@ class IdentityValidator:
         header = [
             "id",
             "uid",
+            "allow_clustering",
             "device_id",
             "normal_sessions_count",
             "repeated_anomaly_count",
