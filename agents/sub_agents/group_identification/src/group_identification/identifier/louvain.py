@@ -3,7 +3,6 @@ from typing import List, Dict, Any, Optional
 
 import numpy as np
 import networkx as nx
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics.pairwise import cosine_similarity
 import community as community_louvain
 
@@ -62,7 +61,6 @@ class LouvainGroupIdentifier:
         self.feature_names: List[str] = []
         self.feature_matrix: np.ndarray = np.empty((0, 0))
 
-        self.scaler = StandardScaler()
         self.G: nx.Graph = nx.Graph()
 
         self.communities: Dict[str, int] = {}
@@ -94,9 +92,7 @@ class LouvainGroupIdentifier:
             ]
 
             self.session_info[sid] = {
-                "date": session.get("logs_date"),
-                "time": logs[0].get("ts") if logs else None,
-                "size": len(set(valid_uids)),
+                "name": session.get("session_context"),
             }
 
             for uid in valid_uids:
@@ -108,28 +104,41 @@ class LouvainGroupIdentifier:
 
     def _extract_features(self) -> None:
         """
-        Extract per-student features for Louvain clustering.
-        Each feature represents attendance in a session (1 = attended, 0 = not attended).
+        Extract per-student features using ONLY session_context.
+        Each unique session_context is treated as ONE atomic categorical feature.
         """
-        # Get all session IDs sorted (for consistent feature ordering)
-        session_ids = sorted(self.session_info.keys())
-        self.feature_names = session_ids
 
+        # 1. Collect unique session_context values (no splitting)
+        session_contexts = sorted({
+            info["name"]
+            for info in self.session_info.values()
+            if info.get("name")
+        })
+
+        self.feature_names = session_contexts
+
+        # 2. Build binary feature vectors per student
         for student in self.student_list:
-            attended_sessions = set(self.student_sessions[student])
-            # Create a binary vector: 1 if student attended this session, 0 otherwise
-            self.features[student] = {sid: 1.0 if sid in attended_sessions else 0.0 for sid in session_ids}
+            attended_sessions = self.student_sessions[student]
 
-        # Build feature matrix (students x sessions)
-        raw_matrix = np.array(
-            [[self.features[s][f] for f in session_ids] for s in self.student_list]
-        )
+            attended_contexts = {
+                self.session_info[sid]["name"]
+                for sid in attended_sessions
+                if self.session_info[sid].get("name")
+            }
 
-        # Optional: scale features
-        self.feature_matrix = self.scaler.fit_transform(raw_matrix)
+            self.features[student] = {
+                ctx: 1.0 if ctx in attended_contexts else 0.0
+                for ctx in session_contexts
+            }
+
+        # 3. Build feature matrix (students × session_contexts)
+        self.feature_matrix = np.array([
+            [self.features[s][f] for f in self.feature_names]
+            for s in self.student_list
+        ], dtype=float)
 
         logger.info(f"Feature matrix shape: {self.feature_matrix.shape}")
-        logger.info(f"Features extracted for {len(self.student_list)} students over {len(session_ids)} sessions.")
 
     def _build_network(self) -> None:
         self.G.add_nodes_from(self.student_list)
@@ -183,7 +192,7 @@ class LouvainGroupIdentifier:
 
     def _export_results(self) -> Dict[str, List[str]]:
         return {
-            f"group_{gid + 1}": members
+            f"group {gid + 1}": members
             for gid, members in self.groups.items()
         }
 
