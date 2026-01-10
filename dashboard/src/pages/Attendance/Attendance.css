@@ -3,6 +3,31 @@
     --page-accent: var(--accent-primary);
 }
 
+/* Search Container Refinement */
+.search-container {
+    position: relative;
+    width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1.25rem 1.25rem 1.25rem 3.75rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    outline: none;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-input:focus {
+    border-color: var(--page-accent);
+    box-shadow: 0 0 0 4px rgba(var(--accent-primary-rgb), 0.1);
+    background: var(--bg-primary);
+}
+
 /* Stats Cards Container */
 .stats-grid {
     display: grid;

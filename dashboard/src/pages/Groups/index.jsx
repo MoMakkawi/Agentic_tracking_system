@@ -192,13 +192,13 @@ const Groups = () => {
                 gradient="linear-gradient(to right, #10b981, #059669)"
                 iconColor="#10b981"
                 iconBgColor="rgba(16, 185, 129, 0.1)"
-                actions={
+                actions={   
                     <div className="search-container">
                         <Search size={20} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
                             type="text"
                             className="search-input"
-                            placeholder="Search by group or member UID..."
+                            placeholder="Search groups..."
                             value={searchTerm}
                             onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
                         />

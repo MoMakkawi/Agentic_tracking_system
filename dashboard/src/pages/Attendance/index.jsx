@@ -11,7 +11,7 @@ import {
     Calendar, Users, Hash, Clock, Filter,
     ChevronLeft, ChevronRight, AlertCircle,
     CheckCircle2, AlertTriangle, Shield,
-    User, Info, Bookmark, TrendingUp, ArrowRight, Layers, Sparkles, ShieldCheck
+    User, Info, Bookmark, TrendingUp, ArrowRight, Layers, Sparkles, ShieldCheck, Search
 } from 'lucide-react';
 
 const Attendance = () => {
@@ -212,7 +212,7 @@ const Attendance = () => {
                 iconBgColor="rgba(99, 102, 241, 0.1)"
                 actions={
                     <div className="search-container">
-                        <Filter style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
+                        <Search style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
                         <input
                             type="text"
                             placeholder="Search sessions..."
