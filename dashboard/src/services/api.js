@@ -44,5 +44,11 @@ export const chatService = {
     getStats: () => client.get('/chat/stats'),
 };
 
+// Analytics Services
+export const analyticsService = {
+    getGroupAnalytics: (params) => client.get('/analytics/groups', { params }),
+    getAttendanceTrend: (params) => client.get('/analytics/attendance-trend', { params }),
+};
+
 export default client;
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { attendanceService, alertService, groupService, chatService } from '../../services/api';
+import { attendanceService, alertService, groupService, chatService, analyticsService } from '../../services/api';
 import Card from '../../components/Common/Card';
 import PageHeader from '../../components/Common/PageHeader';
 import {
@@ -21,7 +21,7 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip,
+    Tooltip as RechartsTooltip,
     ResponsiveContainer,
     PieChart,
     Pie,
@@ -41,7 +41,7 @@ const Overview = () => {
     const [dateRange, setDateRange] = useState(() => {
         const now = new Date();
         const fromDate = new Date();
-        fromDate.setDate(now.getDate() - 6);
+        fromDate.setMonth(now.getMonth() - 1);
 
         const formatDate = (date) => {
             const year = date.getFullYear();
@@ -162,52 +162,11 @@ const Overview = () => {
 
     const fetchTrendData = async () => {
         try {
-            const sessionsRes = await attendanceService.filterSessions({
+            const res = await analyticsService.getAttendanceTrend({
                 received_at_from: dateRange.from,
-                received_at_to: dateRange.to,
-                page_size: 1000
+                received_at_to: dateRange.to
             });
-
-            const filteredSessions = sessionsRes.data.items || [];
-
-            const days = [];
-            const [fromYear, fromMonth, fromDay] = dateRange.from.split('-').map(Number);
-            const [toYear, toMonth, toDay] = dateRange.to.split('-').map(Number);
-
-            const start = new Date(fromYear, fromMonth - 1, fromDay);
-            const end = new Date(toYear, toMonth - 1, toDay);
-
-            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                days.push(`${year}-${month}-${day}`);
-            }
-
-            const trend = days.map(isoDate => {
-                const daySessions = filteredSessions.filter(s => {
-                    const sessionDate = s.received_at || s.logs_date;
-                    if (!sessionDate) return false;
-                    return sessionDate.startsWith(isoDate);
-                });
-
-                // Sum up attendance metrics for all sessions in this day
-                const totalAttendance = daySessions.reduce((sum, s) => sum + (s.unique_count || 0), 0);
-                const totalRecorded = daySessions.reduce((sum, s) => sum + (s.recorded_count || 0), 0);
-                const sessionCount = daySessions.length;
-
-                const displayLabel = formatDate(isoDate);
-
-                return {
-                    name: displayLabel,
-                    fullDate: isoDate,
-                    attendance: totalAttendance,
-                    recorded: totalRecorded,
-                    sessions: sessionCount
-                };
-            });
-
-            setTrendData(trend);
+            setTrendData(res.data || []);
         } catch (error) {
             console.error("Error fetching trend data:", error);
             setTrendData([]);
@@ -349,34 +308,86 @@ const Overview = () => {
                             </div>
                         }
                     >
-                        <div className="chart-container">
-                            <ResponsiveContainer width="100%" height={300}>
-                                <AreaChart data={trendData}>
+                        <div className="chart-container" style={{ height: '400px', marginTop: '1.5rem' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorAttendance" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
                                             <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                         </linearGradient>
+                                        <linearGradient id="colorUnassigned" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                        </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                                    <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                    <Tooltip
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        stroke="var(--text-muted)"
+                                        fontSize={11}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        dy={15}
+                                        interval="preserveStartEnd"
+                                        minTickGap={30}
+                                    />
+                                    <YAxis
+                                        stroke="var(--text-muted)"
+                                        fontSize={11}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(val) => `${val}`}
+                                    />
+                                    <RechartsTooltip
                                         labelFormatter={(label, payload) => {
                                             if (payload && payload.length > 0 && payload[0].payload.fullDate) {
                                                 return formatDate(payload[0].payload.fullDate);
                                             }
                                             return label;
                                         }}
-                                        contentStyle={{ backgroundColor: '#1a1b1e', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}
-                                        itemStyle={{ color: '#fff' }}
-                                        formatter={(value) => [value, 'Participants']}
+                                        contentStyle={{
+                                            backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '12px',
+                                            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                                            backdropFilter: 'blur(8px)'
+                                        }}
+                                        itemStyle={{ padding: '4px 0', fontSize: '13px' }}
+                                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                                     />
-                                    <Area type="monotone" dataKey="attendance" name="attendance" stroke="#3b82f6" fillOpacity={1} fill="url(#colorAttendance)" strokeWidth={2} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="attendance"
+                                        name="Total Attendance"
+                                        stroke="#3b82f6"
+                                        fillOpacity={1}
+                                        fill="url(#colorAttendance)"
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6, strokeWidth: 0 }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="unassigned"
+                                        name="Unassigned Users"
+                                        stroke="#ef4444"
+                                        fillOpacity={1}
+                                        fill="url(#colorUnassigned)"
+                                        strokeWidth={3}
+                                        activeDot={{ r: 6, strokeWidth: 0 }}
+                                    />
                                 </AreaChart>
                             </ResponsiveContainer>
-                            <div className="chart-legend">
-                                <div className="legend-item"><span className="legend-dot" style={{ background: '#3b82f6' }}></span> Participants</div>
+                            <div className="chart-legend" style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '24px' }}>
+                                <div className="legend-item" style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className="legend-dot" style={{ background: '#3b82f6', width: '10px', height: '10px', borderRadius: '50%' }}></span>
+                                    <span>Daily Total Attendance (Unique)</span>
+                                </div>
+                                <div className="legend-item" style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className="legend-dot" style={{ background: '#ef4444', width: '10px', height: '10px', borderRadius: '50%' }}></span>
+                                    <span>Unassigned Users</span>
+                                </div>
                             </div>
                         </div>
                     </Card>
@@ -398,7 +409,7 @@ const Overview = () => {
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <RechartsTooltip />
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="pie-legend">

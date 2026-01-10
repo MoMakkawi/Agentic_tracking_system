@@ -189,7 +189,13 @@ const Agent = () => {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
-        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+        // Reset times to compare dates only
+        const dateJust = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const nowJust = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        const diffTime = nowJust - dateJust;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays === 0) return 'Today';
         if (diffDays === 1) return 'Yesterday';
@@ -202,7 +208,7 @@ const Agent = () => {
             <PageHeader
                 title="AI Agent"
                 icon={Bot}
-                description="Harness the power of AI to analyze your tracking data through natural language."
+                description="Harness AI power to analyze your tracking data through your language."
                 gradient="linear-gradient(to right, #a78bfa, #c084fc)"
                 iconColor="#a78bfa"
                 iconBgColor="rgba(167, 139, 250, 0.1)"
@@ -309,7 +315,6 @@ const Agent = () => {
                                     </div>
                                     <div className={`message-bubble ${msg.isError ? 'error' : ''}`}>
                                         <div className="message-text">{msg.text}</div>
-                                        {msg.status && <div className="message-status">Status: {msg.status}</div>}
                                     </div>
                                 </div>
                             ))
