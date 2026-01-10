@@ -159,7 +159,7 @@ const Agent = () => {
         setLoading(true);
 
         try {
-            const response = await agentService.runTask(userMessage);
+            const response = await agentService.runTask(userMessage, currentConversationId);
             const assistantMessage = {
                 role: 'assistant',
                 text: response.data.result,

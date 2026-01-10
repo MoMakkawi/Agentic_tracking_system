@@ -159,6 +159,30 @@ class ShortTermMemory(BaseMemory):
         """
         return list(self._conversation_log)
 
+    def load_history(self, messages: List[Any]) -> None:
+        """
+        Load conversation history into memory.
+        
+        Args:
+            messages: List of chat messages from ChatService
+        """
+        self._conversation_log.clear()
+        
+        # Format messages into conversation turns (pairs of user/assistant)
+        # Note: We store them in our log. Re-injecting into smolagents is handled
+        # via the first run() call context if necessary, or by appending steps.
+        
+        for msg in messages:
+            entry = MemoryEntry(
+                key=f"{msg.role.capitalize()}: {msg.content[:50]}...",
+                value=msg.content,
+                timestamp=msg.timestamp,
+                metadata={"role": msg.role, "persisted": True}
+            )
+            self._conversation_log.append(entry)
+            
+        logger.info(f"Loaded {len(messages)} messages into ShortTermMemory log")
+
     def get_agent_memory_steps(self) -> List[Dict[str, Any]]:
         """
         Get the raw smolagents memory steps.
@@ -211,3 +235,9 @@ class ShortTermMemory(BaseMemory):
             lines.append(f"Task: {entry.key[:100]}...")
             lines.append(f"Result: {str(entry.value)[:200]}...")
         return "\n".join(lines)
+
+    def get_memory_length(self) -> int:
+        """
+        Returns the number of steps in the underlying agent memory.
+        """
+        return len(self.get_agent_memory_steps())

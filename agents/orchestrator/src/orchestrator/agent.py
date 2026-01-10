@@ -90,13 +90,14 @@ class Orchestrator:
     # ---------------------------------------------------------
     # Task Execution
     # ---------------------------------------------------------
-    def _execute(self, task: str, reset_memory: bool = False) -> str:
+    def _execute(self, task: str, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
         """
         Execute a task using the persistent agent.
         
         Args:
             task: The task to execute
             reset_memory: If True, clears conversation history before running
+            history: Optional conversation history to load (if memory is empty)
         
         Returns:
             The result of task execution
@@ -105,29 +106,46 @@ class Orchestrator:
         
         # Get memory stats before execution
         stm = self.get_memory("short_term")
-        if stm:
-            logger.info(f"Memory reset: {reset_memory}")
+        
+        if reset_memory and stm:
+            stm.clear()
+            logger.info("Memory cleared as requested")
+        
+        # If we have history but no memory steps, load the history
+        if history and stm and isinstance(stm, ShortTermMemory):
+            if stm.get_memory_length() == 0:
+                logger.info(f"Loading {len(history)} messages into memory context")
+                stm.load_history(history)
+                
+                # To make smolagents aware of history without complex step injection,
+                # we can prepend the history summary to the task for the first run.
+                history_context = "\n".join([
+                    f"{'User' if m.role == 'user' else 'Assistant'}: {m.content}"
+                    for m in history[-5:] # Last 5 messages for context
+                ])
+                task = f"Previous Conversation Context:\n{history_context}\n\nCurrent Task: {task}"
 
         # Execute with smolagents (reset=False preserves history)
-        result = self._agent.run(task, reset=reset_memory)
+        # Note: reset=reset_memory is handled by our stm.clear() above, 
+        # but we pass False to smolagents to preserve what we might have injected.
+        result = self._agent.run(task, reset=False)
         
         # Record this interaction in our memory system
         if stm and not reset_memory:
             stm.add(key=task, value=result, metadata={"attempt": 1})
         
         logger.info("Orchestrator task completed successfully")
-        if stm:
-            logger.info(f"Memory stats after execution: {stm.get_stats()["enabled"]}")
         
         return result
 
-    def run(self, task: Optional[str] = None, reset_memory: bool = False) -> str:
+    def run(self, task: Optional[str] = None, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
         """
         Run task with retry logic.
         
         Args:
             task: The task to execute (uses default_task if None)
             reset_memory: If True, clears conversation history before running
+            history: Optional conversation history to load
         
         Returns:
             The result of task execution
@@ -137,7 +155,7 @@ class Orchestrator:
 
         for attempt in range(1, self.retries + 1):
             try:
-                return self._execute(task, reset_memory=reset_memory)
+                return self._execute(task, reset_memory=reset_memory, history=history)
             except Exception as e:
                 logger.exception(f"Attempt {attempt} failed: {e}")
                 if attempt == self.retries:
@@ -253,7 +271,7 @@ class Orchestrator:
 # ----------------------------
 # Main Entry Point
 # ----------------------------
-def main(task: str = None, reset_memory: bool = False) -> str:
+def main(task: str = None, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
     """
     Entry point for the Orchestrator.
     
@@ -262,9 +280,10 @@ def main(task: str = None, reset_memory: bool = False) -> str:
     Args:
         task: The task to execute (uses default if None)
         reset_memory: If True, clears conversation history before running
+        history: Optional conversation history to load
     
     Returns:
         The result of task execution
     """
     orchestrator = Orchestrator.get_instance()
-    return orchestrator.run(task, reset_memory=reset_memory)
+    return orchestrator.run(task, reset_memory=reset_memory, history=history)

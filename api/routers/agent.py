@@ -23,7 +23,7 @@ async def run_agent_task(
     logger.info(f"API request to run agent task: {request.task}")
     
     try:
-        response = service.run_task(request.task)
+        response = service.run_task(request.task, conversation_id=request.conversation_id)
         if response.status == "error":
             raise HTTPException(status_code=500, detail=response.result)
         return response

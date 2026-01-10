@@ -19,21 +19,31 @@ class AgentService:
         """
         Initialize the AgentService and the Orchestrator.
         """
+        from api.services.chat_service import ChatService
+        self.chat_service = ChatService()
     
-    def run_task(self, task: Optional[str] = None) -> AgentResponse:
+    def run_task(self, task: Optional[str] = None, conversation_id: Optional[str] = None) -> AgentResponse:
         """
         Run a task using the Orchestrator agent.
         
         Args:
             task: The task to be executed by the agent.
+            conversation_id: Optional conversation ID to maintain memory.
             
         Returns:
             AgentResponse containing the result and status.
         """
-        logger.info(f"AgentService received task: {task}")
+        logger.info(f"AgentService received task: {task} (conversation_id: {conversation_id})")
         
         try:
-            result = orchestrator_main(task)
+            history = None
+            if conversation_id:
+                conversation = self.chat_service.get_conversation(conversation_id)
+                if conversation:
+                    history = conversation.messages
+                    logger.info(f"Retrieved {len(history)} messages for conversation {conversation_id}")
+            
+            result = orchestrator_main(task, history=history)
             return AgentResponse(
                 result=result,
                 task=task,

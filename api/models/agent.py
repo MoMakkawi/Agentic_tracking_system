@@ -6,6 +6,7 @@ class AgentRequest(BaseModel):
     Request model for the orchestration agent.
     """
     task: str = Field(..., description="The task or query for the agent to execute")
+    conversation_id: Optional[str] = Field(None, description="Optional conversation ID to maintain context")
 
 class AgentResponse(BaseModel):
     """

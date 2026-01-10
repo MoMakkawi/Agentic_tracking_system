@@ -175,6 +175,16 @@ class BaseMemory(ABC):
         pass
 
     @abstractmethod
+    def get_memory_length(self) -> int:
+        """
+        Get the size/length of the memory.
+        
+        Returns:
+            Integer representing memory size
+        """
+        pass
+
+    @abstractmethod
     def get_stats(self) -> Dict[str, Any]:
         """
         Get statistics about this memory.

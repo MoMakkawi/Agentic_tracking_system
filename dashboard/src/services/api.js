@@ -30,7 +30,7 @@ export const groupService = {
 
 // Agent Services
 export const agentService = {
-    runTask: (task) => client.post('/agent/run', { task }),
+    runTask: (task, conversationId = null) => client.post('/agent/run', { task, conversation_id: conversationId }),
 };
 
 // Chat Services
