@@ -28,15 +28,12 @@ class LouvainGroupIdentifier:
 
         # load sessions data
         clean_data_path = config.PATHS.PREPROCESSED
-        logger.info(f"Loading session data from: {clean_data_path}")
         json_repo = JsonRepository(clean_data_path)
         json_repo.ensure_exists()
         self.sessions = json_repo.read_all()
-        logger.info(f"Loaded {len(self.sessions)} sessions successfully!")
 
         # load alerts to detect invalid uids
         id_alerts_path = config.PATHS.ALERTS.VALIDATION.IDENTITY
-        logger.info(f"Loading invalid uids from: {id_alerts_path}")
         csv_repo = CsvRepository(id_alerts_path)
         csv_repo.ensure_exists()
         alerts = csv_repo.read_all()
@@ -45,8 +42,6 @@ class LouvainGroupIdentifier:
             for row in alerts
             if int(row["allow_clustering"]) == 0
         }
-
-        logger.info(f"Loaded {len(self.disallowed_uids)} disallowed uids successfully!")
 
         # Louvain
         louvain_config = config.LLM_MODULES.GROUP_IDENTIFIER.LOUVAIN
@@ -105,7 +100,6 @@ class LouvainGroupIdentifier:
                 self.student_sessions[uid].append(sid)
 
         self.student_list = sorted(self.all_students)
-        logger.info(f"Unique students: {len(self.student_list)}")
 
     def _extract_features(self) -> None:
         """
@@ -192,8 +186,6 @@ class LouvainGroupIdentifier:
 
         for student, gid in self.communities.items():
             self.groups[gid].append(student)
-
-        logger.info(f"Detected {len(self.groups)} groups")
 
     def _export_results(self) -> Dict[str, List[str]]:
         return {

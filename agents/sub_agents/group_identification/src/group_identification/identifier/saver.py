@@ -19,8 +19,6 @@ class GroupSaver:
         :param groups: Dictionary of groups to save.
         :return: Path where the groups were saved.
         """
-        logger.info(f"Saving groups {groups} to: {self.output_path}")
         json_repo = JsonRepository(self.output_path)
         json_repo.save_all(groups)
-        logger.info(f"Saved successfully groups to: {self.output_path}")
         return self.output_path

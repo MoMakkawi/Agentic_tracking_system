@@ -56,7 +56,6 @@ class GroupIdentifierAgent:
         Args:
             task (Optional[str]): High-level instruction/question from orchestrator.
         """
-        logger.info(f"Executing task: {task}")
 
         # Create an isolated code agent for the task
         agent = CodeAgent(
@@ -69,7 +68,6 @@ class GroupIdentifierAgent:
         task = task or self.default_task
         task_instructions=self._build_task_instructions(task)
         result = agent.run(task_instructions)
-        logger.info("Task execution completed successfully. Result: %s", result)
         return result
 
     # ---------------------------------------------------------
@@ -81,7 +79,6 @@ class GroupIdentifierAgent:
         """
 
         task = task or self.default_task
-        logger.info(f"Executing orchestrator task: {task}")
 
         for attempt in range(1, self.retries + 1):
             try:

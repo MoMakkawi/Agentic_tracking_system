@@ -22,10 +22,10 @@ def louvain_clustering_tool() -> Dict[str, List[str]]:
         }
     """
     try:
-        logger.info("Starting Louvain Clustering Tool...")
+        logger.info("Starting Louvain Clustering by Agent!")
         identifier = LouvainGroupIdentifier()
         groups = identifier.run()
-        logger.info("Louvain Clustering Tool finished successfully!")
+        logger.info("Louvain Clustering Tool finished successfully by Agent!")
         return groups
 
     except Exception as e:
@@ -58,11 +58,11 @@ def save_tool(groups: dict[str, List[str]]) -> str:
         - Returns the storage path.
     """
     try:
-        logger.info("Starting Save Tool...")
+        logger.info("Starting Save Tool by Agent!")
 
         output_path = GroupSaver().save(groups)
 
-        logger.info(f"Groups saved successfully to {output_path}")
+        logger.info(f"Groups saved successfully by Agent!")
         return output_path
 
     except Exception as e:

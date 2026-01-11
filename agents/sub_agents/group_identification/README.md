@@ -1,4 +1,4 @@
-# Group Identifier Agent – Stage 3  
+# Group Identifier Agent – Stage 3
 ------------------------------------------------
 
 ## Table of Contents
@@ -54,7 +54,7 @@ The **LouvainGroupIdentifier** constructs a similarity graph from student attend
 
 ### save_tool
 
-Internally uses the **GroupSaver** class to persist groups to JSON and return a confirmation message.
+Internally uses the **GroupSaver** class to persist groups to JSON and return the path.
 
 <details>
 <summary>GroupSaver Internals (click to expand)</summary>
@@ -67,7 +67,7 @@ The **GroupSaver** handles saving clustered groups.
 | **Persist groups** | Save the groups dictionary to JSON using `JsonRepository` |
 | **Return confirmation** | Returns the storage path. |
 
-**Entry point:** `GroupSaver.save(groups)` → confirmation message
+**Entry point:** `GroupSaver.save(groups)` → storage path
 
 </details>
 
@@ -140,7 +140,7 @@ The agent **must never**:
 - Access data without explicit criteria  
 
 The agent **must always**:  
-- Save groups using `save_tool()`  
+- Save groups using `save_tool()`.
 - Return **only** the confirmation message after `save_tool()`  
 
 ---
