@@ -88,24 +88,28 @@ class AnalyticsService:
             # Enrich groups with their individual attendance trends
             enriched_groups = []
             for g in groups_dto:
+                member_set = {str(m).strip().lower() for m in g.members}
                 trend = []
-                # Individual group trend (last 7 recorded dates or similar)
-                # For sparklines, we'll just use the last few sessions
+                
+                # Individual group trend (last 10 sessions)
                 group_sessions = sorted(sessions, key=lambda x: self._get_session_date(x) or "", reverse=True)[:10]
                 for s in reversed(group_sessions):
                     logs = getattr(s, 'logs', []) or []
-                    present = sum(1 for l in logs if hasattr(l, 'uid') and str(l.uid).strip().lower() in [str(m).strip().lower() for m in g.members])
-                    presence_pct = round((present / len(g.members)) * 100) if g.members else 0
+                    uids_in_s = {str(l.uid).strip().lower() for l in logs if hasattr(l, 'uid') and l.uid}
+                    present_count = len(uids_in_s.intersection(member_set))
+                    presence_pct = round((present_count / len(g.members)) * 100) if g.members else 0
                     trend.append(GroupTrendItem(date=self._get_session_date(s), presence=presence_pct))
                 
-                # Overall average
-                total_present = 0
+                # Overall average: unique members across ALL sessions in range
+                all_uids_in_range = set()
                 for s in sessions:
                     logs = getattr(s, 'logs', []) or []
-                    total_present += sum(1 for l in logs if hasattr(l, 'uid') and str(l.uid).strip().lower() in [str(m).strip().lower() for m in g.members])
+                    for l in logs:
+                        if hasattr(l, 'uid') and l.uid:
+                            all_uids_in_range.add(str(l.uid).strip().lower())
                 
-                max_possible = len(g.members) * len(sessions) if sessions and g.members else 1
-                avg = round((total_present / max_possible) * 100)
+                present_in_range = all_uids_in_range.intersection(member_set)
+                avg = round((len(present_in_range) / len(g.members)) * 100) if g.members else 0
 
                 enriched_groups.append(EnrichedGroupItem(
                     name=g.name,
@@ -128,16 +132,17 @@ class AnalyticsService:
                 day_sessions = [s for s in sessions if self._get_session_date(s) == date]
                 row = {"date": date}
                 
+                uids_on_day = set()
+                for s in day_sessions:
+                    logs = getattr(s, 'logs', []) or []
+                    for l in logs:
+                        if hasattr(l, 'uid') and l.uid:
+                            uids_on_day.add(str(l.uid).strip().lower())
+
                 for g in groups_dto:
-                    member_set = set(str(m).strip().lower() for m in g.members)
-                    actual_present = 0
-                    for s in day_sessions:
-                        logs = getattr(s, 'logs', []) or []
-                        uids_in_s = set(str(l.uid).strip().lower() for l in logs if hasattr(l, 'uid') and l.uid and str(l.uid).strip().lower() in member_set)
-                        actual_present += len(uids_in_s)
-                    
-                    max_possible = len(g.members) * len(day_sessions) or 1
-                    row[g.name] = round((actual_present / max_possible) * 100)
+                    member_set = {str(m).strip().lower() for m in g.members}
+                    present_on_day = uids_on_day.intersection(member_set)
+                    row[g.name] = round((len(present_on_day) / len(g.members)) * 100) if g.members else 0
 
                 multi_trend.append(row)
 
