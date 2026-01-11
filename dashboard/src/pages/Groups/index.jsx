@@ -166,8 +166,13 @@ const Groups = () => {
     }, [dateRange]);
 
     const formatDate = (dateStr) => {
-        if (!dateStr || typeof dateStr !== 'string') return dateStr;
-        const [year, month, day] = dateStr.split('-');
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         return showYear ? `${month}/${day}/${year}` : `${month}/${day}`;
     };
 
@@ -192,7 +197,7 @@ const Groups = () => {
                 gradient="linear-gradient(to right, #10b981, #059669)"
                 iconColor="#10b981"
                 iconBgColor="rgba(16, 185, 129, 0.1)"
-                actions={   
+                actions={
                     <div className="search-container">
                         <Search size={20} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
@@ -277,10 +282,32 @@ const Groups = () => {
                                 cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                             />
                             <Legend
-                                verticalAlign="bottom"
-                                height={40}
-                                iconType="circle"
-                                wrapperStyle={{ paddingTop: '20px', fontSize: '12px', color: 'var(--text-secondary)' }}
+                                content={({ payload }) => (
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+                                        {payload.map((entry, index) => (
+                                            <div key={`legend-${index}`} style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem',
+                                                fontSize: '0.8rem',
+                                                color: entry.color,
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                padding: '0.35rem 0.75rem',
+                                                borderRadius: '20px',
+                                                border: `1px solid ${entry.color}30`
+                                            }}>
+                                                <div style={{
+                                                    width: '6px',
+                                                    height: '6px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: entry.color,
+                                                    boxShadow: `0 0 6px ${entry.color}`
+                                                }} />
+                                                <span style={{ fontWeight: 600 }}>{entry.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             />
                             {groups.map(g => (
                                 <Area
