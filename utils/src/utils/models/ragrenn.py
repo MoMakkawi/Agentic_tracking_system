@@ -13,17 +13,17 @@ class RagrennModel:
     def __init__(self, model_config):
         self.base_url = model_config.MODEL.BASE_URL
         target_model_name = model_config.MODEL.NAME
+        self.retries = model_config.SETTINGS.RETRIES
 
         try:
             api_key = Secrets.RENNES_API_KEY
             if not api_key:
                 raise EnvironmentError("Missing RENNES_API_KEY")
 
-            self.client = OpenAI(api_key=api_key, base_url=self.base_url)
+            self.client = OpenAI(api_key=api_key, base_url=self.base_url, max_retries=self.retries)
             
             # Select available model from the provided name(s)
             self.model_name = self._select_available_model(target_model_name)
-            logger.info(f"RagrennModel initialized with model '{self.model_name}'")
 
         except Exception as e:
             logger.exception(f"Failed to initialize RagrennModel: {e}")
@@ -50,13 +50,9 @@ class RagrennModel:
             available_models_response = self.client.models.list()
             available_model_ids = {model.id for model in available_models_response.data}
             
-            logger.debug(f"Available models from API: {available_model_ids}")
-            logger.debug(f"Requested models: {model_names}")
-            
             # Find the first available model
             for model in model_names:
                 if model in available_model_ids:
-                    logger.info(f"Selected model: {model}")
                     return model
             
             # No models available
@@ -72,18 +68,16 @@ class RagrennModel:
 
     def generate_text(self, prompt: str) -> str:
         """Send a text prompt to Ragrenn and return the response."""
-        logger.debug(f"Sending prompt to Ragrenn: {prompt[:80]}...")
         try:
             response = self.client.responses.create(
                 model=self.model_name,
                 input=prompt
             )
             output = response.output_text.strip()
-            logger.info("Ragrenn response received successfully.")
             return output
 
         except Exception as e:
-            logger.exception(f"Ragrenn API call failed: {e}")
+            logger.exception(f"Ragrenn API call failed: {e.message}")
             raise RuntimeError("Ragrenn API call failed.") from e
 
     def ask(self, prompt: str, display_md: bool = False) -> str:
@@ -100,5 +94,5 @@ class RagrennModel:
             model_id=self.model_name,
             api_base=self.base_url,
             api_key=Secrets.RENNES_API_KEY,
-            flatten_messages_as_text=True,
+            flatten_messages_as_text=True
         )

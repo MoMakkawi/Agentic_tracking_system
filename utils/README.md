@@ -1,104 +1,178 @@
-# Utils Package
+# Agentic Tracking System - Utils Package
 
 ## Index
-- [Overview](#overview)
-- [Features](#features)
-  - [Helper Utilities](#helper-utilities)
-  - [Data Models](#data-models)
-  - [Storage Management](#storage-management)
-  - [Configuration & Logging](#configuration--logging)
-- [Usage](#usage)
-  - [Basic Imports](#basic-imports)
-  - [Example: Time Utilities](#example-time-utilities)
-  - [Example: Configuration Management](#example-configuration-management)
-  - [Example: Logging](#example-logging)
+- [Overview](#Overview)
+- [Installation](#installation)
 - [Project Structure](#project-structure)
-- [Related Resources](#related-resources)
+- [Key Features](#key-features)
+  - [Storage Layer](#storage-layer)
+  - [Configuration Management](#configuration-management)
+  - [Data Transfer Objects (DTOs)](#data-transfer-objects-dtos)
+  - [AI Models](#ai-models)
+- [Usage Examples](#usage-examples)
+  - [Using the Storage Repositories](#using-the-storage-repositories)
+  - [Managing Configuration](#managing-configuration)
+  - [Structured Logging](#structured-logging)
+
+---
 
 ## Overview
 
-**utils** is a core component of the **Agentic Tracking System**, providing robust utilities for multi-agent systems, intelligent tracking, and advanced data management in AI-driven applications.
+The **Utils Package** is the foundational library for the **Agentic Tracking System**, abstracting complex low-level operations into clean, reusable interfaces. It provides essential services such as configuration management with auto-reloading, a unified storage repository pattern, structured logging, and robust data transfer objects (DTOs).
 
-## Features
+Designed for multi-agent architectures, this package ensures consistency across data access, error handling, and external service integration (Google Gemini, RAGrenn).
 
-### **Helper Utilities**
-- **General Purpose Helpers** (`general.py`): Common utility functions for data manipulation and processing
-- **Time-related Helpers** (`time.py`): Date, time handling, and temporal utilities for scheduling and tracking
+---
 
-### **Data Models**
-- **Gemini Models** (`gemini.py`): Integration with Google Gemini models for LLM-powered functionality
-- **RAGrenn Models** (`ragrenn.py`): Integration with RAGrenn models for LLM-powered functionality
+## Installation
 
-### **Storage Management**
-Abstraction layer for efficient data persistence and schema management:
-- Database schema information retrieval
-- Data persistence operations
-- Storage optimization utilities
+To install the package in your local environment, run the following command from the `utils` directory:
 
-### **Configuration & Logging**
-- **Config Module** (`config.py`): Centralized configuration management for the entire package
-- **Logger Module** (`logger.py`): Structured logging utilities for debugging and monitoring
-- **Secrets Management** (`Secrets.py`): Secure handling of API keys and sensitive credentials
-
-## Usage
-
-### Basic Imports
-
-```python
-from utils.helpers import general, time
-from utils.models import gemini, ragrenn
-from utils.storage import get_schema_info
-from utils.config import load_config
-from utils.logger import get_logger
+```bash
+pip install .
 ```
 
-### Example: Time Utilities
+Or if you are managing dependencies with Hatch/Poetry:
 
-```python
-from utils.helpers import time
-
-# Handle temporal operations
-timestamp = time.get_current_timestamp()
+```bash
+hatch shell
 ```
 
-### Example: Configuration Management
+---
+
+## Project Structure
+
+The package is organized efficiently to separate concerns between data, logic, and infrastructure:
+
+```text
+src/utils/
+├── config.py           # Centralized threaded configuration manager
+├── logger.py           # Structured logging setup
+├── Secrets.py          # Secure credentials handling
+├── DTOs/               # Data Transfer Objects (Pydantic-style models)
+│   ├── alerts/
+│   ├── attendance/
+│   └── groups/
+├── mappers/            # Domain <-> DTO transformation logic
+│   ├── alert_mappers.py
+│   ├── group_mappers.py
+│   └── session_mappers.py
+├── storage/            # Repository Pattern Implementation
+│   ├── base.py         # Abstract Base Class
+│   ├── factory.py      # Repository Factory
+│   ├── csv_repo.py     # CSV Storage
+│   ├── json_repo.py    # JSON Storage
+│   ├── jsonl_repo.py   # JSONL Storage
+│   └── ics_repo.py     # iCalendar Storage
+├── helpers/            # Utility functions
+│   ├── general.py
+│   └── time.py
+└── models/             # AI Integration
+    ├── gemini.py
+    └── ragrenn.py
+```
+
+---
+
+## Key Features
+
+### Storage Layer
+A robust **Repository Pattern** implementation that abstracts file I/O. It supports multiple backends (`.json`, `.jsonl`, `.csv`, `.ics`) through a unified interface (`RepositoryFactory`).
+*   **Automatic type detection** based on file extension.
+*   **CRUD operations**: `read_all`, `add`, `update`, `delete`.
+*   **Schema introspection**: `get_schema_info`.
+
+### Configuration Management
+A thread-safe configuration manager that supports:
+*   **Hot-reloading**: Automatically detects changes to `config.json` and updates the application state in real-time.
+*   **Environment variable overrides**: Seamlessly inject secrets or environment-specific settings.
+*   **Dot-notation access**: Access deeply nested config keys easily (e.g., `config.SOURCE_URLS.LOGS`).
+
+### Data Transfer Objects (DTOs)
+Strictly typed data structures for core domain entities:
+*   **Attendance**: Tracking student presence.
+*   **Groups**: Managing agent or student groupings.
+*   **Alerts**: System notifications and anomalies.
+
+### AI Models
+Pre-configured wrappers for:
+*   **Google Gemini**: For generative AI tasks.
+*   **RAGrenn**: Custom RAG (Retrieval-Augmented Generation) implementation.
+
+---
+
+## Usage Examples
+
+### Using the Storage Repositories
+
+The `RepositoryFactory` automatically selects the correct driver for your file type.
+
+```python
+from utils.storage.factory import RepositoryFactory
+
+# Initialize repository (Auto-detects JSON driver)
+user_repo = RepositoryFactory.get_repository("data/users.json")
+
+# Create
+user_repo.add({"id": "1", "name": "Alice", "role": "admin"})
+
+# Read
+all_users = user_repo.read_all()
+print(f"Total users: {len(all_users)}")
+
+# Update
+user_repo.update("1", {"name": "Alice Smith"})
+
+# Delete
+user_repo.delete("1")
+```
+
+### Managing Configuration
+
+Load the configuration once at startup. The watcher thread handles updates automatically.
 
 ```python
 from utils.config import load_config, get_config
 
-load_config()
+# Initialize with auto-reload enabled
+load_config("config.json", start_watcher=True)
+
+# Access configuration anywhere in your app
 config = get_config()
-logs_url = config.SOURCE_URLS.LOGS
+
+# Access nested keys using dot notation
+log_level = config.LOGGING.LEVEL
+api_key = config.API_KEYS.GEMINI
+
+print(f"System running with log level: {log_level}")
 ```
 
-### Example: Logging
+### Structured Logging
+
+Use the pre-configured logger for consistent output formats.
 
 ```python
-from utils import logger
+from utils.logger import logger
 
-logger.info("Message")
+try:
+    # Business logic here
+    logger.info("Processing started...")
+except Exception as e:
+    logger.error(f"Processing failed: {e}")
 ```
 
-## Project Structure
+### Time Utilities
 
-```
-utils/
-├── src/utils/
-│   ├── helpers/
-│   │   ├── general.py      # General-purpose utilities
-│   │   └── time.py         # Time and date utilities
-│   ├── models/
-│   │   ├── gemini.py       # Gemini model integration
-│   │   └── ragrenn.py      # Ragrenn model integration
-│   ├── storage/            # Storage abstraction layer
-│   ├── config.py           # Configuration management
-│   ├── logger.py           # Logging configuration
-│   └── Secrets.py          # Credentials and secrets
-├── pyproject.toml          # Project metadata and dependencies
-└── README.md              # This file
+```python
+from utils.helpers import time
+
+# Get standardized timestamp
+current_ts = time.get_current_timestamp()
+print(f"Action recorded at: {current_ts}")
 ```
 
-## Related Resources
+---
 
-- [Project Repository](https://github.com/MoMakkawi/Agentic_tracking_system)
-- [Main Documentation](https://github.com/MoMakkawi/Agentic_tracking_system#readme)
+## License
+
+See LICENSE in project root

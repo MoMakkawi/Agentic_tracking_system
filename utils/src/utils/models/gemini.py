@@ -14,7 +14,7 @@ class GeminiModel:
 
     def __init__(
         self,
-        model_name: Union[str, List[str]] = "gemini-1.5-pro-latest",
+        model_name: Union[str, List[str]] = ["gemini-2.5-flash"],
         base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
     ):
         self.base_url = base_url
@@ -27,8 +27,7 @@ class GeminiModel:
             
             # Select available model from the provided name(s)
             self.model_name = self._select_available_model(model_name)
-            logger.info(f"GeminiModel initialized with model '{self.model_name}'")
-
+            
         except Exception as e:
             logger.exception(f"Failed to initialize GeminiModel: {e}")
             raise
@@ -54,13 +53,12 @@ class GeminiModel:
             available_models_response = self.client.models.list()
             available_model_ids = {model.id for model in available_models_response.data}
             
-            logger.debug(f"Available models from API: {available_model_ids}")
-            logger.debug(f"Requested models: {model_names}")
+            #logger.debug(f"Available models from API: {available_model_ids}")
+            #logger.debug(f"Requested models: {model_names}")
             
             # Find the first available model
             for model in model_names:
                 if model in available_model_ids:
-                    logger.info(f"Selected model: {model}")
                     return model
             
             # No models available
@@ -83,7 +81,6 @@ class GeminiModel:
                 input=prompt
             )
             output = response.output_text.strip()
-            logger.info("Gemini response received successfully.")
             return output
 
         except Exception as e:
