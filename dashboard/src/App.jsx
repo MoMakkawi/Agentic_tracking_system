@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/Layout/Sidebar';
 
 import Overview from './pages/Overview';
@@ -13,6 +14,7 @@ function App() {
     return (
         <Router>
             <div className="app-container">
+                <Toaster position="top-right" />
                 <Sidebar />
                 <div className="main-content">
 

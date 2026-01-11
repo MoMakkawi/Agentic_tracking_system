@@ -1,13 +1,25 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const API_BASE_URL = 'http://localhost:8000';
 
 const client = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 30000,
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+client.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            toast.error("The backend is taking too long to respond. There might be an error in the backend.");
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Attendance Services
 export const attendanceService = {
