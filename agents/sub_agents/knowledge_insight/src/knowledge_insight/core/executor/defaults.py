@@ -3,6 +3,9 @@ import statistics
 import collections
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
+import numpy as np
+import pandas as pd
+import sklearn
 
 DEFAULT_MODULES = {
     "collections": collections,
@@ -12,6 +15,9 @@ DEFAULT_MODULES = {
     "datetime": datetime,
     "timedelta": timedelta,
     "json": json,
+    "numpy": np,
+    "pandas": pd,
+    "sklearn": sklearn,
 }
 
 DEFAULT_BUILTINS = {
