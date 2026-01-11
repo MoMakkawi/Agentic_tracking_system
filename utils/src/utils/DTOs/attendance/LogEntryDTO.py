@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 
-@dataclass
-class LogEntryDTO:
-    ts: str
-    uid: str
+class LogEntryDTO(BaseModel):
+    """DTO for a single attendance log entry."""
+    ts: str = Field(..., description="Timestamp of the log entry")
+    uid: str = Field(..., description="User ID (UID) recorded")

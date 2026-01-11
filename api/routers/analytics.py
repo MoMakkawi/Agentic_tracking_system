@@ -20,7 +20,15 @@ def get_analytics_service(
 ) -> AnalyticsService:
     return AnalyticsService(session_service, group_service, alert_service)
 
-@router.get("/groups", response_model=GroupAnalyticsResponse)
+@router.get(
+    "/groups",
+    response_model=GroupAnalyticsResponse,
+    summary="Get Group Analytics",
+    description="Calculate analytics for groups within a specified date range.",
+    responses={
+        500: {"description": "Internal server error"}
+    }
+)
 async def get_group_analytics(
     received_at_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     received_at_to: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -31,7 +39,15 @@ async def get_group_analytics(
     dt_to = dt_to.replace(hour=23, minute=59, second=59)
     return service.get_group_analytics(dt_from, dt_to)
 
-@router.get("/attendance-trend", response_model=List[AttendanceTrendItem])
+@router.get(
+    "/attendance-trend",
+    response_model=List[AttendanceTrendItem],
+    summary="Get Attendance Trend",
+    description="Get attendance trends over time for the specified date range.",
+    responses={
+        500: {"description": "Internal server error"}
+    }
+)
 async def get_attendance_trend(
     received_at_from: str = Query(..., description="Start date (YYYY-MM-DD)"),
     received_at_to: str = Query(..., description="End date (YYYY-MM-DD)"),

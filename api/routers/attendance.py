@@ -95,7 +95,16 @@ def parse_date_filter(value: Optional[str], field_name: str, end_of_day: bool = 
         )
 
 
-@router.get("/", response_model=PaginatedResponse)
+@router.get(
+    "/",
+    response_model=PaginatedResponse,
+    summary="List Attendance Sessions",
+    description="Retrieve a paginated list of attendance sessions with optional sorting.",
+    responses={
+        400: {"description": "Invalid page number or sort parameter"},
+        500: {"description": "Internal server error"}
+    }
+)
 def get_sessions(
     page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)"),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Number of items per page"),
@@ -171,7 +180,16 @@ def get_sessions(
         )
 
 
-@router.get("/filter", response_model=PaginatedResponse)
+@router.get(
+    "/filter",
+    response_model=PaginatedResponse,
+    summary="Filter Attendance Sessions",
+    description="Search and filter attendance sessions using multiple criteria including date ranges, exact matches, and text search.",
+    responses={
+        400: {"description": "Invalid filter format or page number"},
+        500: {"description": "Internal server error"}
+    }
+)
 def filter_sessions(
     # Exact match filters
     session_id: Optional[int] = Query(None, description="Filter by exact session ID"),
@@ -305,7 +323,14 @@ def filter_sessions(
         )
 
 
-@router.get("/stats")
+@router.get(
+    "/stats", 
+    summary="Get Session Statistics",
+    description="Get summary statistics for all attendance sessions, including total count and sessions with alerts.",
+    responses={
+        500: {"description": "Internal server error"}
+    }
+)
 def get_session_stats(service: SessionService = Depends(get_session_service)):
     """
     Get summary statistics for attendance sessions.

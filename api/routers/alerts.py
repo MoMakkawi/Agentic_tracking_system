@@ -44,7 +44,16 @@ def get_timestamp_alert_service() -> AlertService:
     return get_alert_service(get_config().PATHS.ALERTS.VALIDATION.TIMESTAMP)
 
 
-@router.get("/device", response_model=PaginatedAlertResponse[DeviceAlertDTO])
+@router.get(
+    "/device",
+    response_model=PaginatedAlertResponse[DeviceAlertDTO],
+    summary="Get Device Alerts",
+    description="Retrieve a paginated list of device validation alerts.",
+    responses={
+        400: {"description": "Invalid page number"},
+        500: {"description": "Internal server error"}
+    }
+)
 def get_device_alerts(
     session_id: Optional[int] = Query(None, description="Filter by exact session ID"),
     device_id: Optional[str] = Query(None, description="Filter by device ID (partial match)"),
@@ -83,7 +92,16 @@ def get_device_alerts(
         raise HTTPException(status_code=500, detail=ERROR_READING_ALERTS.format(error=str(e)))
 
 
-@router.get("/identity", response_model=PaginatedAlertResponse[IdentityAlertDTO])
+@router.get(
+    "/identity",
+    response_model=PaginatedAlertResponse[IdentityAlertDTO],
+    summary="Get Identity Alerts",
+    description="Retrieve a paginated list of identity validation alerts.",
+    responses={
+        400: {"description": "Invalid page number"},
+        500: {"description": "Internal server error"}
+    }
+)
 def get_identity_alerts(
     uid: Optional[str] = Query(None, description="Filter by UID (partial match)"),
     device_id: Optional[str] = Query(None, description="Filter by device ID (partial match)"),
@@ -126,7 +144,16 @@ def get_identity_alerts(
         raise HTTPException(status_code=500, detail=ERROR_READING_ALERTS.format(error=str(e)))
 
 
-@router.get("/timestamp", response_model=PaginatedAlertResponse[TimestampAlertDTO])
+@router.get(
+    "/timestamp",
+    response_model=PaginatedAlertResponse[TimestampAlertDTO],
+    summary="Get Timestamp Alerts",
+    description="Retrieve a paginated list of timestamp validation alerts.",
+    responses={
+        400: {"description": "Invalid page number"},
+        500: {"description": "Internal server error"}
+    }
+)
 def get_timestamp_alerts(
     uid: Optional[str] = Query(None),
     session_id: Optional[int] = Query(None),

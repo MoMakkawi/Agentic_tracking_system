@@ -27,7 +27,15 @@ def get_chat_service() -> ChatService:
     return ChatService()
 
 
-@router.post("/", response_model=ChatConversation)
+@router.post(
+    "/",
+    response_model=ChatConversation,
+    summary="Create Conversation",
+    description="Create a new chat conversation with an optional title.",
+    responses={
+        500: {"description": "Internal server error"}
+    }
+)
 async def create_conversation(
     request: ChatCreateRequest = None,
     service: ChatService = Depends(get_chat_service)
@@ -42,7 +50,16 @@ async def create_conversation(
     return service.create_conversation(title)
 
 
-@router.get("/", response_model=ChatListResponse)
+@router.get(
+    "/",
+    response_model=ChatListResponse,
+    summary="List Conversations",
+    description="Retrieve a paginated list of chat conversations.",
+    responses={
+        400: {"description": "Invalid page parameters"},
+        500: {"description": "Internal server error"}
+    }
+)
 async def list_conversations(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
@@ -57,7 +74,15 @@ async def list_conversations(
     return service.list_conversations(page=page, limit=limit)
 
 
-@router.get("/stats", response_model=ChatStatsResponse)
+@router.get(
+    "/stats",
+    response_model=ChatStatsResponse,
+    summary="Get Chat Statistics",
+    description="Retrieve statistics about chat usage.",
+    responses={
+        500: {"description": "Internal server error"}
+    }
+)
 async def get_chat_stats(
     service: ChatService = Depends(get_chat_service)
 ):
@@ -70,7 +95,16 @@ async def get_chat_stats(
     return service.get_stats()
 
 
-@router.get("/{conversation_id}", response_model=ChatConversation)
+@router.get(
+    "/{conversation_id}",
+    response_model=ChatConversation,
+    summary="Get Conversation",
+    description="Retrieve a specific conversation and its messages by ID.",
+    responses={
+        404: {"description": "Conversation not found"},
+        500: {"description": "Internal server error"}
+    }
+)
 async def get_conversation(
     conversation_id: str,
     service: ChatService = Depends(get_chat_service)
@@ -89,7 +123,16 @@ async def get_conversation(
     return conversation
 
 
-@router.post("/{conversation_id}/message", response_model=ChatConversation)
+@router.post(
+    "/{conversation_id}/message",
+    response_model=ChatConversation,
+    summary="Add Message",
+    description="Add a new message to an existing conversation.",
+    responses={
+        404: {"description": "Conversation not found"},
+        500: {"description": "Internal server error"}
+    }
+)
 async def add_message(
     conversation_id: str,
     request: ChatMessageRequest,
@@ -115,7 +158,15 @@ async def add_message(
     return conversation
 
 
-@router.delete("/{conversation_id}")
+@router.delete(
+    "/{conversation_id}",
+    summary="Delete Conversation",
+    description="Permanently delete a conversation.",
+    responses={
+        404: {"description": "Conversation not found"},
+        500: {"description": "Internal server error"}
+    }
+)
 async def delete_conversation(
     conversation_id: str,
     service: ChatService = Depends(get_chat_service)
@@ -135,7 +186,16 @@ async def delete_conversation(
     return {"status": "deleted", "conversation_id": conversation_id}
 
 
-@router.patch("/{conversation_id}/title", response_model=ChatConversation)
+@router.patch(
+    "/{conversation_id}/title",
+    response_model=ChatConversation,
+    summary="Update Title",
+    description="Update the title of a conversation.",
+    responses={
+        404: {"description": "Conversation not found"},
+        500: {"description": "Internal server error"}
+    }
+)
 async def update_conversation_title(
     conversation_id: str,
     request: ChatUpdateTitleRequest,

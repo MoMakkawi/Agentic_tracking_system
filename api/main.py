@@ -14,7 +14,36 @@ from .routers import (
 )
 from utils import load_config, get_config
 
-app = FastAPI(title="Agentic Tracking System API", version="0.2.0")
+app = FastAPI(
+    title="Agentic Tracking System API",
+    description="""
+    # Agentic Tracking System API
+    
+    This API provides the backend services for the Agentic Tracking System.
+    
+    ## Key Features
+    * **Attendance Tracking**: Monitor and manage session data.
+    * **Group Analytics**: Analyze group dynamics and identification.
+    * **Alerts**: System notifications and anomaly detection.
+    * **Agent Interaction**: specific endpoints for the orchestrator agent and sub-agents.
+    
+    ## Authentication
+    Currently open (internal use).
+    """,
+    version="0.2.0",
+    contact={
+        "name": "API Support",
+        "url": "http://localhost:8000/docs",
+    },
+    openapi_tags=[
+        {"name": "Attendance", "description": "Operations with attendance sessions and statistics."},
+        {"name": "Alerts", "description": "Manage system alerts and notifications."},
+        {"name": "Groups", "description": "Group identification and analytics."},
+        {"name": "Agent", "description": "Agent orchestrator control and status."},
+        {"name": "Chat", "description": "Chat interface for communicating with the agent."},
+        {"name": "Analytics", "description": "Data analytics and reporting."},
+    ]
+)
 
 # Enable CORS
 app.add_middleware(

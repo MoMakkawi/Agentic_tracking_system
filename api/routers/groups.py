@@ -27,7 +27,15 @@ def get_group_service() -> GroupService:
     return GroupService(repo)
 
 
-@router.get("/", response_model=PaginatedGroupResponse)
+@router.get(
+    "/",
+    response_model=PaginatedGroupResponse,
+    summary="List Groups",
+    responses={
+        400: {"description": "Invalid page number"},
+        500: {"description": "Internal server error"}
+    }
+)
 def get_groups(
     group_name: Optional[str] = Query(None, description="Filter by group name (partial match)"),
     member_uid: Optional[str] = Query(None, description="Filter by member UID present in group"),

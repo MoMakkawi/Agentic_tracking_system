@@ -9,7 +9,15 @@ def get_agent_service() -> AgentService:
     """Dependency injection for AgentService."""
     return AgentService()
 
-@router.post("/run", response_model=AgentResponse)
+@router.post(
+    "/run",
+    response_model=AgentResponse,
+    summary="Run Agent Task",
+    description="Send a natural language task to the orchestration agent.",
+    responses={
+        500: {"description": "Agent execution failed"}
+    }
+)
 async def run_agent_task(
     request: AgentRequest,
     service: AgentService = Depends(get_agent_service)
