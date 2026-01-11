@@ -18,7 +18,6 @@ class IdentityValidator:
 
         json_repo = JsonRepository(self.input_path)
         json_repo.ensure_exists()
-        logger.info(f"Loading preprocessed data from: {self.input_path}")
         self.data = json_repo.read_all()
 
         self.df = self._flatten_logs(self.data)
@@ -45,25 +44,21 @@ class IdentityValidator:
                 })
 
         df = pd.DataFrame(records)
-        logger.info(f"Flattened {len(df)} logs into DataFrame for identity validation")
         return df
 
     # -------------------------------------------------------------------------
     def _flag_suspicious_patterns(self):
         pattern = re.compile(r"^(?=.*[a-z])(?=.*\d)[0-9a-f]{8,9}$")
         self.df["uid_suspicious_pattern"] = ~self.df["uid"].astype(str).apply(lambda x: bool(pattern.match(x)))
-        logger.info(f"Flagged {self.df['uid_suspicious_pattern'].sum()} suspicious UID patterns")
 
     # -------------------------------------------------------------------------
     def _flag_session_redundant_uids(self):
         self.df["uid_redundant"] = self.df["redundant_count"] > 1
-        logger.info(f"Flagged {self.df['uid_redundant'].sum()} redundant UIDs within sessions")
 
     # -------------------------------------------------------------------------
     def _flag_global_rare_uids(self):
         uid_counts = self.df["uid"].value_counts()
         self.df["uid_rare_global"] = self.df["uid"].map(lambda x: uid_counts[x] <= 1)
-        logger.info(f"Flagged {self.df['uid_rare_global'].sum()} globally rare UIDs")
 
     # -------------------------------------------------------------------------
     def _track_repeated_anomalies(self):
@@ -92,7 +87,6 @@ class IdentityValidator:
         uid_meta["repeated_anomaly_count"] = uid_meta["repeated_anomaly_count"].fillna(0).astype(int)
 
         self.uid_meta = uid_meta.set_index("uid").to_dict(orient="index")
-        logger.info(f"Tracked repeated anomalies for {len(uid_meta)} UIDs")
 
     # -------------------------------------------------------------------------
     def _collect_alerts(self):
@@ -136,12 +130,10 @@ class IdentityValidator:
                 alert_id += 1
 
         self.alerts = alerts
-        logger.info(f"Collected {len(alerts)} UID-device level identity alerts")
 
     # -------------------------------------------------------------------------
     def run(self):
         """Execute full identity validation pipeline."""
-        logger.info("Running IdentityValidator pipeline...")
         self._flag_suspicious_patterns()
         self._flag_session_redundant_uids()
         self._flag_global_rare_uids()
@@ -170,6 +162,5 @@ class IdentityValidator:
         
         data = [dict(zip(header, alert)) for alert in self.alerts]
         CsvRepository(output_path).save_all(data)
-        
-        logger.info(f"Identity alerts exported to CSV: {output_path}")
+    
         return output_path

@@ -18,18 +18,15 @@ class TimestampValidator:
 
     def __init__(self, input_path: str = None):
         self.input_path = input_path or get_config().PATHS.PREPROCESSED
-        logger.info(f"Loading preprocessed data from: {self.input_path}")
-        self.data = JsonRepository(self.input_path).read_all()
-        if not self.data:
-             logger.warning(f"No data loaded from {self.input_path}")
-        
+        json_repo = JsonRepository(self.input_path)
+        json_repo.ensure_exists()
+        self.data = json_repo.read_all()
         self.df = self._flatten_logs(self.data)
         self.alerts = []
 
     # -------------------------------------------------------------------------
     def run(self):
         """Execute full timestamp validation pipeline."""
-        logger.info("Running TimestampValidator pipeline...")
         self._flag_out_of_date_range_checkins()
         self._flag_out_of_time_range_checkins()
         self._detect_weekend_and_holiday_checkins()
@@ -46,7 +43,6 @@ class TimestampValidator:
         output_path = output_path or get_config().PATHS.ALERTS.VALIDATION.TIMESTAMP
         
         CsvRepository(output_path).save_all(self.alerts)
-        logger.info(f"Alerts exported to CSV: {output_path}")
         return output_path
 
     # -------------------------------------------------------------------------
@@ -70,7 +66,6 @@ class TimestampValidator:
                 })
 
         df = pd.DataFrame(records)
-        logger.info(f"Flattened {len(df)} logs into DataFrame")
         return df
 
     # -------------------------------------------------------------------------
@@ -81,7 +76,6 @@ class TimestampValidator:
         end_time = datetime.strptime(cfg.SCHEDULE.END_TIME, "%H:%M:%S").time() if cfg.SCHEDULE.END_TIME else time(18, 0)
 
         self.df["outside_valid_time"] = ~self.df["timestamp"].dt.time.between(start_time, end_time)
-        logger.info(f"Flagged {self.df['outside_valid_time'].sum()} check-ins outside valid time")
 
     # -------------------------------------------------------------------------
     def _flag_out_of_date_range_checkins(self):
@@ -91,8 +85,7 @@ class TimestampValidator:
         end_date = pd.to_datetime(cfg.SCHEDULE.END_DATE)
 
         self.df["outside_valid_date"] = ~self.df["timestamp"].between(start_date, end_date)
-        logger.info(f"Flagged {self.df['outside_valid_date'].sum()} check-ins outside valid date")
-
+        
     # -------------------------------------------------------------------------
     def _detect_weekend_and_holiday_checkins(self):
         """Detect check-ins on weekends or holidays."""
@@ -102,8 +95,6 @@ class TimestampValidator:
         self.df["is_weekend"] = self.df["timestamp"].dt.dayofweek >= 5
         self.df["is_holiday"] = self.df["timestamp"].dt.date.isin(holidays)
         self.df["invalid_day_checkin"] = self.df["is_weekend"] | self.df["is_holiday"]
-
-        logger.info(f"Flagged {self.df['invalid_day_checkin'].sum()} check-ins on weekends/holidays")
 
     # -------------------------------------------------------------------------
     def _collect_alerts(self):
@@ -133,5 +124,3 @@ class TimestampValidator:
                 "reasons": ";".join(sorted(reasons))
             })
             alert_id += 1
-
-        logger.info(f"Collected {len(self.alerts)} unique alerts (grouped by UID & session)")

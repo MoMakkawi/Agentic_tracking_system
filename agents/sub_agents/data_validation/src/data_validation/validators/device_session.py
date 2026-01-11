@@ -20,7 +20,6 @@ class DeviceValidator:
         # Use JsonRepository to load preprocessed data
         json_repo = JsonRepository(self.input_path)
         json_repo.ensure_exists()
-        logger.info(f"Loading preprocessed data from: {self.input_path}")
         self.data = json_repo.read_all()
         
         self.df = self._flatten_logs(self.data)
@@ -50,7 +49,6 @@ class DeviceValidator:
 
         df = pd.DataFrame(records)
         df["timestamp_dt"] = pd.to_datetime(df["timestamp"], errors="coerce")
-        logger.info(f"Flattened {len(df)} logs into DataFrame for device validation")
         return df
 
     # -------------------------------------------------------------------------
@@ -78,8 +76,6 @@ class DeviceValidator:
 
         self.df["is_clock_reset"] = self.df.apply(check_date_mismatch, axis=1)
 
-        logger.info(f"Detected {self.df['is_clock_reset'].sum()} device-session entries with clock resets")
-
     # -------------------------------------------------------------------------
 
     def _detect_unusual_active_sessions(self, max_duration_hours: int = 11):
@@ -99,20 +95,15 @@ class DeviceValidator:
             if duration_hours > max_duration_hours:
                 self.df.loc[group.index, "is_active_continuous"] = True
 
-        logger.info(f"Detected {self.df['is_active_continuous'].sum()} entries in unusually long active sessions")
-
     # -------------------------------------------------------------------------
     def _detect_missing_data(self):
         """Detect missing or invalid device_id, session_id, or received_at timestamps."""
 
         self.df["missing_device_id"] = self.df["device_id"].isna() | (self.df["device_id"] == "")
-        logger.info(f"Detected {self.df['missing_device_id'].sum()} logs with missing device_id")
 
         self.df["missing_session_id"] = self.df["session_id"].isna() | (self.df["session_id"] == "")
-        logger.info(f"Detected {self.df['missing_session_id'].sum()} logs with missing session_id")
 
         self.df["missing_received_at"] = self.df["received_at"].isna() | (self.df["received_at"] == "")
-        logger.info(f"Detected {self.df['missing_received_at'].sum()} logs with missing received_at")
 
     # -------------------------------------------------------------------------
     def _collect_alerts(self):
@@ -145,12 +136,10 @@ class DeviceValidator:
                 alert_id += 1
 
         self.alerts = alerts
-        logger.info(f"Collected {len(alerts)} device-session level alerts")
 
     # -------------------------------------------------------------------------
     def run(self):
         """Run full validation pipeline."""
-        logger.info("Running DeviceValidator pipeline...")
         self._detect_missing_data()
         self._detect_clock_resets()
         self._detect_unusual_active_sessions()
@@ -180,6 +169,5 @@ class DeviceValidator:
         # Use CsvRepository to save alerts
         csv_repo = CsvRepository(output_path)
         csv_repo._save(alert_dicts)
-        
-        logger.info(f"Device-session alerts exported to CSV: {output_path}")
+
         return output_path

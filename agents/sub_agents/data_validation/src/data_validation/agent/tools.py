@@ -25,7 +25,7 @@ def device_validation_tool() -> str:
         validator.run()
         output_path = validator.save()
 
-        logger.info(f"Device validation completed successfully. Alerts saved to: {output_path}")
+        logger.info("Device validation completed successfully saved by Agent!")
         return output_path
 
     except Exception as e:
@@ -55,7 +55,7 @@ def timestamp_validation_tool() -> str:
         validator.run()
         output_path = validator.save()
 
-        logger.info(f"Timestamp validation completed successfully. Alerts saved to: {output_path}")
+        logger.info("Timestamp validation completed successfully saved by Agent!")
         return output_path
 
     except Exception as e:
@@ -86,7 +86,7 @@ def identity_validation_tool() -> str:
         validator.run()
         output_path = validator.save()
 
-        logger.info(f"Identity validation completed successfully. Alerts saved to: {output_path}")
+        logger.info("Identity validation completed successfully saved by Agent!")
         return output_path
 
     except Exception as e:

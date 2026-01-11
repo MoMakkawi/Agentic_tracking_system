@@ -32,8 +32,6 @@ class DataValidationAgent:
         # Register tools
         self.tools = [device_validation_tool, timestamp_validation_tool, identity_validation_tool]
 
-        logger.info("DataValidationAgent initialized with tools: %s", [t.name for t in self.tools])
-
     # ---------------------------------------------------------
     # Execute Task
     # ---------------------------------------------------------
@@ -43,8 +41,7 @@ class DataValidationAgent:
         Args:
             task (str): High-level validation instruction from Orchestrator.
         """
-        logger.info(f"Executing validation task: {task}")
-
+        
         # Create an isolated code agent for the task
         agent = CodeAgent(
             tools=self.tools,
@@ -55,7 +52,6 @@ class DataValidationAgent:
 
         # Run the task
         result = agent.run(task)
-        logger.info("Validation task completed successfully. Result: %s", result)
         return result
 
     # ---------------------------------------------------------
@@ -67,7 +63,6 @@ class DataValidationAgent:
         """
 
         task = task or self.default_task
-        logger.info(f"Executing orchestrator task: {task}")
 
         for attempt in range(1, self.retries + 1):
             try:
