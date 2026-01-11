@@ -36,7 +36,6 @@ class ChatService:
     def _ensure_storage_exists(self) -> None:
         """Create the storage directory if it doesn't exist."""
         self.base_path.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Chat storage directory ready at: {self.base_path}")
     
     def _get_conversation_path(self, conversation_id: str) -> Path:
         """Get the file path for a conversation."""
@@ -101,8 +100,7 @@ class ChatService:
         
         # Save to file
         self._save_conversation(conversation)
-        logger.info(f"Created new conversation: {conversation_id}")
-        
+
         return conversation
     
     def _save_conversation(self, conversation: ChatConversation) -> None:
@@ -124,7 +122,6 @@ class ChatService:
         file_path = self._get_conversation_path(conversation_id)
         
         if not file_path.exists():
-            logger.warning(f"Conversation not found: {conversation_id}")
             return None
         
         try:
@@ -174,7 +171,6 @@ class ChatService:
             conversation.title = content[:50] + ("..." if len(content) > 50 else "")
         
         self._save_conversation(conversation)
-        logger.debug(f"Added {role} message to conversation {conversation_id}")
         
         return conversation
     
@@ -233,7 +229,6 @@ class ChatService:
         
         try:
             os.remove(file_path)
-            logger.info(f"Deleted conversation: {conversation_id}")
             return True
         except Exception as e:
             logger.error(f"Error deleting conversation {conversation_id}: {e}")
@@ -257,7 +252,6 @@ class ChatService:
         conversation.title = title
         conversation.updated_at = datetime.now()
         self._save_conversation(conversation)
-        logger.info(f"Updated conversation title: {conversation_id} -> {title}")
         return conversation
     
     def get_stats(self) -> ChatStatsResponse:

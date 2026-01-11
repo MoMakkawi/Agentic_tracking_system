@@ -128,7 +128,6 @@ class SessionService:
             SessionNotFoundError: If the data file is not found
         """
         try:
-            logger.info("Loading all sessions and detailed alerts")
             raw_data = self.repository.read_all()
             session_alerts = self._get_session_alerts()
             
@@ -138,7 +137,6 @@ class SessionService:
                 alerts = session_alerts.get(sid, [])
                 sessions.append(map_to_session_dto(item, alert_count=len(alerts), alerts=alerts))
                 
-            logger.info(f"Loaded {len(sessions)} sessions with detailed alerts successfully")
             return sessions
         except FileNotFoundError as e:
             logger.warning(f"Session data file not found: {e}")
@@ -160,10 +158,8 @@ class SessionService:
             Filtered list of SessionDTO instances
         """
         if not filters.has_filters():
-            logger.debug("No filters applied, returning all sessions")
             return sessions
         
-        logger.info(f"Applying filters to {len(sessions)} sessions")
         filtered = []
         
         for session in sessions:
@@ -263,7 +259,6 @@ class SessionService:
             # If all filters pass, add to results
             filtered.append(session)
         
-        logger.info(f"Filtered to {len(filtered)} sessions")
         return filtered
     
     def sort_sessions(
@@ -285,14 +280,11 @@ class SessionService:
             InvalidSortFieldError: If the sort field is not valid
         """
         if sort_params.order_by is None:
-            logger.debug("No sorting applied")
             return sessions
         
         # Validate sort field
         if sort_params.order_by not in SORTABLE_FIELDS:
             raise InvalidSortFieldError(sort_params.order_by, SORTABLE_FIELDS)
-        
-        logger.info(f"Sorting sessions by {sort_params.order_by} ({sort_params.order_direction})")
         
         reverse = sort_params.is_descending()
         
@@ -324,8 +316,6 @@ class SessionService:
         """
         total = len(sessions)
         total_pages = max(1, (total + pagination.page_size - 1) // pagination.page_size)
-        
-        logger.info(f"Paginating {total} sessions: page {pagination.page} of {total_pages}")
         
         # Get slice indices
         start_idx, end_idx = pagination.get_slice_indices()

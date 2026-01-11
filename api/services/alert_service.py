@@ -6,7 +6,7 @@ logic related to alert data retrieval, filtering, sorting, and pagination.
 """
 
 from typing import List, Optional, Tuple, TypeVar, Any, Callable
-from utils import CsvRepository, logger
+from utils import CsvRepository
 from utils import (
     DeviceAlertDTO, IdentityAlertDTO, TimestampAlertDTO,
     map_to_device_alert_dto, map_to_identity_alert_dto, map_to_timestamp_alert_dto

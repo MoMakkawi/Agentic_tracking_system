@@ -6,7 +6,7 @@ via the Orchestrator agent.
 """
 
 from typing import Optional
-from agents.orchestrator import orchestrator_main
+from agents import orchestrator_run
 from utils import logger
 from api.models import AgentResponse
 
@@ -33,7 +33,6 @@ class AgentService:
         Returns:
             AgentResponse containing the result and status.
         """
-        logger.info(f"AgentService received task: {task} (conversation_id: {conversation_id})")
         
         try:
             history = None
@@ -41,9 +40,8 @@ class AgentService:
                 conversation = self.chat_service.get_conversation(conversation_id)
                 if conversation:
                     history = conversation.messages
-                    logger.info(f"Retrieved {len(history)} messages for conversation {conversation_id}")
             
-            result = orchestrator_main(task, history=history)
+            result = orchestrator_run(task, history=history)
             return AgentResponse(
                 result=result,
                 task=task,
