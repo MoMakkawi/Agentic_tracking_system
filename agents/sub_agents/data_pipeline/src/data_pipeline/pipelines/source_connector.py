@@ -51,20 +51,17 @@ class DataFetcher:
 
     def _fetch(self, url: str, resource_name: str) -> bytes:
         """Generic fetch wrapper with logging and error handling."""
-        logger.info(f"Fetching {resource_name}")
-
         try:
             response = requests.get(url, timeout= 60)
             response.raise_for_status()
-            logger.info(f"{resource_name.capitalize()} fetched successfully")
             return response.content
 
         except requests.Timeout:
-            logger.error(f"Timed out while fetching {resource_name} from {url}")
+            logger.error(f"Timed out while fetching {resource_name}.")
             raise
 
         except requests.RequestException as e:
-            logger.error(f"Failed to fetch {resource_name} from {url}: {e}")
+            logger.error(f"Failed to fetch {resource_name}: {e}.")
             raise
 
     def _save_data(self, data: bytes, path: str, resource_name: str) -> None:
@@ -79,7 +76,6 @@ class DataFetcher:
         try:
             repo = RepositoryFactory.get_repository(path)
             repo.save_from_bytes(data)
-            logger.info(f"{resource_name.capitalize()} saved successfully to: {path}")
         except Exception as e:
             logger.error(f"Failed to save {resource_name} to {path}: {e}")
             raise

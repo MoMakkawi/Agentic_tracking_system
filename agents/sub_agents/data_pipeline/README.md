@@ -1,4 +1,4 @@
-# Data Pipeline Agent – Stage 1 
+# Data Pipeline Agent – Stage 1
 ------------------------------------------------
 
 ## Table of Contents

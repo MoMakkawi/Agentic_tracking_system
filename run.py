@@ -6,10 +6,8 @@ from utils import logger, load_config
 
 def run_parallel():
     load_config()
-    logger.info("="*50)
     logger.info("      AGENTIC TRACKING SYSTEM - DASHBOARD & API")
-    logger.info("="*50)
-
+    
     # 1. Start the API
     logger.info("Starting API on http://localhost:8000...")
     api_process = subprocess.Popen(

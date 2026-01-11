@@ -29,8 +29,6 @@ class DataPipelineAgent:
         # Register tools
         self.tools = [fetch_tool, preprocess_tool]
 
-        logger.info("DataPipelineAgent initialized with tools: %s", [t.name for t in self.tools])
-
     # ---------------------------------------------------------
     # Execute Task
     # ---------------------------------------------------------
@@ -40,8 +38,7 @@ class DataPipelineAgent:
         Args:
             task (str): High-level pipeline instruction from Orchestrator.
         """
-        logger.info(f"Executing task: {task}")
-
+        
         # Create an isolated code agent for the task
         agent = CodeAgent(
             tools=self.tools,
@@ -52,7 +49,6 @@ class DataPipelineAgent:
 
         # Run the task
         result = agent.run(task)
-        logger.info("Task execution completed successfully. Result: %s", result)
         return result
 
     # ---------------------------------------------------------
@@ -64,8 +60,6 @@ class DataPipelineAgent:
         """
 
         task = task or self.default_task
-        logger.info(f"Executing orchestrator task: {task}")
-        
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)

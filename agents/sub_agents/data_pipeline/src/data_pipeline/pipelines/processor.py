@@ -17,12 +17,11 @@ class Preprocessor:
         self.jsonl_path = jsonl_path or get_config().PATHS.LOGS
         self.ics_path = ics_path or get_config().PATHS.ICS
         
-        logger.info(f"Loading logs data from: {self.jsonl_path}")
+        logger.info("Loading logs data & ICS.")
         self.jsonl_repo = JsonlRepository(self.jsonl_path)
         self.jsonl_repo.ensure_exists()
         self.logs_data = self.jsonl_repo.read_all()
 
-        logger.info(f"Loading ICS data from: {self.ics_path}")
         self.ics_repo = IcsRepository(self.ics_path)
         self.ics_repo.ensure_exists()
         self.ics_data = self.ics_repo.read_all()
@@ -35,13 +34,10 @@ class Preprocessor:
         Execute full preprocessing pipeline.
         Returns processed sessions list.
         """
-        logger.info("Running preprocessing pipeline...")
-
         cleaned_data = self._separate_redundant(self.logs_data)
         sessions = self._create_sessions(cleaned_data)
 
         self.processed_sessions = sessions
-        logger.info(f"Pipeline completed: {len(sessions)} sessions created")
 
         return sessions
 
@@ -51,8 +47,6 @@ class Preprocessor:
         Remove redundant logs and track redundancy count per UID.
         Keep only earliest timestamp for each UID.
         """
-        logger.info("Separating redundant logs within each record...")
-
         total_redundant = 0
 
         for record in data:
@@ -78,13 +72,11 @@ class Preprocessor:
             record["redundant_uids"] = redundant_count
             total_redundant += sum(redundant_count.values())
 
-        logger.info(f"Detected {total_redundant} redundant logs in total")
         return data
 
     # -------------------------------------------------------------------------
     def _create_sessions(self, data):
         """Convert cleaned data into structured session dictionaries."""
-        logger.info("Generating structured sessions...")
         sessions = []
 
         for index, record in enumerate(data, start=1):
@@ -124,7 +116,6 @@ class Preprocessor:
 
             sessions.append(session)
 
-        logger.info(f"{len(sessions)} structured sessions generated.")
         return sessions
 
     # -------------------------------------------------------------------------
@@ -197,5 +188,4 @@ class Preprocessor:
         output_path = output_path or get_config().PATHS.PREPROCESSED
         json_repo = JsonRepository(output_path)
         json_repo.save_all(sessions)
-        logger.info(f"Preprocessed data saved to: {output_path}")
         return output_path

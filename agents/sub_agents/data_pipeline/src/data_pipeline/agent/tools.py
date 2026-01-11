@@ -29,7 +29,7 @@ def fetch_tool() -> str:
         fetcher.run()
         output_paths = fetcher.save() 
 
-        logger.info(f"Fetched successfully and saved as {output_paths}")
+        logger.info("Fetched successfully and saved by Agent!")
         return output_paths
 
     except Exception as e:
@@ -63,7 +63,7 @@ def preprocess_tool() -> str:
         p.run()
         output_path = p.save()
 
-        logger.info(f"Data preprocessed successfully and saved to {output_path}")
+        logger.info("Data preprocessed successfully and saved by Agent!")
         return output_path
 
     except Exception as e:
