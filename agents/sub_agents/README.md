@@ -198,6 +198,10 @@ insights = knowledge_insight_main(task4)
 │     Stage 4: Knowledge Insight (Insights & Intelligence)        │
 │                   Outputs: Insights                             │
 └─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│             Final Answer: Enhanced sub-agent answer             │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Key Design Principles

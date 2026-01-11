@@ -9,7 +9,7 @@ Provides the main Orchestrator agent with extensible memory management
 for coordinating sub-agents in the attendance analytics system.
 """
 
-from .src.orchestrator.agent import main as orchestrator_main
+from .src.orchestrator.agent import main as orchestrator_run
 from .src.orchestrator.agent import Orchestrator
 from .src.orchestrator.memory import (
     BaseMemory,
@@ -78,7 +78,7 @@ def get_memory(name: str = "short_term"):
 
 __all__ = [
     # Main exports
-    "orchestrator_main",
+    "orchestrator_run",
     "Orchestrator",
     
     # Memory classes

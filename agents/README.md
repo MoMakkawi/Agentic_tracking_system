@@ -107,22 +107,24 @@ Generates custom analytical insights through safe code execution.
 ### User Query: "What are the attendance patterns of students in group 2?"
 
 1. **Orchestrator** receives query
-2. Classifies intent as "insight + grouping"
-3. Calls **group_identifier** → update groups
-4. Calls **knowledge_insight** → generate analysis code
-5. Code executed on filtered attendance data
-6. Results aggregated and returned to user
+2. validates scope and safety
+3. interprets user intent
+4. designs execution plan
+5. selects and orders required sub-agents
+6. dispatches agents sequentially
+7. monitors failures and adapts safely
+8. synthesizes final user-facing response
 
+Note : Orchestrator have short memory, so it will not remember previous conversations that will help him to understand the context of the conversation and sometime will use it is memory to help him to answer the user query or to plan the execution of the sub-agents.
 
 ## Getting Started
 
 ### Basic Usage
 
 ```python
-from agents.orchestrator import OrchestratorAgent
+from agents.orchestrator import orchestrator_run
 
-orchestrator = OrchestratorAgent()
-response = orchestrator.process_query("Show me abnormal attendance patterns")
+response = orchestrator_run("Show me abnormal attendance patterns.")
 print(response)
 ```
 ## Configuration
@@ -144,22 +146,13 @@ All errors are logged with full context for debugging.
 All agents log to `logs/agents.log`:
 
 ```
-2025-12-02 10:11:47 | utils | jsonl_repo | INFO | JSONL content saved successfully.
-2025-12-02 10:12:48 | utils | jsonl_repo | INFO | JSONL content saved successfully.
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Loading ICS data from: data/test_enrichment/calendar.ics
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Loading logs data from: data/test_enrichment/logs.jsonl
-2025-12-02 10:12:49 | utils | jsonl_repo | INFO | JSONL loaded successfully.
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Running preprocessing pipeline...
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Separating redundant logs within each record...
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Detected 0 redundant logs in total
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Generating structured sessions...
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | 1 structured sessions generated.
-2025-12-02 10:12:49 | data_pipeline | processor | INFO | Pipeline completed: 1 sessions created
-2025-12-02 10:22:04 | utils | ragrenn | INFO | Selected model: openai/gpt-oss-120b
-2025-12-02 10:22:05 | utils | ragrenn | INFO | RagrennModel initialized with model 'openai/gpt-oss-120b'
-2025-12-02 10:22:06 | agents | agent | INFO | Starting Orchestrator Task: Run full data pipeline and validate the results.
+2026-01-11 16:09:55 | run.py | INFO |       AGENTIC TRACKING SYSTEM - DASHBOARD & API
+2026-01-11 16:09:56 | run.py | INFO | Starting API on http://localhost:8000...
+2026-01-11 16:09:56 | run.py | INFO | Starting Dashboard...
+2026-01-11 16:09:56 | run.py | INFO | Both services are starting. Press Ctrl+C to stop both.
+2026-01-11 16:10:12 | api\services\session_service.py | INFO | Loading all sessions and detailed alerts
+2026-01-11 16:10:13 | api\services\session_service.py | INFO | Loaded 101 sessions with detailed alerts successfully
 ```
 
 ## License
-
-MIT - See LICENSE in project root
+See LICENSE in project root

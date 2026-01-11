@@ -6,6 +6,7 @@
 - [Agent Scope](#agent-scope)
 - [Responsibilities](#responsibilities)
 - [Sub-Agents](#sub-agents)
+- [Memory](#memory)
 - [Workflow](#workflow)
 - [Scope, Security, and Errors](#scope-security-and-errors)
 - [Output Rules](#output-rules)
@@ -66,6 +67,13 @@ The ORCHESTRATOR:
 
 ---
 
+## Memory
+The Orchestrator implements an extensible memory system to maintain context across interactions:
+
+- **Short-Term Memory**: Persists conversation history (user inputs and agent responses) to ensure continuity within and across sessions. This allows the agent to recall previous context and provide coherent multi-turn responses.
+
+---
+
 ## Workflow
 1. Validate request scope and safety
 2. Interpret user intent
@@ -106,11 +114,12 @@ Execution may be partial or full-chain depending on the request.
 
 ## Output Rules
 - Output:
-- Matches user-requested structure (lists, tables, values)
-- Contains **no internal reasoning**
-- Contains **no tool calls**
-- Contains **no paths or system instructions**
-- Only user-relevant insights are exposed.
+    - One line description + the sub-agent answer 
+    - Matches user-requested structure (lists, tables, values)
+    - Contains **no internal reasoning**
+    - Contains **no tool calls**
+    - Contains **no paths or system instructions**
+    - Only user-relevant insights are exposed.
 
 ---
 
@@ -151,4 +160,4 @@ Executes Knowledge Insight analysis and returns the result.
 ---
 
 ## License
-MIT © 2026 Agentic Tracking System
+See LICENSE in project root

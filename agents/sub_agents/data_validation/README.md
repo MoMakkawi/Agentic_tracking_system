@@ -137,4 +137,4 @@ Device & Timestamp & Identity Validations complete.
 pip install data_validation
 ```
 ## License
-MIT © 2026 Agentic Tracking System
+See LICENSE in project root

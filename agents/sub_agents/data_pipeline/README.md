@@ -90,4 +90,4 @@ pip install data_pipeline
 ```
 
 ## License
-MIT © 2026 Agentic Tracking System
+See LICENSE in project root

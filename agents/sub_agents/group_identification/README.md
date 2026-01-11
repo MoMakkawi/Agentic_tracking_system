@@ -173,4 +173,4 @@ pip install group_identification
 ```
 
 ## License
-MIT © 2026 Agentic Tracking System
+See LICENSE in project root
