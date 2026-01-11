@@ -1,5 +1,27 @@
 # Sub Agents Package
 
+## Index
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Agents](#agents)
+  - [Data Pipeline Agent – Stage 1](#1-data-pipeline-agent--stage-1)
+  - [Data Validation Agent – Stage 2](#2-data-validation-agent--stage-2)
+  - [Group Identifier Agent – Stage 3](#3-group-identifier-agent--stage-3)
+  - [Knowledge Insight Agent – Stage 4](#4-knowledge-insight-agent--stage-4)
+- [Package Structure](#package-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Importing Agents](#importing-agents)
+  - [Running the Pipeline](#running-the-pipeline)
+- [Default Data Flow](#default-data-flow)
+- [Key Design Principles](#key-design-principles)
+- [Configuration](#configuration)
+- [Development](#development)
+- [License](#license)
+
+---
+
 ## Overview
 
 The **sub_agents** package contains four specialized agent modules that form the **multi-stage pipeline** of the Agentic Tracking System. Each agent operates independently but passes refined data to the next stage, creating a deterministic, composable workflow for attendance tracking and analysis.
@@ -233,12 +255,7 @@ To extend the sub-agents system:
 5. **Document thoroughly**: README explaining purpose and usage
 6. **Integrate**: Register in the parent orchestrator
 
+---
+
 ## License
-
-MIT © 2026 Agentic Tracking System
-
-## See Also
-
-- [Parent Agents Documentation](../README.md)
-- [Individual Agent Documentation](./data_pipeline/README.md)
-- [Project Main README](../../README.md)
+See LICENSE in project root
