@@ -25,7 +25,8 @@ import {
     ResponsiveContainer,
     PieChart,
     Pie,
-    Cell
+    Cell,
+    Legend
 } from 'recharts';
 import './Overview.css';
 
@@ -80,7 +81,12 @@ const Overview = () => {
 
     const formatDate = (isoDate) => {
         if (!isoDate) return '';
-        const [year, month, day] = isoDate.split('-');
+        const date = new Date(isoDate);
+        if (isNaN(date.getTime())) return isoDate; // Return original if parsing fails
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
         return showYear ? `${month}/${day}/${year}` : `${month}/${day}`;
     };
 
@@ -324,17 +330,17 @@ const Overview = () => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                                     <XAxis
                                         dataKey="name"
-                                        stroke="var(--text-muted)"
-                                        fontSize={11}
+                                        stroke="var(--text-secondary)"
+                                        fontSize={12}
                                         tickLine={false}
                                         axisLine={false}
-                                        dy={15}
-                                        interval="preserveStartEnd"
+                                        dy={10}
                                         minTickGap={30}
+                                        tickFormatter={(val) => formatDate(val)}
                                     />
                                     <YAxis
-                                        stroke="var(--text-muted)"
-                                        fontSize={11}
+                                        stroke="var(--text-secondary)"
+                                        fontSize={12}
                                         tickLine={false}
                                         axisLine={false}
                                         tickFormatter={(val) => `${val}`}
@@ -357,10 +363,38 @@ const Overview = () => {
                                         itemStyle={{ padding: '4px 0', fontSize: '13px' }}
                                         cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                                     />
+                                    <Legend
+                                        content={({ payload }) => (
+                                            <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', paddingTop: '1.5rem' }}>
+                                                {payload.map((entry, index) => (
+                                                    <div key={`legend-${index}`} style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.6rem',
+                                                        fontSize: '0.85rem',
+                                                        color: entry.color,
+                                                        background: 'rgba(255, 255, 255, 0.03)',
+                                                        padding: '0.4rem 0.8rem',
+                                                        borderRadius: '20px',
+                                                        border: `1px solid ${entry.color}30`
+                                                    }}>
+                                                        <div style={{
+                                                            width: '8px',
+                                                            height: '8px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: entry.color,
+                                                            boxShadow: `0 0 8px ${entry.color}`
+                                                        }} />
+                                                        <span style={{ fontWeight: 600 }}>{entry.value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    />
                                     <Area
                                         type="monotone"
                                         dataKey="attendance"
-                                        name="Total Attendance"
+                                        name="Verified Presence"
                                         stroke="#3b82f6"
                                         fillOpacity={1}
                                         fill="url(#colorAttendance)"
@@ -370,7 +404,7 @@ const Overview = () => {
                                     <Area
                                         type="monotone"
                                         dataKey="unassigned"
-                                        name="Unassigned Users"
+                                        name="Unassigned Activity"
                                         stroke="#ef4444"
                                         fillOpacity={1}
                                         fill="url(#colorUnassigned)"
@@ -379,16 +413,6 @@ const Overview = () => {
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
-                            <div className="chart-legend" style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '24px' }}>
-                                <div className="legend-item" style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span className="legend-dot" style={{ background: '#3b82f6', width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Daily Total Attendance (Unique)</span>
-                                </div>
-                                <div className="legend-item" style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span className="legend-dot" style={{ background: '#ef4444', width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Unassigned Users</span>
-                                </div>
-                            </div>
                         </div>
                     </Card>
 
