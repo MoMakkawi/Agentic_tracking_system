@@ -10,6 +10,7 @@ import {
     Info,
     Activity
 } from 'lucide-react';
+const logo = '/logo.png';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -25,8 +26,8 @@ const Sidebar = () => {
     return (
         <aside className="sidebar glass">
             <div className="sidebar-logo">
-                <div className="logo-icon">ATS</div>
-                <span className="logo-text">Agentic Tracking</span>
+                <img src={logo} alt="ATS Logo" className="logo-image" />
+                <span className="logo-text">Agentic Tracking System</span>
             </div>
 
             <nav className="sidebar-nav">

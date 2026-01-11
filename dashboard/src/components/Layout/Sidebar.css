@@ -18,29 +18,26 @@
 
 .sidebar-logo {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 1rem;
-    padding: 0.5rem 0.5rem 2.5rem;
+    padding: 1rem 0.5rem 2rem;
+    text-align: center;
 }
 
-.logo-icon {
-    width: 42px;
-    height: 42px;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.9rem;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+.logo-image {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 4px;
+    /* Slight radius for better aesthetics if it's a solid icon */
 }
 
 .logo-text {
     font-family: var(--font-heading);
     font-weight: 800;
-    font-size: 1.4rem;
+    font-size: 1.7rem;
+    line-height: 1.4;
     letter-spacing: -0.02em;
     background: linear-gradient(to right, #fff, #a5b4fc);
     -webkit-background-clip: text;
