@@ -140,6 +140,8 @@ const Groups = () => {
         if (!from || !to) { setValidationError('Both dates are required'); return false; }
         const f = new Date(from), t = new Date(to);
         if (f > t) { setValidationError('From date cannot be after To date'); return false; }
+        const today = new Date(); today.setHours(23, 59, 59, 999);
+        if (f > today || t > today) { setValidationError('Dates cannot be in the future'); return false; }
         const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
         if (f < oneYearAgo) { setValidationError('Cannot query older than 1 year'); return false; }
         setValidationError(''); return true;
@@ -224,14 +226,14 @@ const Groups = () => {
                                 <Calendar size={14} className="input-icon" />
                                 <div className="input-content">
                                     <span className="input-label">From</span>
-                                    <input type="date" value={inputDateRange.from} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('from', e.target.value)} />
+                                    <input type="date" value={inputDateRange.from} max={new Date().toISOString().split('T')[0]} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('from', e.target.value)} />
                                 </div>
                             </div>
                             <div className="premium-date-input">
                                 <Calendar size={14} className="input-icon" />
                                 <div className="input-content">
                                     <span className="input-label">To</span>
-                                    <input type="date" value={inputDateRange.to} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('to', e.target.value)} />
+                                    <input type="date" value={inputDateRange.to} max={new Date().toISOString().split('T')[0]} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('to', e.target.value)} />
                                 </div>
                             </div>
                             <button className="filter-btn-premium" onClick={handleFilterClick} disabled={!!validationError}><Filter size={14} /> Apply Filter</button>

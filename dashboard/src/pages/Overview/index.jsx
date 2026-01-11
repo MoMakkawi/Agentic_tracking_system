@@ -101,6 +101,10 @@ const Overview = () => {
             return "Start date cannot be after End date";
         }
 
+        if (fromDate > today || toDate > today) {
+            return "Dates cannot be in the future";
+        }
+
         if (fromDate < oneYearAgo || toDate < oneYearAgo) {
             return "Dates cannot be more than 1 year in the past";
         }
@@ -286,6 +290,7 @@ const Overview = () => {
                                                 type="date"
                                                 className={`date-input ${validationError ? 'error' : ''}`}
                                                 value={inputDateRange.from}
+                                                max={new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => handleInputChange('from', e.target.value)}
                                             />
                                         </div>
@@ -298,6 +303,7 @@ const Overview = () => {
                                                 type="date"
                                                 className={`date-input ${validationError ? 'error' : ''}`}
                                                 value={inputDateRange.to}
+                                                max={new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => handleInputChange('to', e.target.value)}
                                             />
                                         </div>
