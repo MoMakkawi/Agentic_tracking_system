@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 from utils import logger, get_config
-from utils import JsonRepository, CsvRepository
+from utils import JsonRepository
 from .executor import CodeExecutor, CodeValidator
 
 class GroupInsighter(CodeExecutor):

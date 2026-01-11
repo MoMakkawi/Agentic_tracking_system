@@ -44,8 +44,6 @@ class KnowledgeInsightAgent:
         Args:
             task (str): High-level instruction/question from orchestrator.
         """
-        logger.info(f"Executing task: {task}")
-
         # Create an isolated code agent for the task
         agent = CodeAgent(
             tools=self.tools,
@@ -59,7 +57,6 @@ class KnowledgeInsightAgent:
         instructions = self._build_task_instructions(task)
 
         result = agent.run(instructions)
-        logger.info("Task execution completed successfully. Result: %s", result)
         return result
 
     def _build_task_instructions(self, task: str):
@@ -92,7 +89,6 @@ class KnowledgeInsightAgent:
         """
 
         task = task or self.default_task
-        logger.info(f"Executing orchestrator task: {task}")
 
         for attempt in range(1, self.retries + 1):
             try:
@@ -118,4 +114,3 @@ def main(task: Optional[str] = None):
     agent = KnowledgeInsightAgent()
     result = agent.run(task)
     return result
-

@@ -2,6 +2,7 @@ import ast
 from typing import List, Optional, Set
 from utils import get_config
 from .exceptions import ValidationError
+from .defaults import DEFAULT_MODULES, DEFAULT_BUILTINS
 
 class CodeValidator:
     """
@@ -9,10 +10,10 @@ class CodeValidator:
     Checks for forbidden imports, function calls, and attribute access.
     """
 
-    def __init__(self, allowed_modules: List[str], forbidden_names: Optional[List[str]] = None):
+    def __init__(self, allowed_modules:Optional[List[str]] = None, forbidden_names: Optional[List[str]] = None):
         config = get_config().LLM_MODULES.KNOWLEDGE_INSIGHT.EXECUTOR_VALIDATORS.COMMON
         
-        self.allowed_modules = allowed_modules
+        self.allowed_modules = allowed_modules or list(DEFAULT_MODULES.keys())
         self.forbidden_names = set(
             list(config.FORBIDDEN_NAMES) + (forbidden_names or [])
         )

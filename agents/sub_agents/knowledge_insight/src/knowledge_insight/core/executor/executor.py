@@ -47,24 +47,20 @@ class CodeExecutor:
             self.validator.validate(code)
             namespace = self.namespace_builder.build()
             
-            logger.info("Executing generated code...")
             exec(code, namespace)
             
             return self._format_result(namespace.get("result"))
             
         except ValidationError as e:
             msg = f"CODE VALIDATION ERROR: {e}"
-            logger.error(msg)
             return msg
             
         except NameError as e:
             msg = f"NAME ERROR: {e}"
-            logger.error(msg)
             return msg
             
         except Exception as e:
             msg = f"EXECUTION ERROR: {type(e).__name__}: {e}"
-            logger.error(msg, exc_info=True)
             return msg
 
     @staticmethod

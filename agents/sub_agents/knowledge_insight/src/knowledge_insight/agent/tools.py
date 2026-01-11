@@ -34,10 +34,10 @@ def data_insighter_tool(code: str) -> str:
         data_insighter_tool(code)
     """
     try:
-        logger.info("Starting Clean Data Insight Tool...")
+        logger.info("Starting Clean Data Insight By Agent!")
         executor = DataInsighter()
         result = executor.execute(code)
-        logger.info("Clean Data Insight Tool finished successfully!")
+        logger.info("Clean Data Insight Tool finished successfully by Agent!")
         return str(result)
 
     except Exception as e:
@@ -72,10 +72,10 @@ def groups_insighter_tool(code: str) -> str:
         group_insighter_tool(code)
     """
     try:
-        logger.info("Starting Groups Insight Tool...")
+        logger.info("Starting Groups Insight By Agent!")
         executor = GroupInsighter()
         result = executor.execute(code)
-        logger.info("Groups Insight Tool finished successfully!")
+        logger.info("Groups Insight Tool finished successfully by Agent!")
         return str(result)
 
     except Exception as e:
@@ -113,10 +113,10 @@ def alerts_insighter_tool(code: str) -> str:
         alerts_insighter_tool(code)
     """
     try:
-        logger.info("Starting Alerts Insight Tool...")
+        logger.info("Starting Alerts Insight by Agent!")
         executor = AlertsInsighter()
         result = executor.execute(code)
-        logger.info("Alerts Insight Tool finished successfully!")
+        logger.info("Alerts Insight Tool finished successfully by Agent!")
         return str(result)
 
     except Exception as e:
