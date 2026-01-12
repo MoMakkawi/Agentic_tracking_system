@@ -53,15 +53,15 @@ class CodeExecutor:
             
         except ValidationError as e:
             msg = f"CODE VALIDATION ERROR: {e}"
-            return msg
+            raise Exception(msg)
             
         except NameError as e:
             msg = f"NAME ERROR: {e}"
-            return msg
+            raise Exception(msg)
             
         except Exception as e:
             msg = f"EXECUTION ERROR: {type(e).__name__}: {e}"
-            return msg
+            raise Exception(msg)
 
     @staticmethod
     def _format_result(result: Any) -> str:
