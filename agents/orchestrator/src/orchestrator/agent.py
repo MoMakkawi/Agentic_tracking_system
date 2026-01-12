@@ -16,29 +16,12 @@ class Orchestrator:
     
     Memory Types:
         - short_term: Conversation history within a session (enabled by default)
-        - long_term: Persistent memory across sessions (future)
-        - semantic: Knowledge/facts memory (future)
-        - episodic: Event/experience memory (future)
     
     Features:
         - Executes complete pipeline, validation, identification, and knowledge insight workflows
         - Delegates tasks to specialized sub-agents
         - Supports configurable instructions and retry logic
         - Extensible memory system for multiple memory types
-    
-    Example:
-        orchestrator = Orchestrator.get_instance()
-        
-        # Run tasks (memory persists between calls)
-        result1 = orchestrator.run("Who is the most late student?")
-        result2 = orchestrator.run("What group is that student in?")  # References context
-        
-        # Access memory system
-        stm = orchestrator.get_memory("short_term")
-        print(stm.get_stats())
-        
-        # Clear specific memory
-        orchestrator.memory_manager.clear("short_term")
     """
 
     # Singleton instance
@@ -79,10 +62,10 @@ class Orchestrator:
         self._short_term_memory = ShortTermMemory(self._agent)
         self.memory_manager.register(self._short_term_memory)
         
-        # Future memory types will be registered here:
-        # self.memory_manager.register(LongTermMemory(...))
-        # self.memory_manager.register(SemanticMemory(...))
         # ==============================================
+
+        # Track current conversation for isolation
+        self.current_conversation_id: Optional[str] = None
 
         logger.info("OrchestratorAgent initialized with tools.")
         logger.info("Memory system initialized: %s", self.memory_manager.list_memories())
@@ -90,7 +73,7 @@ class Orchestrator:
     # ---------------------------------------------------------
     # Task Execution
     # ---------------------------------------------------------
-    def _execute(self, task: str, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
+    def _execute(self, task: str, reset_memory: bool = False, history: Optional[List[Any]] = None, conversation_id: Optional[str] = None) -> str:
         """
         Execute a task using the persistent agent.
         
@@ -98,18 +81,25 @@ class Orchestrator:
             task: The task to execute
             reset_memory: If True, clears conversation history before running
             history: Optional conversation history to load (if memory is empty)
+            conversation_id: Optional conversation ID to isolate memory
         
         Returns:
             The result of task execution
         """
-        logger.info(f"Executing orchestrator task: {task}")
+        logger.info(f"Executing orchestrator task: {task} (ConvID: {conversation_id})")
         
         # Get memory stats before execution
         stm = self.get_memory("short_term")
+
+        # Check for conversation switch
+        if conversation_id and self.current_conversation_id != conversation_id:
+            logger.info(f"Conversation switch detected: {self.current_conversation_id} -> {conversation_id}")
+            reset_memory = True
+            self.current_conversation_id = conversation_id
         
         if reset_memory and stm:
             stm.clear()
-            logger.info("Memory cleared as requested")
+            logger.info("Memory cleared for new conversation session")
         
         # If we have history but no memory steps, load the history
         if history and stm and isinstance(stm, ShortTermMemory):
@@ -131,14 +121,14 @@ class Orchestrator:
         result = self._agent.run(task, reset=False)
         
         # Record this interaction in our memory system
-        if stm and not reset_memory:
+        if stm:
             stm.add(key=task, value=result, metadata={"attempt": 1})
         
         logger.info("Orchestrator task completed successfully")
         
         return result
 
-    def run(self, task: Optional[str] = None, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
+    def run(self, task: Optional[str] = None, reset_memory: bool = False, history: Optional[List[Any]] = None, conversation_id: Optional[str] = None) -> str:
         """
         Run task with retry logic.
         
@@ -146,6 +136,7 @@ class Orchestrator:
             task: The task to execute (uses default_task if None)
             reset_memory: If True, clears conversation history before running
             history: Optional conversation history to load
+            conversation_id: Optional conversation ID to isolate memory
         
         Returns:
             The result of task execution
@@ -155,7 +146,7 @@ class Orchestrator:
 
         for attempt in range(1, self.retries + 1):
             try:
-                return self._execute(task, reset_memory=reset_memory, history=history)
+                return self._execute(task, reset_memory=reset_memory, history=history, conversation_id=conversation_id)
             except Exception as e:
                 logger.exception(f"Attempt {attempt} failed: {e}")
                 if attempt == self.retries:
@@ -271,7 +262,7 @@ class Orchestrator:
 # ----------------------------
 # Main Entry Point
 # ----------------------------
-def main(task: str = None, reset_memory: bool = False, history: Optional[List[Any]] = None) -> str:
+def main(task: str = None, reset_memory: bool = False, history: Optional[List[Any]] = None, conversation_id: Optional[str] = None) -> str:
     """
     Entry point for the Orchestrator.
     
@@ -281,9 +272,10 @@ def main(task: str = None, reset_memory: bool = False, history: Optional[List[An
         task: The task to execute (uses default if None)
         reset_memory: If True, clears conversation history before running
         history: Optional conversation history to load
+        conversation_id: Optional conversation ID to isolate memory
     
     Returns:
         The result of task execution
     """
     orchestrator = Orchestrator.get_instance()
-    return orchestrator.run(task, reset_memory=reset_memory, history=history)
+    return orchestrator.run(task, reset_memory=reset_memory, history=history, conversation_id=conversation_id)

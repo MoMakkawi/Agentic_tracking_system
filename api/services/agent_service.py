@@ -41,7 +41,7 @@ class AgentService:
                 if conversation:
                     history = conversation.messages
             
-            result = orchestrator_run(task, history=history)
+            result = orchestrator_run(task, history=history, conversation_id=conversation_id)
             return AgentResponse(
                 result=result,
                 task=task,
