@@ -26,6 +26,7 @@ class KnowledgeInsightAgent:
 
         # Initialize default task
         self.default_task = config.DEFAULT_TASK
+        self.instructions = config.INSTRUCTIONS
 
         # Initialize settings
         self.retries = config.SETTINGS.RETRIES
@@ -48,19 +49,20 @@ class KnowledgeInsightAgent:
         agent = CodeAgent(
             tools=self.tools,
             model=self.model,
-            max_steps=self.max_steps,  # Limit steps: understand -> generate -> execute
-            verbosity_level=self.verbosity_level
+            max_steps=self.max_steps,
+            verbosity_level=self.verbosity_level,
+            instructions=self.instructions
         )
 
 
         # Run the task
-        instructions = self._build_task_instructions(task)
+        enriched_task = self._enrich_task(task)
 
-        result = agent.run(instructions)
+        result = agent.run(enriched_task)
         return result
 
-    def _build_task_instructions(self, task: str):
-        """Builds the agent instructions by fetching schemas from repositories."""
+    def _enrich_task(self, task: str):
+        """Builds the user task by fetching schemas from repositories."""
         config_paths = get_config().PATHS
         
         # Initialize data schemas
@@ -70,15 +72,15 @@ class KnowledgeInsightAgent:
         timestamp_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.TIMESTAMP).get_schema_info()
         device_alerts_schema = CsvRepository(config_paths.ALERTS.VALIDATION.DEVICE).get_schema_info()
         
-        # build task instructions
-        instructions = get_config().LLM_MODULES.KNOWLEDGE_INSIGHT.INSTRUCTIONS.format(
+        # build task enriched
+        enriched_task = get_config().LLM_MODULES.KNOWLEDGE_INSIGHT.IMPROVED_TASK.format(
             clean_data_schema=clean_data_schema,
             groups_data_schema=groups_data_schema,
             timestamp_alerts_schema=timestamp_alerts_schema,
             identity_alerts_schema=identity_alerts_schema,
             device_alerts_schema=device_alerts_schema,
             task=task)
-        return instructions
+        return enriched_task
 
     # ---------------------------------------------------------
     # Run with Retries (Used by Orchestrator)
