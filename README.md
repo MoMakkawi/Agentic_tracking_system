@@ -31,16 +31,17 @@ graph TD
     User[User] -->|Interacts| Dashboard[React Dashboard]
     Dashboard -->|HTTP/REST| API[FastAPI Backend]
     
-    subgraph "Core System"
+    subgraph Core_System["Core System"]
         API -->|Dispatches| Orchestrator[Orchestrator Agent]
         Orchestrator -->|Coordinates| SubAgents[Sub-Agents]
         
-        SubAgents -->|Data Pipeline| Data Pipeline Agent
-        SubAgents -->|Analyst| Knowledge Insights Agent
-        SubAgents -->|Validator| Validation Agent
+        SubAgents -->|Data Pipeline| DataPipeline[Data Pipeline Agent]
+        SubAgents -->|Validator| Validation[Validation Agent]
+        SubAgents -->|Group Identifier| GroupIdentifier[Group Identifier Agent]
+        SubAgents -->|Knowledge Insights| KnowledgeInsights[Knowledge Insights Agent]
     end
     
-    subgraph "Infrastructure"
+    subgraph Infrastructure
         API -->|Reads/Writes| Utils[Shared Utils Library]
         Orchestrator -->|Uses| Utils
         Utils -->|Persists| Storage[(Data Storage)]
