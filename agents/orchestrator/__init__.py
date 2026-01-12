@@ -11,7 +11,7 @@ for coordinating sub-agents in the attendance analytics system.
 
 from .src.orchestrator.agent import main as orchestrator_run
 from .src.orchestrator.agent import Orchestrator
-from .src.orchestrator.memory import (
+from agents.memory import (
     BaseMemory,
     MemoryType,
     ShortTermMemory,

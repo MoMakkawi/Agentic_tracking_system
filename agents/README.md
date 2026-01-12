@@ -13,6 +13,7 @@ Core multi-agent system that orchestrates data processing, validation, grouping,
     - [data_validation](#data_validation)
     - [group_identifier](#group_identifier)
     - [knowledge_insight](#knowledge_insight)
+  - [memory](#memory)
 - [Workflow Example](#workflow-example)
 - [Getting Started](#getting-started)
   - [Installation](#installation)
@@ -52,6 +53,8 @@ Orchestrator Agent (Entry Point)
         ├── Query Analyzer
         ├── Code Generator
         └── Safe Executor
+Shared Components
+└── Memory Package (Short-term, Long-term)
 ```
 
 ## Components
@@ -101,6 +104,14 @@ Generates custom analytical insights through safe code execution.
 - **Query Understanding**: Parses natural language analysis requests
 - **Code Generation**: Creates safe Python analysis snippets
 - **Execution**: Runs code with resource limits and safety checks
+
+### memory/
+
+Shared memory package providing persistence capabilities for agents.
+
+- **Short-Term Memory**: Conversation history and context management
+- **Long-Term Memory**: Persistent storage across sessions (planned)
+- **Memory Manager**: Coordinator for multiple memory types
 
 ## Workflow Example
 

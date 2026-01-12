@@ -3,7 +3,7 @@ from typing import Optional, List, Dict, Any
 from utils import logger, get_config, load_config
 from utils import RagrennModel
 from .tools import pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, insighter_agent_tool 
-from .memory import MemoryManager, ShortTermMemory, BaseMemory
+from agents.memory import MemoryManager, ShortTermMemory, BaseMemory
 
 
 class Orchestrator:
