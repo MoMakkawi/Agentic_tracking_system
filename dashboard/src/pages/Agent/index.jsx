@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { agentService, chatService } from '../../services/api';
-import { Bot, Send, User, Sparkles, Loader2, MessageSquare, Plus, Trash2, X, Edit2, Check } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Loader2, MessageSquare, Plus, Trash2, X, Edit2, Check, Copy } from 'lucide-react';
 import PageHeader from '../../components/Common/PageHeader';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import './Agent.css';
 
 const Agent = () => {
@@ -18,6 +21,59 @@ const Agent = () => {
     const [editingTitleId, setEditingTitleId] = useState(null);
     const [tempTitle, setTempTitle] = useState('');
     const messagesEndRef = useRef(null);
+
+    // Helper to unescape and format message text
+    const formatMessageText = (text) => {
+        if (!text) return '';
+
+        let processedText = text;
+
+        // 1. Handle JSON blocks that might be escaped
+        // Find content between triple backticks
+        processedText = processedText.replace(/```(?:json)?\s*([\s\S]*?)```/g, (match, content) => {
+            try {
+                // If it looks like escaped JSON (contains \"), try to parse and re-stringify it
+                if (content.includes('\\"')) {
+                    // Remove literal \n and \\
+                    const unescaped = content
+                        .replace(/\\n/g, '\n')
+                        .replace(/\\"/g, '"')
+                        .replace(/\\\\/g, '\\');
+
+                    try {
+                        const parsed = JSON.parse(unescaped);
+                        return `\`\`\`json\n${JSON.stringify(parsed, null, 2)}\n\`\`\``;
+                    } catch (e) {
+                        return `\`\`\`json\n${unescaped}\n\`\`\``;
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to unescape JSON block', err);
+            }
+            return match;
+        });
+
+        // 2. Fix literal \n outside of code blocks if they exist
+        // (sometimes APIs return raw \n strings)
+        // Only if they aren't already handled by Markdown
+        if (processedText.includes('\\n')) {
+            processedText = processedText.replace(/\\n/g, '\n');
+        }
+
+        return processedText;
+    };
+
+    const [copiedId, setCopiedId] = useState(null);
+
+    const copyToClipboard = async (text, id) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -314,7 +370,60 @@ const Agent = () => {
                                         {msg.role === 'assistant' ? <Bot size={18} /> : <User size={18} />}
                                     </div>
                                     <div className={`message-bubble ${msg.isError ? 'error' : ''}`}>
-                                        <div className="message-text">{msg.text}</div>
+                                        <div className="message-text">
+                                            <ReactMarkdown
+                                                components={{
+                                                    code({ node, inline, className, children, ...props }) {
+                                                        const match = /language-(\w+)/.exec(className || '');
+                                                        const language = match ? match[1] : '';
+                                                        const codeContent = String(children).replace(/\n$/, '');
+                                                        const codeId = `code-${index}-${language}-${codeContent.substring(0, 10)}`;
+
+                                                        return !inline && match ? (
+                                                            <div className="code-block-container">
+                                                                <div className="code-block-header">
+                                                                    <span className="code-language">{language.toUpperCase()}</span>
+                                                                    <button
+                                                                        className={`copy-code-btn ${copiedId === codeId ? 'copied' : ''}`}
+                                                                        onClick={() => copyToClipboard(codeContent, codeId)}
+                                                                        title="Copy code"
+                                                                    >
+                                                                        {copiedId === codeId ? <Check size={14} /> : <Copy size={14} />}
+                                                                        <span>{copiedId === codeId ? 'Copied!' : 'Copy'}</span>
+                                                                    </button>
+                                                                </div>
+                                                                <SyntaxHighlighter
+                                                                    style={vscDarkPlus}
+                                                                    language={language}
+                                                                    PreTag="div"
+                                                                    {...props}
+                                                                >
+                                                                    {codeContent}
+                                                                </SyntaxHighlighter>
+                                                            </div>
+                                                        ) : (
+                                                            <code className={className} {...props}>
+                                                                {children}
+                                                            </code>
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                {formatMessageText(msg.text)}
+                                            </ReactMarkdown>
+                                        </div>
+                                        {msg.role === 'assistant' && !msg.isError && (
+                                            <div className="message-actions">
+                                                <button
+                                                    className={`copy-all-btn ${copiedId === `all-${index}` ? 'copied' : ''}`}
+                                                    onClick={() => copyToClipboard(msg.text, `all-${index}`)}
+                                                    title="Copy all response"
+                                                >
+                                                    {copiedId === `all-${index}` ? <Check size={14} /> : <Copy size={14} />}
+                                                    <span>{copiedId === `all-${index}` ? 'Copied all!' : 'Copy all'}</span>
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))

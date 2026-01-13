@@ -17,15 +17,14 @@ function App() {
                 <Toaster position="top-right" />
                 <Sidebar />
                 <div className="main-content">
-
-                    <div className="animate-fade-in">
+                    <div className="animate-fade-in main-wrapper">
                         <Routes>
-                            <Route path="/" element={<Overview />} />
-                            <Route path="/attendance" element={<Attendance />} />
-                            <Route path="/alerts" element={<Alerts />} />
-                            <Route path="/groups" element={<Groups />} />
+                            <Route path="/" element={<div className="scrollable-content"><Overview /></div>} />
+                            <Route path="/attendance" element={<div className="scrollable-content"><Attendance /></div>} />
+                            <Route path="/alerts" element={<div className="scrollable-content"><Alerts /></div>} />
+                            <Route path="/groups" element={<div className="scrollable-content"><Groups /></div>} />
                             <Route path="/agent" element={<Agent />} />
-                            <Route path="/about" element={<About />} />
+                            <Route path="/about" element={<div className="scrollable-content"><About /></div>} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </div>

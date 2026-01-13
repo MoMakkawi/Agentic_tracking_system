@@ -112,17 +112,42 @@ button {
 }
 
 /* Layout Classes */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
 .app-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .main-content {
   flex: 1;
+  height: 100vh;
+  overflow: hidden;
+  /* Changed from overflow-y: auto */
+  display: flex;
+  flex-direction: column;
   padding: 2rem;
+  /* Restored padding */
   margin-left: 260px;
   /* Sidebar width */
   transition: var(--transition-base);
+  position: relative;
+  box-sizing: border-box;
+  /* Crucial for padding */
+}
+
+/* Scrollable area for pages that use standard scrolling */
+.scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 @media (max-width: 1024px) {
@@ -194,4 +219,11 @@ button {
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
