@@ -1,25 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { groupService, attendanceService, analyticsService } from '../../services/api';
+import { analyticsService } from '../../services/api';
 import Card from '../../components/Common/Card';
 import PageHeader from '../../components/Common/PageHeader';
 import Modal from '../../components/Common/Modal';
 import {
     Users,
     User,
-    ArrowRight,
     Layers,
     Search,
     ChevronLeft,
     ChevronRight,
-    Calendar,
     Filter,
-    AlertTriangle
+    AlertTriangle,
+    Zap,
+    Cpu,
+    Activity,
+    Target,
+    Calendar
 } from 'lucide-react';
 import {
     AreaChart,
     Area,
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -29,67 +30,72 @@ import {
 } from 'recharts';
 import './Groups.css';
 
-const GroupCard = ({ group, onClick }) => (
-    <div className="group-card-premium animate-fade-in" onClick={() => onClick(group)}>
-        <div className="card-header">
-            <div className="group-info-main">
-                <span className="group-tag">Analytics Active</span>
+const GroupCard = ({ group, color, onClick }) => (
+    <div className="group-card-liquid animate-fade-in"
+        onClick={() => onClick(group)}
+        style={{ '--card-accent': color, '--card-accent-rgb': color.includes('var') ? (color.includes('success') ? '63, 185, 80' : '88, 166, 255') : (color === '#f59e0b' ? '245, 158, 11' : (color === '#3b82f6' ? '59, 130, 246' : '63, 185, 80')) }}>
+
+        <div className="card-liquid-glow"></div>
+
+        <div className="card-header-pro">
+            <div className="title-section">
                 <h3 className="group-name-text">{group.name}</h3>
+                <span className="pro-status-tag">Neural Cluster</span>
             </div>
-            <div className="group-icon-box"><Layers size={20} /></div>
-        </div>
-
-        <div className="card-visual-stats">
-            <div className="stat-mini-item">
-                <span className="stat-mini-label">Total Members</span>
-                <span className="stat-mini-value">{group.members.length}</span>
-            </div>
-            <div className="stat-mini-item" style={{ textAlign: 'right' }}>
-                <span className="stat-mini-label">Avg. Presence</span>
-                <span className="stat-mini-value" style={{ color: 'var(--page-accent)' }}>
-                    {group.avgAttendance || 0}%
-                </span>
+            <div className="pro-icon-box">
+                <Cpu size={32} strokeWidth={1.5} />
             </div>
         </div>
 
-        <div className="attendance-sparkline" style={{ height: '40px', margin: '0.5rem 0' }}>
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={group.attendanceTrend}>
-                    <defs>
-                        <linearGradient id={`spark-grad-${group.name.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--page-accent)" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="var(--page-accent)" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <Area
-                        type="monotone"
-                        dataKey="presence"
-                        stroke="var(--page-accent)"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill={`url(#spark-grad-${group.name.replace(/\s+/g, '-')})`}
-                        dot={false}
-                    />
-                </AreaChart>
-            </ResponsiveContainer>
+        <div className="pro-stats-column">
+            <div className="pro-stat-info">
+                <span className="label">Cohort</span>
+                <span className="value">{group.members.length}</span>
+            </div>
+            <div className="pro-stat-info">
+                <span className="label">Sync</span>
+                <span className="value" style={{ color: 'var(--card-accent)' }}>{group.avgAttendance || 0}%</span>
+            </div>
         </div>
 
-        <div className="avatar-group-preview">
-            {group.members.slice(0, 4).map((m, idx) => (
-                <div key={idx} title={m} className="preview-avatar">
-                    <User size={12} />
+        <div className="attendance-sparkline-integrated">
+            <div className="spark-meta">
+                <Activity size={12} style={{ marginRight: '0.5rem' }} />
+                <span>Continuity Signal</span>
+            </div>
+            <div style={{ width: '100%', height: 70, marginTop: '0.5rem' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={group.attendanceTrend}>
+                        <defs>
+                            <linearGradient id={`spark-grad-${group.name.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="var(--card-accent)" stopOpacity={0.6} />
+                                <stop offset="95%" stopColor="var(--card-accent)" stopOpacity={0} />
+                            </linearGradient>
+                        </defs>
+                        <Area
+                            type="step"
+                            dataKey="presence"
+                            stroke="var(--card-accent)"
+                            strokeWidth={3}
+                            fillOpacity={1}
+                            fill={`url(#spark-grad-${group.name.replace(/\s+/g, '-')})`}
+                            dot={false}
+                            isAnimationActive={true}
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </div>
+        </div>
+
+        <div className="avatar-peek">
+            {group.members.slice(0, 5).map((m, idx) => (
+                <div key={idx} className="peek-avatar" style={{ zIndex: 10 - idx }}>
+                    <User size={14} />
                 </div>
             ))}
-            {group.members.length > 4 && (
-                <div className="preview-avatar more-count">+{group.members.length - 4}</div>
+            {group.members.length > 5 && (
+                <div className="peek-avatar more" style={{ zIndex: 1 }}>+{group.members.length - 5}</div>
             )}
-        </div>
-
-        <div className="card-action-bar">
-            <div className="cohesion-indicator">
-                <ArrowRight size={14} color="var(--page-accent)" />
-                <span>Dynamic Cluster</span>
-            </div>
         </div>
     </div>
 );
@@ -99,9 +105,7 @@ const Groups = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGroup, setSelectedGroup] = useState(null);
-    const [page, setPage] = useState(1);
-    const [pageSize] = useState(6);
-    const [totalPages, setTotalPages] = useState(0);
+    const scrollRef = React.useRef(null);
 
     const [multiTrendData, setMultiTrendData] = useState([]);
     const [groupColors, setGroupColors] = useState({});
@@ -137,13 +141,9 @@ const Groups = () => {
 
     // ===== Date Validation =====
     const validateDates = (from, to) => {
-        if (!from || !to) { setValidationError('Both dates are required'); return false; }
+        if (!from || !to) { setValidationError('Selection required'); return false; }
         const f = new Date(from), t = new Date(to);
-        if (f > t) { setValidationError('From date cannot be after To date'); return false; }
-        const today = new Date(); today.setHours(23, 59, 59, 999);
-        if (f > today || t > today) { setValidationError('Dates cannot be in the future'); return false; }
-        const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        if (f < oneYearAgo) { setValidationError('Cannot query older than 1 year'); return false; }
+        if (f > t) { setValidationError('Range error'); return false; }
         setValidationError(''); return true;
     };
 
@@ -155,30 +155,37 @@ const Groups = () => {
     const handleFilterClick = () => {
         if (validateDates(inputDateRange.from, inputDateRange.to)) {
             setDateRange(inputDateRange);
-            setPage(1);
         }
     };
 
-    // ===== Conditional Year Display =====
-    // Year display based on data range
+    // Check if range spans multiple years
     const showYear = useMemo(() => {
+        if (!dateRange.from || !dateRange.to) return false;
         const fromYear = dateRange.from.split('-')[0];
         const toYear = dateRange.to.split('-')[0];
         return fromYear !== toYear;
     }, [dateRange]);
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return dateStr;
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+    const formatDateTooltip = (dateStr) => {
+        const d = new Date(dateStr);
+        // Tooltip can be more verbose, but let's match the requested logic for consistency if desired,
+        // or keep it full. User asked for "diagram", usually axis. 
+        // Let's make it consistent.
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
         return showYear ? `${month}/${day}/${year}` : `${month}/${day}`;
     };
 
-    // Filter & Pagination
+    const formatDateAxis = (dateStr) => {
+        const d = new Date(dateStr);
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getFullYear();
+        return showYear ? `${month}/${day}/${year}` : `${month}/${day}`;
+    };
+
+    // Filter
     const filteredGroups = useMemo(() => {
         const term = searchTerm.toLowerCase();
         return groups.filter(g =>
@@ -186,62 +193,90 @@ const Groups = () => {
         );
     }, [groups, searchTerm]);
 
-    useEffect(() => { setTotalPages(Math.ceil(filteredGroups.length / pageSize)); }, [filteredGroups, pageSize]);
-    const paginatedGroups = filteredGroups.slice((page - 1) * pageSize, page * pageSize);
+    const scroll = (direction) => {
+        if (scrollRef.current) {
+            const { scrollLeft, clientWidth } = scrollRef.current;
+            const scrollTo = direction === 'left' ? scrollLeft - clientWidth * 0.8 : scrollLeft + clientWidth * 0.8;
+            scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+        }
+    };
 
     return (
         <div className="groups-page animate-fade-in">
             {/* Header */}
             <PageHeader
-                title="Student Intelligence"
-                icon={Users}
-                description="Advanced clustering analysis for behavioral pattern identification."
-                gradient="linear-gradient(to right, #10b981, #059669)"
+                title="Neural Clustering Analysis"
+                icon={Target}
+                description="High-fidelity behavioral segmentation and predictive continuity tracking."
+                gradient="linear-gradient(135deg, #10b981 0%, #3b82f6 100%)"
                 iconColor="#10b981"
-                iconBgColor="rgba(16, 185, 129, 0.1)"
+                iconBgColor="rgba(16, 185, 129, 0.05)"
                 actions={
-                    <div className="search-container">
-                        <Search size={20} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    <div className="search-container" style={{ width: '400px' }}>
+                        <Search size={20} style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                         <input
                             type="text"
                             className="search-input"
-                            placeholder="Search groups..."
+                            placeholder="Scan neural patterns..."
+                            style={{
+                                padding: '1.25rem 1.5rem 1.25rem 4rem',
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '20px',
+                                fontSize: '1rem'
+                            }}
                             value={searchTerm}
-                            onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
                 }
             />
 
-            {/* Attendance Chart */}
+            {/* Engagement Chart */}
             <Card
-                title="Group Attendance History (%)"
-                subtitle="Comparative presence trends for all identified clusters"
-                className="full-width"
+                title="Neural Engagement Matrix"
+                subtitle="Comparative cluster dynamics over temporal dimensions."
+                className="full-width adaptive-chart-card"
                 extra={
-                    <div className="date-range-picker">
+                    <div className="vision-date-picker">
                         {validationError && <div className="date-error-message"><AlertTriangle size={12} /> {validationError}</div>}
-                        <div className="date-inputs-row">
-                            <div className="premium-date-input">
+                        <div className="vision-inputs-row">
+                            <div className="vision-date-entry" onClick={(e) => e.target.tagName !== 'INPUT' && document.getElementById('group-date-from').showPicker()}>
                                 <Calendar size={14} className="input-icon" />
                                 <div className="input-content">
                                     <span className="input-label">From</span>
-                                    <input type="date" value={inputDateRange.from} max={new Date().toISOString().split('T')[0]} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('from', e.target.value)} />
+                                    <input
+                                        id="group-date-from"
+                                        type="date"
+                                        value={inputDateRange.from}
+                                        max={new Date().toISOString().split('T')[0]}
+                                        className={`date-input ${validationError ? 'error' : ''}`}
+                                        onChange={e => handleInputChange('from', e.target.value)}
+                                    />
                                 </div>
                             </div>
-                            <div className="premium-date-input">
+                            <div className="vision-date-entry" onClick={(e) => e.target.tagName !== 'INPUT' && document.getElementById('group-date-to').showPicker()}>
                                 <Calendar size={14} className="input-icon" />
                                 <div className="input-content">
                                     <span className="input-label">To</span>
-                                    <input type="date" value={inputDateRange.to} max={new Date().toISOString().split('T')[0]} className={`date-input ${validationError ? 'error' : ''}`} onChange={e => handleInputChange('to', e.target.value)} />
+                                    <input
+                                        id="group-date-to"
+                                        type="date"
+                                        value={inputDateRange.to}
+                                        max={new Date().toISOString().split('T')[0]}
+                                        className={`date-input ${validationError ? 'error' : ''}`}
+                                        onChange={e => handleInputChange('to', e.target.value)}
+                                    />
                                 </div>
                             </div>
-                            <button className="filter-btn-premium" onClick={handleFilterClick} disabled={!!validationError}><Filter size={14} /> Apply Filter</button>
+                            <button className="filter-btn-visionary" onClick={handleFilterClick} disabled={!!validationError}>
+                                <Filter size={14} /> <span>Apply Filter</span>
+                            </button>
                         </div>
                     </div>
                 }
             >
-                <div className="chart-wrapper" style={{ height: '400px', marginTop: '1.5rem', position: 'relative' }}>
+                <div className="chart-wrapper adaptive-chart">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={multiTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
@@ -252,26 +287,26 @@ const Groups = () => {
                                     </linearGradient>
                                 ))}
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                             <XAxis
                                 dataKey="date"
-                                tickFormatter={formatDate}
-                                axisLine={false}
+                                tickFormatter={formatDateAxis}
+                                stroke="var(--text-secondary)"
+                                fontSize={12}
                                 tickLine={false}
-                                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-                                dy={15}
-                                interval="preserveStartEnd"
+                                axisLine={false}
+                                dy={10}
                                 minTickGap={30}
                             />
                             <YAxis
-                                axisLine={false}
+                                stroke="var(--text-secondary)"
+                                fontSize={12}
                                 tickLine={false}
-                                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-                                domain={[0, 100]}
+                                axisLine={false}
                                 tickFormatter={(val) => `${val}%`}
                             />
                             <RechartsTooltip
-                                labelFormatter={formatDate}
+                                labelFormatter={formatDateTooltip}
                                 contentStyle={{
                                     backgroundColor: 'rgba(13, 17, 23, 0.95)',
                                     border: '1px solid rgba(255,255,255,0.1)',
@@ -285,27 +320,44 @@ const Groups = () => {
                             />
                             <Legend
                                 content={({ payload }) => (
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                                        gap: '1rem',
+                                        padding: '1rem 1.5rem 0.5rem 1.5rem',
+                                        marginTop: '0.5rem',
+                                        maxWidth: '1000px',
+                                        margin: '0.5rem auto 0 auto'
+                                    }}>
                                         {payload.map((entry, index) => (
                                             <div key={`legend-${index}`} style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: '0.5rem',
-                                                fontSize: '0.8rem',
-                                                color: entry.color,
-                                                background: 'rgba(255, 255, 255, 0.03)',
-                                                padding: '0.35rem 0.75rem',
-                                                borderRadius: '20px',
-                                                border: `1px solid ${entry.color}30`
+                                                gap: '1rem',
+                                                padding: '0.75rem 1.25rem',
+                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                borderRadius: '16px',
+                                                border: `1px solid ${entry.color}20`,
+                                                transition: 'all 0.3s ease',
+                                                backdropFilter: 'blur(5px)'
                                             }}>
                                                 <div style={{
-                                                    width: '6px',
-                                                    height: '6px',
-                                                    borderRadius: '50%',
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    borderRadius: '4px',
                                                     backgroundColor: entry.color,
-                                                    boxShadow: `0 0 6px ${entry.color}`
+                                                    boxShadow: `0 0 12px ${entry.color}`,
+                                                    flexShrink: 0
                                                 }} />
-                                                <span style={{ fontWeight: 600 }}>{entry.value}</span>
+                                                <span style={{
+                                                    fontWeight: 800,
+                                                    fontSize: '0.85rem',
+                                                    color: '#f0f6fc',
+                                                    letterSpacing: '0.03em',
+                                                    whiteSpace: 'nowrap'
+                                                }}>
+                                                    {entry.value}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
@@ -326,41 +378,105 @@ const Groups = () => {
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
-            </Card >
+            </Card>
 
-            {/* Loading / Grid */}
-            {
-                loading ? (
-                    <div className="loading-state" style={{ padding: '8rem', textAlign: 'center' }}>
-                        <div className="spinner"></div>
-                        <p style={{ marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '1.1rem' }}>Processing neural clusters...</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="groups-grid">
-                            {paginatedGroups.map(g => <GroupCard key={g.name} group={g} onClick={setSelectedGroup} />)}
+            {/* Clusters Browsing */}
+            {loading ? (
+                <div className="loading-state" style={{ padding: '10rem', textAlign: 'center' }}>
+                    <div className="spinner" style={{ width: '60px', height: '60px' }}></div>
+                    <p style={{ marginTop: '2rem', color: '#8b949e', fontSize: '1.25rem', fontWeight: 600 }}>Deciphering neural signatures...</p>
+                </div>
+            ) : (
+                <div className="groups-browsing-section">
+                    <div className="section-header-pro">
+                        <div className="section-title">
+                            Identified Neural Clusters
+                            <span className="count-badge">{filteredGroups.length} Active Nodes</span>
                         </div>
-                    </>
-                )
-            }
+                        <div className="carousel-controls">
+                            <button className="carousel-btn prev" onClick={() => scroll('left')}>
+                                <ChevronLeft size={28} />
+                            </button>
+                            <button className="carousel-btn next" onClick={() => scroll('right')}>
+                                <ChevronRight size={28} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="groups-carousel-container" ref={scrollRef}>
+                        <div className="groups-horizontal-grid">
+                            {filteredGroups.map(group => (
+                                <GroupCard
+                                    key={group.name}
+                                    group={group}
+                                    color={groupColors[group.name] || 'var(--page-accent)'}
+                                    onClick={setSelectedGroup}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
-            <Modal isOpen={!!selectedGroup} onClose={() => setSelectedGroup(null)} title={selectedGroup?.name || 'Group Details'}>
+            <Modal isOpen={!!selectedGroup} onClose={() => setSelectedGroup(null)} title={selectedGroup?.name || 'Cluster Insights'}>
                 {selectedGroup && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <h3>Members ({selectedGroup.members.length})</h3>
-                        <div className="members-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            {selectedGroup.members.map(m => (
-                                <div key={m} className="member-card">
-                                    <User size={20} />
-                                    <span>{m}</span>
-                                </div>
-                            ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>COHORT POPULATION</div>
+                                <div style={{ fontSize: '3rem', fontWeight: 900 }}>{selectedGroup.members.length}</div>
+                            </div>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '2rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>AGGREGATE SYNC</div>
+                                <div style={{ fontSize: '3rem', fontWeight: 900, color: '#10b981' }}>{selectedGroup.avgAttendance}%</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 800, color: '#f0f6fc', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Users size={20} />
+                                ENROLLED OPERATIVES
+                            </h4>
+                            <div className="members-grid" style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                gap: '1rem',
+                                maxHeight: '400px',
+                                overflowY: 'auto',
+                                paddingRight: '1rem'
+                            }}>
+                                {selectedGroup.members.map(m => (
+                                    <div key={m} style={{
+                                        background: 'rgba(255,255,255,0.02)',
+                                        padding: '1.25rem',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '1rem'
+                                    }}>
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '12px',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#10b981'
+                                        }}>
+                                            <User size={20} />
+                                        </div>
+                                        <span style={{ fontWeight: 700, color: '#f0f6fc' }}>{m}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
             </Modal>
-        </div >
+        </div>
     );
 };
 

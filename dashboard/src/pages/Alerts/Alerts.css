@@ -1,5 +1,10 @@
 .alerts-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem 1rem 1rem;
     --page-accent: var(--accent-warning);
+    overflow: hidden;
 }
 
 /* Search Container Refinement */

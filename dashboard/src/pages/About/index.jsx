@@ -10,13 +10,18 @@ import {
     GitBranch,
     Mail,
     ExternalLink,
-    Info
+    Info,
+    Smartphone,
+    Cpu,
+    Sparkles,
+    ShieldCheck,
+    ChevronRight
 } from 'lucide-react';
 import './About.css';
 import PageHeader from '../../components/Common/PageHeader';
+import Card from '../../components/Common/Card';
 
 const About = () => {
-    // Placeholder data - replace with actual values
     const projectInfo = {
         name: "Agentic Tracking System",
         version: "1.0.0",
@@ -33,119 +38,121 @@ const About = () => {
             email: "MoMakkawi@hotmail.com"
         },
         supervisors: [
-            { name: "Laurent TOUTAIN", title: "IoT Professor." },
-            { name: "Baptiste GAULTIER", title: "Research Support Engineer." }
+            { name: "Laurent TOUTAIN", title: "IoT Professor" },
+            { name: "Baptiste GAULTIER", title: "Research Support Engineer" }
         ]
     };
 
     const techStack = [
-        { icon: Layout, name: "React + Vite", type: "Frontend" },
-        { icon: Code2, name: "Python + JavaScript", type: "Language" },
-        { icon: Server, name: "Python FastAPI", type: "Backend" },
-        { icon: Database, name: "SmoalAgent HuggingFace", type: "AI" }
+        { icon: Layout, name: "React 18", type: "Framework", color: "#61DAFB" },
+        { icon: Cpu, name: "FastAPI", type: "Backend", color: "#009688" },
+        { icon: Database, name: "SmolAgents", type: "AI Engine", color: "#FF9800" },
+        { icon: Code2, name: "Python DSL", type: "Language", color: "#3776AB" },
+        { icon: Server, name: "Vite", type: "Build Tool", color: "#646CFF" },
+        { icon: Smartphone, name: "IoT Integration", type: "Hardware", color: "#4CAF50" }
     ];
 
     return (
-        <div className="about-container fade-in">
-            {/* Hero Section */}
+        <div className="about-page animate-fade-in">
             <PageHeader
-                title={projectInfo.name}
+                title="System Intelligence"
                 icon={Info}
-                description={projectInfo.description}
-                gradient="linear-gradient(to right, #22d3ee, #67e8f9)"
-                iconColor="#22d3ee"
-                iconBgColor="rgba(34, 211, 238, 0.1)"
+                description="Behind the scenes of the Agentic Tracking System."
+                gradient="linear-gradient(to right, var(--accent-primary), var(--accent-success))"
+                iconColor="var(--accent-primary)"
+                iconBgColor="rgba(var(--accent-primary-rgb), 0.1)"
                 actions={
-                    <div className="version-badge" style={{ alignSelf: 'center', padding: '0.5rem 1rem', background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border-primary)', fontWeight: '600' }}>
-                        v{projectInfo.version}
+                    <div className="badge-premium" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                        Version {projectInfo.version}
                     </div>
                 }
             />
 
-            <div className="about-grid">
-                {/* Team Section */}
-                <div className="about-card team-card">
-                    <div className="card-header">
-                        <Users className="card-icon" />
-                        <h2>Project Team</h2>
-                    </div>
-
-                    <div className="team-member main-member">
-                        <div className="member-avatar">
-                            <span className="initials">{team.student.name.charAt(0)}</span>
+            <div className="about-layout">
+                {/* Left Column: Team & Bio */}
+                <div className="about-left">
+                    <div className="profile-card">
+                        <div className="profile-avatar-wrapper">
+                            <div className="profile-avatar">
+                                <Users size={48} color="var(--accent-primary)" />
+                            </div>
                         </div>
-                        <div className="member-info">
-                            <h3>{team.student.name}</h3>
-                            <span className="role">{team.student.role}</span>
-                            <div className="member-links">
-                                <a href={team.student.github} target="_blank" rel="noopener noreferrer" className="link-button">
-                                    <Github size={16} /> GitHub
+                        <div className="profile-info">
+                            <span className="role">IT Engineer</span>
+                            <h2>{team.student.name}</h2>
+                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                                <a href={team.student.github} target="_blank" rel="noopener noreferrer" className="icon-btn" style={{ width: '40px', height: '40px' }}>
+                                    <Github size={18} />
                                 </a>
-                                <a href={`mailto:${team.student.email}`} className="link-button">
-                                    <Mail size={16} /> Contact
+                                <a href={`mailto:${team.student.email}`} className="icon-btn" style={{ width: '40px', height: '40px' }}>
+                                    <Mail size={18} />
                                 </a>
                             </div>
                         </div>
+                        <Sparkles size={120} style={{ position: 'absolute', right: '-20px', top: '-20px', opacity: 0.03, pointerEvents: 'none' }} />
                     </div>
 
-                    <div className="supervisors-list">
-                        <h3>Supervised By</h3>
-                        {team.supervisors.map((sup, index) => (
-                            <div key={index} className="supervisor-item">
-                                <GraduationCap size={18} className="supervisor-icon" />
-                                <div>
-                                    <span className="supervisor-name">{sup.name}</span>
-                                    <span className="supervisor-title">{sup.title}</span>
+                    <Card title="Project Foundation" subtitle="Supervision and Academic Context">
+                        <div className="details-scrollable">
+                            {team.supervisors.map((sup, index) => (
+                                <div key={index} className="supervisor-pro-card">
+                                    <div className="supervisor-icon-box">
+                                        <GraduationCap size={24} />
+                                    </div>
+                                    <div className="supervisor-pro-info">
+                                        <span className="name">{sup.name}</span>
+                                        <span className="title">{sup.title}</span>
+                                    </div>
                                 </div>
+                            ))}
+
+                            <div style={{ marginTop: 'auto', padding: '1rem', background: 'rgba(var(--accent-primary-rgb), 0.05)', borderRadius: '16px', border: '1px solid rgba(var(--accent-primary-rgb), 0.1)' }}>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                    Developed as a specialized research project at <strong>{projectInfo.university}</strong>, focusing on the intersection of IoT data and Agentic AI behaviors.
+                                </p>
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    </Card>
                 </div>
 
-                {/* Tech Stack & Links */}
-                <div className="about-right-column">
-                    <div className="about-card tech-card">
-                        <div className="card-header">
-                            <Code2 className="card-icon" />
-                            <h2>Technical Stack</h2>
-                        </div>
-                        <div className="tech-grid">
+                {/* Right Column: Tech & Resources */}
+                <div className="about-right">
+                    <Card title="Technology Matrix" subtitle="The core architecture fuels the agent's logic">
+                        <div className="tech-grid-premium">
                             {techStack.map((tech, index) => (
-                                <div key={index} className="tech-item">
-                                    <tech.icon size={20} />
-                                    <div className="tech-info">
-                                        <span className="tech-name">{tech.name}</span>
-                                        <span className="tech-type">{tech.type}</span>
+                                <div key={index} className="tech-card-pro">
+                                    <div className="tech-icon-box" style={{ color: tech.color }}>
+                                        <tech.icon size={20} />
+                                    </div>
+                                    <div className="stack-item-info">
+                                        <span className="stack-label">{tech.type}</span>
+                                        <span className="stack-name">{tech.name}</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="about-card links-card">
-                        <div className="card-header">
-                            <GitBranch className="card-icon" />
-                            <h2>Project Resources</h2>
-                        </div>
-                        <div className="links-list">
-                            <a href="https://github.com/MoMakkawi/Agentic_tracking_system" target="_blank" rel="noopener noreferrer" className="resource-link">
-                                <Github size={20} />
-                                <div>
-                                    <span className="link-title">Source Code</span>
-                                    <span className="link-desc">View repository on GitHub</span>
+                    <Card title="Open Intelligence" subtitle="Access repository and documentation">
+                        <div className="resources-grid">
+                            <a href="https://github.com/MoMakkawi/Agentic_tracking_system" target="_blank" rel="noopener noreferrer" className="resource-pro-link">
+                                <GitBranch size={24} color="var(--accent-primary)" />
+                                <div className="resource-content">
+                                    <span className="title">Main Repository</span>
+                                    <span className="desc">Explore the core source code on GitHub</span>
                                 </div>
-                                <ExternalLink size={16} className="arrow-icon" />
+                                <ChevronRight size={18} className="arrow-icon-pro" />
                             </a>
-                            <a href={projectInfo.universityUrl} target="_blank" rel="noopener noreferrer" className="resource-link">
-                                <GraduationCap size={20} />
-                                <div>
-                                    <span className="link-title">{projectInfo.university}</span>
-                                    <span className="link-desc">A top-10 engineering school, part of the Mines-Telecom Institute.</span>
+                            <a href={projectInfo.universityUrl} target="_blank" rel="noopener noreferrer" className="resource-pro-link">
+                                <ShieldCheck size={24} color="var(--accent-success)" />
+                                <div className="resource-content">
+                                    <span className="title">Academic Partner</span>
+                                    <span className="desc">Vist IMT Atlantique University profile</span>
                                 </div>
-                                <ExternalLink size={16} className="arrow-icon" />
+                                <ChevronRight size={18} className="arrow-icon-pro" />
                             </a>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </div>

@@ -1,8 +1,22 @@
 .overview-container {
-    padding: 1rem;
-    max-width: 1600px;
-    margin: 0 auto;
-    animation: fadeIn 0.5s ease-out;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 1.5rem 0;
+    /* Add bottom breathing room */
+    /* Full screen experience */
+    margin: 0;
+    max-width: none;
+    animation: fadeIn 0.4s ease-out;
+    overflow-y: auto;
+    /* Allow gentle scrolling if needed on small screens, but fixed is preferred */
+    position: relative;
+    /* Changed from fixed to allow normal flow if parent allows */
+    background: radial-gradient(circle at 0% 0%, rgba(var(--accent-primary-rgb), 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(var(--accent-success-rgb), 0.08) 0%, transparent 50%),
+        var(--bg-primary);
+    z-index: 10;
 }
 
 
@@ -11,9 +25,10 @@
 /* Professional Stats Grid */
 .professional-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    flex-shrink: 0;
 }
 
 /* Professional Stat Card */
@@ -166,10 +181,12 @@
 
 /* Dashboard Layout */
 .dashboard-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    /* Full width now that sidebar is gone */
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem 1rem;
+    flex: 1;
+    min-height: 0;
 }
 
 .main-charts {
@@ -177,12 +194,20 @@
     grid-template-columns: 7fr 3fr;
     /* Side by side: Attendance vs Alerts */
     gap: 1.5rem;
-    align-items: start;
+    align-items: stretch;
+    height: 100%;
+    min-height: 0;
 }
 
 .chart-container {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     padding-right: 1rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.adaptive-chart {
+    height: 100%;
 }
 
 .date-range-picker {
@@ -250,13 +275,13 @@
     background: transparent;
     border: none;
     color: var(--text-primary);
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     outline: none;
-    font-family: inherit;
+    font-family: var(--font-main);
     width: 100%;
     padding: 0;
-    cursor: pointer;
+    cursor: text;
 }
 
 .date-input.error {
@@ -273,25 +298,72 @@
     opacity: 0.5;
 }
 
+/* Filter Controls */
+.date-inputs-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.premium-date-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+    min-width: 170px;
+    cursor: pointer;
+}
+
+.premium-date-input:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.input-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-icon {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.input-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.1rem;
+    text-transform: uppercase;
+}
+
 .filter-btn-premium {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     background: linear-gradient(135deg, var(--accent-primary), #2563eb);
     color: white;
-    border: none;
-    padding: 0.7rem 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.5rem;
     border-radius: 12px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .filter-btn-premium:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
     filter: brightness(1.1);
 }
 
@@ -304,6 +376,7 @@
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
+    transform: none;
 }
 
 .date-error-message {
@@ -347,6 +420,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Pie Chart Legend */
@@ -354,6 +429,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1;
+    min-height: 0;
+}
+
+.adaptive-pie {
+    height: 100%;
+    width: 100%;
 }
 
 .pie-legend {

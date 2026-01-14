@@ -42,7 +42,7 @@ export const groupService = {
 
 // Agent Services
 export const agentService = {
-    runTask: (task, conversationId = null) => client.post('/agent/run', { task, conversation_id: conversationId }),
+    runTask: (task, conversationId = null) => client.post('/agent/run', { task, conversation_id: conversationId }, { timeout: 600000 }),
 };
 
 // Chat Services

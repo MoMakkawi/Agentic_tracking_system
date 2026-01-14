@@ -232,7 +232,7 @@ const Overview = () => {
             <PageHeader
                 title="System Overview"
                 icon={Activity}
-                description="Real-time insights and monitoring status."
+                description="Agentic insights and monitoring status."
                 gradient="linear-gradient(to right, #8b5cf6, #ec4899)"
                 iconColor="#8b5cf6"
                 iconBgColor="rgba(139, 92, 246, 0.1)"
@@ -270,7 +270,7 @@ const Overview = () => {
             </div>
 
             <div className="dashboard-layout">
-                <section className="main-charts">
+                <div className="main-charts">
                     <Card
                         title="Attendance Performance"
                         subtitle="Engagement and match rate trends"
@@ -282,11 +282,12 @@ const Overview = () => {
                                     </div>
                                 )}
                                 <div className="date-inputs-row">
-                                    <div className="premium-date-input">
+                                    <div className="premium-date-input" onClick={(e) => e.target.tagName !== 'INPUT' && document.getElementById('overview-date-from').showPicker()}>
                                         <Calendar size={14} className="input-icon" />
                                         <div className="input-content">
                                             <span className="input-label">From</span>
                                             <input
+                                                id="overview-date-from"
                                                 type="date"
                                                 className={`date-input ${validationError ? 'error' : ''}`}
                                                 value={inputDateRange.from}
@@ -295,11 +296,12 @@ const Overview = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="premium-date-input">
+                                    <div className="premium-date-input" onClick={(e) => e.target.tagName !== 'INPUT' && document.getElementById('overview-date-to').showPicker()}>
                                         <Calendar size={14} className="input-icon" />
                                         <div className="input-content">
                                             <span className="input-label">To</span>
                                             <input
+                                                id="overview-date-to"
                                                 type="date"
                                                 className={`date-input ${validationError ? 'error' : ''}`}
                                                 value={inputDateRange.to}
@@ -320,7 +322,7 @@ const Overview = () => {
                             </div>
                         }
                     >
-                        <div className="chart-container" style={{ height: '400px', marginTop: '1.5rem' }}>
+                        <div className="chart-container adaptive-chart" style={{ marginTop: '0.5rem' }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
@@ -371,27 +373,39 @@ const Overview = () => {
                                     />
                                     <Legend
                                         content={({ payload }) => (
-                                            <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', paddingTop: '1.5rem' }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                gap: '1.5rem',
+                                                paddingTop: '2rem',
+                                                flexWrap: 'wrap'
+                                            }}>
                                                 {payload.map((entry, index) => (
                                                     <div key={`legend-${index}`} style={{
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: '0.6rem',
-                                                        fontSize: '0.85rem',
-                                                        color: entry.color,
-                                                        background: 'rgba(255, 255, 255, 0.03)',
-                                                        padding: '0.4rem 0.8rem',
-                                                        borderRadius: '20px',
-                                                        border: `1px solid ${entry.color}30`
+                                                        gap: '0.75rem',
+                                                        padding: '0.6rem 1rem',
+                                                        background: 'rgba(255, 255, 255, 0.02)',
+                                                        borderRadius: '12px',
+                                                        border: `1px solid ${entry.color}20`,
+                                                        transition: 'all 0.3s ease'
                                                     }}>
                                                         <div style={{
-                                                            width: '8px',
-                                                            height: '8px',
+                                                            width: '10px',
+                                                            height: '10px',
                                                             borderRadius: '50%',
                                                             backgroundColor: entry.color,
-                                                            boxShadow: `0 0 8px ${entry.color}`
+                                                            boxShadow: `0 0 10px ${entry.color}`
                                                         }} />
-                                                        <span style={{ fontWeight: 600 }}>{entry.value}</span>
+                                                        <span style={{
+                                                            fontWeight: 700,
+                                                            fontSize: '0.8rem',
+                                                            color: '#f0f6fc',
+                                                            letterSpacing: '0.02em'
+                                                        }}>
+                                                            {entry.value}
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -425,8 +439,8 @@ const Overview = () => {
 
 
                     <Card title="Alert Distribution" subtitle="Composition by error type">
-                        <div className="pie-chart-container">
-                            <ResponsiveContainer width="100%" height={200}>
+                        <div className="pie-chart-container adaptive-pie">
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={alertDistribution}
@@ -452,7 +466,7 @@ const Overview = () => {
                             </div>
                         </div>
                     </Card>
-                </section >
+                </div>
 
 
             </div >

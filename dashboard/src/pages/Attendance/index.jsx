@@ -11,7 +11,7 @@ import {
     Calendar, Users, Hash, Clock, Filter,
     ChevronLeft, ChevronRight, AlertCircle,
     CheckCircle2, AlertTriangle, Shield,
-    User, Info, Bookmark, TrendingUp, ArrowRight, Layers, Sparkles, ShieldCheck, Search
+    User, Info, Bookmark, TrendingUp, ArrowRight, Layers, Sparkles, ShieldCheck, Search, ChevronDown
 } from 'lucide-react';
 
 const Attendance = () => {
@@ -19,7 +19,7 @@ const Attendance = () => {
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [sortConfig, setSortConfig] = useState({ key: 'received_at', direction: 'desc' });
@@ -39,7 +39,7 @@ const Attendance = () => {
             fetchSessions();
         }, 300);
         return () => clearTimeout(timeoutId);
-    }, [page, sortConfig, searchTerm, activeFilter]);
+    }, [page, sortConfig, searchTerm, activeFilter, pageSize]);
 
     const fetchStats = async () => {
         try {
@@ -83,6 +83,11 @@ const Attendance = () => {
         }
     };
 
+    const handlePageSizeChange = (e) => {
+        setPageSize(Number(e.target.value));
+        setPage(1);
+    };
+
     const handleSort = (key) => {
         let direction = 'desc';
         if (sortConfig.key === key && sortConfig.direction === 'desc') {
@@ -114,7 +119,7 @@ const Attendance = () => {
             render: (val) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Hash size={14} color="var(--accent-primary)" />
-                    <Badge type="info" style={{ fontWeight: '700' }}>{val}</Badge>
+                    <Badge type="info" className="badge-premium" style={{ fontWeight: '700' }}>{val}</Badge>
                 </div>
             )
         },
@@ -241,7 +246,7 @@ const Attendance = () => {
 
             <Card
                 className="glass overflow-hidden"
-                style={{ padding: '0', border: '1px solid var(--border-primary)' }}
+                style={{ flex: 1, minHeight: 0, padding: '0', border: '1px solid var(--border-primary)' }}
                 theme="primary"
                 title="Attendance Sessions"
                 subtitle={`Total ${total} records found`}
@@ -261,24 +266,92 @@ const Attendance = () => {
                     onRowClick={handleRowClick}
                 />
 
-                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', padding: '1.5rem 0', borderTop: '1px solid var(--border-primary)' }}>
-                    <button
-                        disabled={page === 1}
-                        onClick={() => setPage(p => p - 1)}
-                        className={`icon-btn hover-lift ${page === 1 ? 'disabled' : ''}`}
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <div className="page-indicator">
-                        Page <span className="current-page">{page}</span> of <span className="total-pages">{totalPages}</span>
+                <div className="pagination" style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1.25rem 1.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(0, 0, 0, 0.02)'
+                }}>
+                    <div className="rows-per-page" style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontWeight: '500', letterSpacing: '0.01em' }}>Rows per page</span>
+                        <div style={{ position: 'relative' }}>
+                            <select
+                                value={pageSize}
+                                onChange={handlePageSizeChange}
+                                style={{
+                                    appearance: 'none',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid var(--border-primary)',
+                                    borderRadius: '8px',
+                                    padding: '0.5rem 2.5rem 0.5rem 1rem',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    outline: 'none',
+                                    transition: 'all 0.2s',
+                                    minWidth: '80px'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--text-muted)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--border-primary)'}
+                            >
+                                {[10, 20, 50, 100].map(size => (
+                                    <option key={size} value={size} style={{ background: '#1e1e1e', color: '#fff' }}>{size}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} style={{ position: 'absolute', right: '0.8rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }} />
+                        </div>
                     </div>
-                    <button
-                        disabled={page === totalPages}
-                        onClick={() => setPage(p => p + 1)}
-                        className={`icon-btn hover-lift ${page === totalPages ? 'disabled' : ''}`}
-                    >
-                        <ChevronRight size={20} />
-                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <div className="page-indicator" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Page <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{page}</span> of <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{totalPages}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                disabled={page === 1}
+                                onClick={() => setPage(p => p - 1)}
+                                className={`icon-btn hover-lift ${page === 1 ? 'disabled' : ''}`}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid var(--border-primary)',
+                                    background: page === 1 ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                    color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                                    cursor: page === 1 ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => setPage(p => p + 1)}
+                                className={`icon-btn hover-lift ${page === totalPages ? 'disabled' : ''}`}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid var(--border-primary)',
+                                    background: page === totalPages ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                    color: page === totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                                    cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </Card>
 

@@ -8,7 +8,7 @@ import Modal from '../../components/Common/Modal';
 import {
     AlertTriangle, ShieldCheck, User, Clock, Smartphone, Search,
     ChevronLeft, ChevronRight, Calendar, Hash, Users, AlertCircle,
-    CheckCircle2, Shield, Info, Bookmark
+    CheckCircle2, Shield, Info, Bookmark, ChevronDown
 } from 'lucide-react';
 import './Alerts.css';
 
@@ -60,7 +60,7 @@ const Alerts = () => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'desc' });
@@ -76,7 +76,7 @@ const Alerts = () => {
             fetchAlerts();
         }, 300);
         return () => clearTimeout(timeoutId);
-    }, [activeTab, page, sortConfig, searchTerm]);
+    }, [activeTab, page, sortConfig, searchTerm, pageSize]);
 
     const fetchAlerts = async () => {
         setLoading(true);
@@ -109,6 +109,11 @@ const Alerts = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePageSizeChange = (e) => {
+        setPageSize(Number(e.target.value));
+        setPage(1);
     };
 
     const handleSort = (key) => {
@@ -153,7 +158,7 @@ const Alerts = () => {
                 render: (reasons) => (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                         {Array.isArray(reasons) ? reasons.map((reason, idx) => (
-                            <Badge key={idx} type="warning" style={{ fontSize: '0.75rem' }}>{reason}</Badge>
+                            <Badge key={idx} type="warning" className="badge-premium" style={{ fontSize: '0.75rem' }}>{reason}</Badge>
                         )) : <Badge type="warning">{reasons}</Badge>}
                     </div>
                 )
@@ -163,7 +168,7 @@ const Alerts = () => {
         if (activeTab === 'device') {
             return [
                 { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{val}</span> },
-                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
+                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info" className="badge-premium">ID: {val}</Badge> },
                 { title: 'Device Fingerprint', key: 'device_id', width: '250px', render: (val) => <code className="glass-code">{val}</code> },
                 ...common
             ];
@@ -199,7 +204,7 @@ const Alerts = () => {
         } else {
             return [
                 { title: 'ID', key: 'id', width: '80px', render: (val) => <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem' }}>{val}</span> },
-                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info">ID: {val}</Badge> },
+                { title: 'Session', key: 'session_id', width: '120px', render: (val) => <Badge type="info" className="badge-premium">ID: {val}</Badge> },
                 { title: 'Attendance ID', key: 'uid', width: '195px', render: (val) => <span style={{ fontWeight: '600' }}>{val}</span> },
                 {
                     title: 'Recorded At', key: 'timestamp', width: '180px', render: (val) => (
@@ -292,7 +297,7 @@ const Alerts = () => {
 
             <Card
                 className="alerts-card glass overflow-hidden"
-                style={{ padding: '0' }}
+                style={{ flex: 1, minHeight: 0, padding: '0' }}
                 theme="warning"
                 title={`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')} Anomalies`}
                 subtitle={`Total ${total} security incidents identified`}
@@ -312,24 +317,92 @@ const Alerts = () => {
                     onRowClick={activeTab !== 'identity' ? handleRowClick : null}
                 />
 
-                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', padding: '1.5rem 0', borderTop: '1px solid var(--border-primary)' }}>
-                    <button
-                        disabled={page === 1}
-                        onClick={() => setPage(p => p - 1)}
-                        className={`icon-btn hover-lift ${page === 1 ? 'disabled' : ''}`}
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <div className="page-indicator">
-                        Page <span className="current-page">{page}</span> of <span className="total-pages">{totalPages}</span>
+                <div className="pagination" style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '1.25rem 1.75rem',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(0, 0, 0, 0.02)'
+                }}>
+                    <div className="rows-per-page" style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontWeight: '500', letterSpacing: '0.01em' }}>Rows per page</span>
+                        <div style={{ position: 'relative' }}>
+                            <select
+                                value={pageSize}
+                                onChange={handlePageSizeChange}
+                                style={{
+                                    appearance: 'none',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid var(--border-primary)',
+                                    borderRadius: '8px',
+                                    padding: '0.5rem 2.5rem 0.5rem 1rem',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    outline: 'none',
+                                    transition: 'all 0.2s',
+                                    minWidth: '80px'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--text-muted)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--border-primary)'}
+                            >
+                                {[10, 20, 50, 100].map(size => (
+                                    <option key={size} value={size} style={{ background: '#1e1e1e', color: '#fff' }}>{size}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} style={{ position: 'absolute', right: '0.8rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }} />
+                        </div>
                     </div>
-                    <button
-                        disabled={page === totalPages}
-                        onClick={() => setPage(p => p + 1)}
-                        className={`icon-btn hover-lift ${page === totalPages ? 'disabled' : ''}`}
-                    >
-                        <ChevronRight size={20} />
-                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <div className="page-indicator" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                            Page <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{page}</span> of <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{totalPages}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                disabled={page === 1}
+                                onClick={() => setPage(p => p - 1)}
+                                className={`icon-btn hover-lift ${page === 1 ? 'disabled' : ''}`}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid var(--border-primary)',
+                                    background: page === 1 ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                    color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
+                                    cursor: page === 1 ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => setPage(p => p + 1)}
+                                className={`icon-btn hover-lift ${page === totalPages ? 'disabled' : ''}`}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid var(--border-primary)',
+                                    background: page === totalPages ? 'transparent' : 'rgba(255,255,255,0.05)',
+                                    color: page === totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
+                                    cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </Card>
 
