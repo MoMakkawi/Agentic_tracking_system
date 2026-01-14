@@ -7,6 +7,7 @@ logic related to session data retrieval, filtering, sorting, and pagination.
 
 from typing import List, Optional, Tuple, Dict, Any
 from datetime import datetime
+import re
 
 from utils import JsonRepository, CsvRepository, SessionDTO, logger, map_to_session_dto
 from api.models import SessionFilters, PaginationParams, SortParams
@@ -142,6 +143,31 @@ class SessionService:
             logger.warning(f"Session data file not found: {e}")
             raise SessionNotFoundError("Session data file not found") from e
     
+    def _is_potential_date(self, text: str) -> bool:
+        """
+        Check if the text looks like a date search.
+        
+        Returns True if:
+        - Contains separators (/, -, .)
+        - Is exactly 4 digits (Year)
+        - Contains month names
+        """
+        # Check for separators
+        if any(c in text for c in ['/', '-', '.']):
+            return True
+        
+        # Check for 4 digit year
+        if re.match(r'^\d{4}$', text):
+            return True
+            
+        # Check for month names
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        lower_text = text.lower()
+        if any(m in lower_text for m in months):
+            return True
+            
+        return False
+
     def filter_sessions(
         self,
         sessions: List[SessionDTO],
@@ -210,25 +236,26 @@ class SessionService:
             if filters.search is not None:
                 search_term = filters.search.lower()
                 matches = False
+                is_date_search = self._is_potential_date(search_term)
                 
                 # Check session ID
-                if str(session.session_id).lower().find(search_term) != -1:
+                if str(session.session_id) == search_term:
                     matches = True
                 
                 # Check device ID
-                elif session.device_id and search_term in session.device_id.lower():
+                elif session.device_id and search_term == session.device_id.lower():
                     matches = True
                 
                 # Check session context
                 elif session.session_context and search_term in session.session_context.lower():
                     matches = True
                 
-                # Check logs date
-                elif session.logs_date and search_term in session.logs_date:
+                # Check logs date (Only if it looks like a date)
+                elif is_date_search and session.logs_date and search_term in session.logs_date:
                     matches = True
                 
-                # Check formatted dates and times from received_at
-                elif session.received_at:
+                # Check formatted dates and times from received_at (Only if it looks like a date)
+                elif is_date_search and session.received_at:
                     # Comprehensive list of formats to match against
                     formats = [
                         "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d",
@@ -246,6 +273,13 @@ class SessionService:
                         except Exception:
                             continue
                     
+                        
+                # Check session logs for UID match
+                if not matches and session.logs:
+                    for log in session.logs:
+                        if str(log.uid).lower() == search_term:
+                            matches = True
+                            break
                 if not matches:
                     continue
             

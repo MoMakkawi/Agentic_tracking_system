@@ -220,7 +220,7 @@ const Attendance = () => {
                         <Search style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} size={20} />
                         <input
                             type="text"
-                            placeholder="Search sessions..."
+                            placeholder="Search sessions, UIDs..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="search-input"
