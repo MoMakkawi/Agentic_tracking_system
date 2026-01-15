@@ -180,7 +180,7 @@
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
-    padding-bottom: 5rem;
+    padding-bottom: 0rem;
 }
 
 .section-header-pro {
@@ -328,7 +328,7 @@
 }
 
 .pro-stats-column {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     display: flex;
     gap: 3rem;
     position: relative;
@@ -351,30 +351,38 @@
 }
 
 .attendance-sparkline-integrated {
-    margin-top: auto;
+    margin-top: 1.5rem;
     position: relative;
     z-index: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 24px;
-    padding: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border-radius: 20px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid rgba(var(--card-accent-rgb), 0.15);
+    box-shadow:
+        0 8px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
 }
 
 .spark-meta {
-    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.7rem;
     font-weight: 800;
-    color: var(--text-muted);
+    color: var(--card-accent);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.5rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
 }
 
 .avatar-peek {
-    position: absolute;
-    bottom: 2.5rem;
-    right: 2.5rem;
+    position: relative;
     display: flex;
-    z-index: 2;
+    margin-top: 1.5rem;
+    z-index: 1;
+    justify-content: flex-start;
+    padding-left: 0.5rem;
 }
 
 .peek-avatar {

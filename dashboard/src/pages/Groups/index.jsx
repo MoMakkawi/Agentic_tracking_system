@@ -40,7 +40,7 @@ const GroupCard = ({ group, color, onClick }) => (
         <div className="card-header-pro">
             <div className="title-section">
                 <h3 className="group-name-text">{group.name}</h3>
-                <span className="pro-status-tag">Neural Cluster</span>
+                <span className="pro-status-tag">Cluster</span>
             </div>
             <div className="pro-icon-box">
                 <Cpu size={32} strokeWidth={1.5} />
@@ -205,7 +205,7 @@ const Groups = () => {
         <div className="groups-page animate-fade-in">
             {/* Header */}
             <PageHeader
-                title="Neural Clustering Analysis"
+                title="Clustering Analysis"
                 icon={Target}
                 description="High-fidelity behavioral segmentation and predictive continuity tracking."
                 gradient="linear-gradient(135deg, #10b981 0%, #3b82f6 100%)"
@@ -234,7 +234,7 @@ const Groups = () => {
 
             {/* Engagement Chart */}
             <Card
-                title="Neural Engagement Matrix"
+                title="Engagement Matrix"
                 subtitle="Comparative cluster dynamics over temporal dimensions."
                 className="full-width adaptive-chart-card"
                 extra={
@@ -390,8 +390,8 @@ const Groups = () => {
                 <div className="groups-browsing-section">
                     <div className="section-header-pro">
                         <div className="section-title">
-                            Identified Neural Clusters
-                            <span className="count-badge">{filteredGroups.length} Active Nodes</span>
+                            Identified Clusters
+                            <span className="count-badge">{filteredGroups.length}</span>
                         </div>
                         <div className="carousel-controls">
                             <button className="carousel-btn prev" onClick={() => scroll('left')}>
