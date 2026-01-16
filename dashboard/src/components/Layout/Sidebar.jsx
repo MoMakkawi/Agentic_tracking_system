@@ -25,25 +25,89 @@ const Sidebar = () => {
 
     return (
         <aside className="sidebar glass">
-            <div className="sidebar-logo">
-                <img src={logo} alt="ATS Logo" className="logo-image" />
-                <span className="logo-text">Agentic Tracking System</span>
-            </div>
+            <NavLink to="/" className="sidebar-logo-link">
+                <div className="sidebar-logo">
+                    <img src={logo} alt="ATS Logo" className="logo-image" />
+                    <div className="logo-text-container">
+                        <h1 className="logo-primary">ATS</h1>
+                        <p className="logo-subtitle">Agentic Tracking System</p>
+                    </div>
+                </div>
+            </NavLink>
 
             <nav className="sidebar-nav">
-                {menuItems.map((item) => (
+                {/* Monitored Section */}
+                <div className="nav-section">
                     <NavLink
-                        key={item.path}
-                        to={item.path}
+                        to="/"
                         className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                        style={{ '--item-color': item.color }}
+                        style={{ '--item-color': '#8b5cf6' }}
                     >
-                        {item.icon}
-                        <span>{item.name}</span>
+                        <Activity size={20} />
+                        <span>Overview</span>
                     </NavLink>
-                ))}
-            </nav>
+                    <NavLink
+                        to="/groups"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        style={{ '--item-color': '#10b981' }}
+                    >
+                        <Users size={20} />
+                        <span>Groups</span>
+                    </NavLink>
+                </div>
 
+                <div className="nav-divider"></div>
+
+                {/* Data Section */}
+                <div className="nav-section">
+                    <NavLink
+                        to="/attendance"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        style={{ '--item-color': '#6366f1' }}
+                    >
+                        <CalendarCheck size={20} />
+                        <span>Attendance</span>
+                    </NavLink>
+                    <NavLink
+                        to="/alerts"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        style={{ '--item-color': '#f59e0b' }}
+                    >
+                        <AlertTriangle size={20} />
+                        <span>Alerts</span>
+                    </NavLink>
+                </div>
+
+                <div className="nav-divider"></div>
+
+                {/* AI Agent Section */}
+                <div className="nav-section">
+                    <NavLink
+                        to="/agent"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        style={{ '--item-color': '#a78bfa' }}
+                    >
+                        <Bot size={20} />
+                        <span>Agent</span>
+                    </NavLink>
+                </div>
+
+                <div className="nav-divider"></div>
+
+
+
+                {/* Meta Section */}
+                <div className="nav-section">
+                    <NavLink
+                        to="/about"
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                        style={{ '--item-color': '#22d3ee' }}
+                    >
+                        <Info size={20} />
+                        <span>About</span>
+                    </NavLink>
+                </div>
+            </nav>
 
         </aside>
     );
