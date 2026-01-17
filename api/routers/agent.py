@@ -3,7 +3,7 @@ from api.models import AgentRequest, AgentResponse
 from api.services import AgentService
 from utils import logger
 
-router = APIRouter()
+router = APIRouter(tags=["Agent"])
 
 def get_agent_service() -> AgentService:
     """Dependency injection for AgentService."""
@@ -12,10 +12,15 @@ def get_agent_service() -> AgentService:
 @router.post(
     "/run",
     response_model=AgentResponse,
-    summary="Run Agent Task",
-    description="Send a natural language task to the orchestration agent.",
+    summary="Run AI Agent Task",
+    description="""
+    Send a natural language task to the orchestration agent. 
+    The agent will coordinate sub-agents (Data Pipeline, Validation, Grouping, Knowledge Insight) 
+    to retrieve data and generate a response.
+    """,
     responses={
-        500: {"description": "Agent execution failed"}
+        200: {"description": "Agent successfully executed the task"},
+        500: {"description": "Agent execution failed or internal error"}
     }
 )
 async def run_agent_task(

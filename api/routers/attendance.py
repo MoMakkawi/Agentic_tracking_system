@@ -101,18 +101,20 @@ def parse_date_filter(value: Optional[str], field_name: str, end_of_day: bool = 
     summary="List Attendance Sessions",
     description="Retrieve a paginated list of attendance sessions with optional sorting.",
     responses={
+        200: {"description": "Successful retrieval of sessions"},
         400: {"description": "Invalid page number or sort parameter"},
         500: {"description": "Internal server error"}
     }
 )
 def get_sessions(
-    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)"),
-    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Number of items per page"),
+    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)", example=1),
+    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Number of items per page", example=10),
     order_by: Optional[str] = Query(
         None,
-        description=f"Field to order by ({', '.join(SORTABLE_FIELDS)})"
+        description=f"Field to order by ({', '.join(SORTABLE_FIELDS)})",
+        example="session_id"
     ),
-    order_direction: str = Query("asc", pattern="^(asc|desc)$", description="Order direction: asc or desc"),
+    order_direction: str = Query("asc", pattern="^(asc|desc)$", description="Order direction: asc or desc", example="desc"),
     service: SessionService = Depends(get_session_service)
 ):
     """
@@ -186,41 +188,43 @@ def get_sessions(
     summary="Filter Attendance Sessions",
     description="Search and filter attendance sessions using multiple criteria including date ranges, exact matches, and text search.",
     responses={
+        200: {"description": "Successful retrieval of filtered sessions"},
         400: {"description": "Invalid filter format or page number"},
         500: {"description": "Internal server error"}
     }
 )
 def filter_sessions(
     # Exact match filters
-    session_id: Optional[int] = Query(None, description="Filter by exact session ID"),
-    device_id: Optional[str] = Query(None, description="Filter by exact device ID"),
-    logs_date: Optional[str] = Query(None, description="Filter by exact logs date (YYYY-MM-DD)"),
+    session_id: Optional[int] = Query(None, description="Filter by exact session ID", example=42),
+    device_id: Optional[str] = Query(None, description="Filter by exact device ID", example="Incubateur"),
+    logs_date: Optional[str] = Query(None, description="Filter by exact logs date (YYYY-MM-DD)", example="2025-09-08"),
     
     # Range filters for dates
-    received_at_from: Optional[str] = Query(None, description="Filter sessions received from this date (YYYY-MM-DD or ISO format)"),
-    received_at_to: Optional[str] = Query(None, description="Filter sessions received until this date (YYYY-MM-DD or ISO format)"),
+    received_at_from: Optional[str] = Query(None, description="Filter sessions received from this date (YYYY-MM-DD or ISO format)", example="2025-09-01"),
+    received_at_to: Optional[str] = Query(None, description="Filter sessions received until this date (YYYY-MM-DD or ISO format)", example="2025-09-30"),
     
     # Range filters for counts
-    recorded_count_min: Optional[int] = Query(None, ge=0, description="Minimum recorded count"),
-    recorded_count_max: Optional[int] = Query(None, ge=0, description="Maximum recorded count"),
-    unique_count_min: Optional[int] = Query(None, ge=0, description="Minimum unique count"),
-    unique_count_max: Optional[int] = Query(None, ge=0, description="Maximum unique count"),
+    recorded_count_min: Optional[int] = Query(None, ge=0, description="Minimum recorded count", example=10),
+    recorded_count_max: Optional[int] = Query(None, ge=0, description="Maximum recorded count", example=50),
+    unique_count_min: Optional[int] = Query(None, ge=0, description="Minimum unique count", example=5),
+    unique_count_max: Optional[int] = Query(None, ge=0, description="Maximum unique count", example=20),
     
     # Text search
-    session_context_contains: Optional[str] = Query(None, description="Filter by session context containing this text (case-insensitive)"),
-    search: Optional[str] = Query(None, description="Generic search term impacting multiple fields"),
+    session_context_contains: Optional[str] = Query(None, description="Filter by session context containing this text (case-insensitive)", example="Master IT"),
+    search: Optional[str] = Query(None, description="Generic search term impacting multiple fields", example="8842a17b1"),
     
     # Boolean toggles
-    has_alerts: Optional[bool] = Query(None, description="Filter sessions that have at least one alert"),
+    has_alerts: Optional[bool] = Query(None, description="Filter sessions that have at least one alert", example=True),
     
     # Pagination and ordering
-    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)"),
-    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Number of items per page"),
+    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number (starts from 1)", example=1),
+    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Number of items per page", example=10),
     order_by: Optional[str] = Query(
         None,
-        description=f"Field to order by ({', '.join(SORTABLE_FIELDS)})"
+        description=f"Field to order by ({', '.join(SORTABLE_FIELDS)})",
+        example="recorded_count"
     ),
-    order_direction: str = Query("asc", pattern="^(asc|desc)$", description="Order direction: asc or desc"),
+    order_direction: str = Query("asc", pattern="^(asc|desc)$", description="Order direction: asc or desc", example="desc"),
     service: SessionService = Depends(get_session_service)
 ):
     """

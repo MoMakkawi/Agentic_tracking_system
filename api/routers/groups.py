@@ -18,7 +18,7 @@ from api.constants import (
     GROUP_SORTABLE_FIELDS
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Groups"])
 
 def get_group_service() -> GroupService:
     """Dependency injection for GroupService."""
@@ -30,21 +30,26 @@ def get_group_service() -> GroupService:
 @router.get(
     "/",
     response_model=PaginatedGroupResponse,
-    summary="List Groups",
+    summary="List and Filter Groups",
+    description="""
+    Retrieve a paginated list of student groups. 
+    You can filter by group name, member UID, or group size.
+    """,
     responses={
-        400: {"description": "Invalid page number"},
+        200: {"description": "Successful retrieval of groups"},
+        400: {"description": "Invalid page number or filter parameters"},
         500: {"description": "Internal server error"}
     }
 )
 def get_groups(
-    group_name: Optional[str] = Query(None, description="Filter by group name (partial match)"),
-    member_uid: Optional[str] = Query(None, description="Filter by member UID present in group"),
-    min_members: Optional[int] = Query(None, ge=0, description="Minimum number of members in group"),
-    max_members: Optional[int] = Query(None, ge=0, description="Maximum number of members in group"),
-    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number"),
-    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Items per page"),
-    order_by: Optional[str] = Query(None, description=f"Sort field: {', '.join(GROUP_SORTABLE_FIELDS)}"),
-    order_direction: str = Query("asc", pattern="^(asc|desc)$"),
+    group_name: Optional[str] = Query(None, description="Filter by group name (partial match)", example="group 1"),
+    member_uid: Optional[str] = Query(None, description="Filter by member UID present in group", example="8842a17b1"),
+    min_members: Optional[int] = Query(None, ge=0, description="Minimum number of members in group", example=5),
+    max_members: Optional[int] = Query(None, ge=0, description="Maximum number of members in group", example=20),
+    page: int = Query(DEFAULT_PAGE, ge=1, description="Page number", example=1),
+    page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="Items per page", example=10),
+    order_by: Optional[str] = Query(None, description=f"Sort field: {', '.join(GROUP_SORTABLE_FIELDS)}", example="name"),
+    order_direction: str = Query("asc", pattern="^(asc|desc)$", example="asc"),
     service: GroupService = Depends(get_group_service)
 ):
     """
