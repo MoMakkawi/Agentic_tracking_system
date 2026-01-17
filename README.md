@@ -37,9 +37,9 @@ graph TD
         Orchestrator -->|Coordinates| SubAgents[Sub-Agents]
         
         SubAgents -->|Analytical Tasks| KnowledgeInsights[Knowledge Insights Agent]
+        SubAgents -->|Clustering| GroupIdentifier[Group Identifier Agent]
+        SubAgents -->|Validation| Validation[Validation Agent]
         SubAgents -->|Extraction| DataPipeline[Data Pipeline Agent]
-        SubAgents -->|Security| Validation[Validation Agent]
-        SubAgents -->|Analytics| GroupIdentifier[Group Identifier Agent]
     end
     
     subgraph Infrastructure
