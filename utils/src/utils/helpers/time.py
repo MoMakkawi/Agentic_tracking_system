@@ -93,6 +93,34 @@ class TimestampHelper:
             return None
 
     @staticmethod
+    def now_paris() -> datetime:
+        """
+        Get the current time in Europe/Paris timezone as a naive datetime.
+        
+        Returns:
+            Naive datetime representing current Paris time
+        """
+        return datetime.now(ZoneInfo("Europe/Paris")).replace(tzinfo=None)
+
+    @staticmethod
+    def is_within_window(target_time: datetime, window_seconds: int = 60) -> bool:
+        """
+        Check if a target time is within a window centered on current time.
+        
+        Args:
+            target_time: The datetime to check (naive, Paris time)
+            window_seconds: Total window size (±half on each side)
+            
+        Returns:
+            True if target_time is within the window
+        """
+        now = TimestampHelper.now_paris()
+        half_window = timedelta(seconds=window_seconds / 2)
+        window_start = now - half_window
+        window_end = now + half_window
+        return window_start <= target_time <= window_end
+
+    @staticmethod
     def combine_date_time(date_str: str, time_str: str) -> datetime | None:
         """
         Combine date and time strings into a datetime object.
