@@ -8,6 +8,7 @@
   - [Group Analytics](#group-analytics)
   - [Alert Management](#alert-management)
   - [Agent Integration](#agent-integration)
+  - [Event Scheduler](#event-scheduler)
 - [Running the Server](#running-the-server)
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
@@ -82,7 +83,17 @@ The alerting subsystem flags suspicious or invalid activity through specialized 
   - Delegation to specialized sub-agents.
   - Coordinated multi-step analytical workflows.
 - Designed to support extensible agentic reasoning and automation.
+- **Autonomous Triggers**: Integrates with the Event Scheduler to trigger tasks based on real-world time events.
 
+---
+
+## Event Scheduler
+
+The API includes a robust **Event Scheduler Service** that runs as an asynchronous background task. It monitors the system's `pass.ics` calendar and ensures that the Orchestrator agent is triggered autonomously.
+
+- **Background Monitoring**: Continuously polls for events reaching their `DTEND`.
+- **Time Precision**: Uses a 60-second tolerance window (±30s) to ensure no events are missed due to polling intervals.
+- **Persistence**: Maintains a `triggered_events.json` registry to prevent duplicate execution, even across service restarts.
 ---
 
 ## Running the Server

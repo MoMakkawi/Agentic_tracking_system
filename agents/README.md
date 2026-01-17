@@ -28,7 +28,7 @@ Core multi-agent system that orchestrates data processing, validation, grouping,
 ## Overview
 
 The agents module implements a hierarchical agent architecture where:
-- **Orchestrator Agent** acts as the central controller, parsing user requests and delegating tasks
+- **Orchestrator Agent** acts as the central controller, parsing user requests or autonomous system triggers and delegating tasks
 - **Sub-agents** handle specialized responsibilities with narrow, well-defined scopes
 - Each agent is modular, testable, and reusable across different contexts
 

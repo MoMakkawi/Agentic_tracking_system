@@ -8,6 +8,7 @@
 - [Sub-Agents](#sub-agents)
 - [Memory](#memory)
 - [Workflow](#workflow)
+- [Dynamic Activation](#dynamic-activation)
 - [Scope, Security, and Errors](#scope-security-and-errors)
 - [Output Rules](#output-rules)
 - [Tools](#tools)
@@ -84,6 +85,15 @@ The Orchestrator implements an extensible memory system to maintain context acro
 7. Synthesize final user-facing response
 
 Execution may be partial or full-chain depending on the request.
+
+---
+
+## Dynamic Activation
+
+While the Orchestrator primarily responds to direct user queries via the API, it also supports **Autonomous Triggering**:
+
+- **System-Initiated Tasks**: The `EventSchedulerService` can trigger the Orchestrator automatically when specific time-based events occur (e.g., at the end of a scheduled class).
+- **Default Workflows**: When triggered autonomously, the Orchestrator executes a pre-defined `DEFAULT_TASK` (configured in `config.json`) to perform system-wide updates, validation, and insight generation without human intervention.
 
 ---
 

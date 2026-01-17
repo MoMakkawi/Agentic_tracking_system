@@ -61,7 +61,10 @@ graph TD
     Features a robust memory layer supporting **Short-Term Memory** with conversation isolation. This ensures context is maintained across multiple turns while keeping independent sessions secure and private.
 
 -   **Robust Data Pipeline & Repositories**
-    Utilizes a unified **Repository Pattern** to handle multiple data formats (`JSON`, `JSONL`, `CSV`, `ICS`) seamlessly. Automated ingestion, validation, and processing ensure data integrity.
+    Utilizes a unified **Repository Pattern** to handle multiple data formats (`JSON`, `JSONL`, `CSV`, `ICS`) seamlessly. Features an enhanced storage layer with automatic schema detection and specialized handlers like the iCalendar event monitor.
+
+-   **Background Event Scheduling**
+    A persistent, fully configurable background task that monitors calendar events (ICS). It automatically triggers orchestrator workflows when events reach their end time, ensuring autonomous and timely data updates.
 
 -   **Dynamic "Hot-Reload" Configuration**
     A thread-safe configuration manager that supports real-time updates without system downtime. Includes dot-notation access for complex settings and secure environment variable integration.
