@@ -414,7 +414,7 @@ const Overview = () => {
                                     <Area
                                         type="monotone"
                                         dataKey="attendance"
-                                        name="Verified Presence"
+                                        name="Regular Attendees."
                                         stroke="#3b82f6"
                                         fillOpacity={1}
                                         fill="url(#colorAttendance)"
@@ -424,7 +424,7 @@ const Overview = () => {
                                     <Area
                                         type="monotone"
                                         dataKey="unassigned"
-                                        name="Unassigned Activity"
+                                        name="Outsiders."
                                         stroke="#ef4444"
                                         fillOpacity={1}
                                         fill="url(#colorUnassigned)"
