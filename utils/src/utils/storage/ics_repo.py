@@ -2,7 +2,7 @@ import os
 from typing import List, Dict, Any, Union
 from datetime import datetime
 from .base import FileRepository
-from utils import TimestampHelper
+from ..helpers.time import TimestampHelper
 
 try:
     from icalendar import Calendar, Event
@@ -40,6 +40,30 @@ class IcsRepository(FileRepository):
                         
                     sessions.append(session_dict)
             return sessions
+
+    def get_ending_events(self, window_seconds: int = 60) -> List[Dict[str, Any]]:
+        """
+        Find events whose end time (DTEND) falls within the specified window.
+        
+        Args:
+            window_seconds: Total window size in seconds (±half of this around now).
+            
+        Returns:
+            List of matching event dictionaries.
+        """
+        all_events = self.read_all()
+        ending_events = []
+        
+        for event in all_events:
+            end_time_str = event.get("end")
+            if not end_time_str:
+                continue
+                
+            end_time = TimestampHelper.to_datetime(end_time_str)
+            if end_time and TimestampHelper.is_within_window(end_time, window_seconds):
+                ending_events.append(event)
+                
+        return ending_events
 
     def save_all(self, data: List[Dict[str, Any]]):
         self._save(data)
