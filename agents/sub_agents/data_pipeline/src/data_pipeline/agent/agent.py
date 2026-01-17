@@ -1,4 +1,5 @@
 from smolagents.agents import CodeAgent
+from typing import Optional
 from utils import RagrennModel, logger, load_config, get_config
 from .tools import fetch_tool, preprocess_tool
 
@@ -54,7 +55,7 @@ class DataPipelineAgent:
     # ---------------------------------------------------------
     # Run with Retries (Used by Orchestrator)
     # ---------------------------------------------------------
-    def run(self, task: str):
+    def run(self, task: Optional[str] = None):
         """
         Run task with retry logic.
         """
@@ -74,7 +75,7 @@ class DataPipelineAgent:
 # ----------------------------
 # Callable main() for ToolCallAgent
 # ----------------------------
-def main(task: str = None):
+def main(task: Optional[str] = None):
     """
     Entry point for ToolCallAgent.
     Args:
