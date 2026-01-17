@@ -80,6 +80,8 @@ src/utils/
 A robust **Repository Pattern** implementation that abstracts file I/O. It supports multiple backends (`.json`, `.jsonl`, `.csv`, `.ics`) through a unified interface (`RepositoryFactory`).
 *   **Automatic type detection** based on file extension.
 *   **CRUD operations**: `read_all`, `add`, `update`, `delete`.
+*   **Object-Style Support**: `read`, `save`, and `update_dict` for managing settings or state files.
+*   **Event Monitoring**: `IcsRepository.get_ending_events` for finding events ending within a specific time window.
 *   **Schema introspection**: `get_schema_info`.
 
 ### Configuration Management
@@ -108,7 +110,7 @@ Pre-configured wrappers for:
 The `RepositoryFactory` automatically selects the correct driver for your file type.
 
 ```python
-from utils.storage.factory import RepositoryFactory
+from utils import RepositoryFactory
 
 # Initialize repository (Auto-detects JSON driver)
 user_repo = RepositoryFactory.get_repository("data/users.json")
@@ -132,7 +134,7 @@ user_repo.delete("1")
 Load the configuration once at startup. The watcher thread handles updates automatically.
 
 ```python
-from utils.config import load_config, get_config
+from utils import load_config, get_config
 
 # Initialize with auto-reload enabled
 load_config("config.json", start_watcher=True)
@@ -152,7 +154,7 @@ print(f"System running with log level: {log_level}")
 Use the pre-configured logger for consistent output formats.
 
 ```python
-from utils.logger import logger
+from utils import logger
 
 try:
     # Business logic here
@@ -164,11 +166,14 @@ except Exception as e:
 ### Time Utilities
 
 ```python
-from utils.helpers import time
+from utils import TimestampHelper
 
-# Get standardized timestamp
-current_ts = time.get_current_timestamp()
+# Get standardized Paris time
+current_ts = TimestampHelper.now_paris()
 print(f"Action recorded at: {current_ts}")
+
+# Check if a time is within a ±30s window of now
+is_now = TimestampHelper.is_within_window(current_ts)
 ```
 
 ---
