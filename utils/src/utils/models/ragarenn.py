@@ -3,9 +3,9 @@ from smolagents.models import OpenAIServerModel
 from utils import logger, Secrets
 from typing import Union, List
 
-class RagrennModel:
+class RagarennModel:
     """
-    Wrapper class for interacting with the Ragrenn (Rennes) model through its OpenAI-compatible API.
+    Wrapper class for interacting with the Ragarenn (Rennes) model through its OpenAI-compatible API.
     Provides unified text generation and smolagent compatibility.
     Supports automatic model selection from a list with fallback.
     """
@@ -26,7 +26,7 @@ class RagrennModel:
             self.model_name = self._select_available_model(target_model_name)
 
         except Exception as e:
-            logger.exception(f"Failed to initialize RagrennModel: {e}")
+            logger.exception(f"Failed to initialize RagarennModel: {e}")
             raise
 
     def _select_available_model(self, model_name: Union[str, List[str]]) -> str:
@@ -67,7 +67,7 @@ class RagrennModel:
             return model_names[0]
 
     def generate_text(self, prompt: str) -> str:
-        """Send a text prompt to Ragrenn and return the response."""
+        """Send a text prompt to Ragarenn and return the response."""
         try:
             response = self.client.responses.create(
                 model=self.model_name,
@@ -77,11 +77,11 @@ class RagrennModel:
             return output
 
         except Exception as e:
-            logger.exception(f"Ragrenn API call failed: {e.message}")
-            raise RuntimeError("Ragrenn API call failed.") from e
+            logger.exception(f"Ragarenn API call failed: {e.message}")
+            raise RuntimeError("Ragarenn API call failed.") from e
 
     def ask(self, prompt: str, display_md: bool = False) -> str:
-        """Ask Ragrenn a question and optionally display as Markdown."""
+        """Ask Ragarenn a question and optionally display as Markdown."""
         from IPython.display import Markdown, display
         answer = self.generate_text(prompt)
         if display_md:

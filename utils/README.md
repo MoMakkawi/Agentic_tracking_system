@@ -20,7 +20,7 @@
 
 The **Utils Package** is the foundational library for the **Agentic Tracking System**, abstracting complex low-level operations into clean, reusable interfaces. It provides essential services such as configuration management with auto-reloading, a unified storage repository pattern, structured logging, and robust data transfer objects (DTOs).
 
-Designed for multi-agent architectures, this package ensures consistency across data access, error handling, and external service integration (Google Gemini, RAGrenn).
+Designed for multi-agent architectures, this package ensures consistency across data access, error handling, and external service integration (Google Gemini, Ragarenn).
 
 ---
 
@@ -69,7 +69,7 @@ src/utils/
 │   └── time.py
 └── models/             # AI Integration
     ├── gemini.py
-    └── ragrenn.py
+    └── Ragarenn.py
 ```
 
 ---
@@ -99,7 +99,7 @@ Strictly typed data structures for core domain entities:
 ### AI Models
 Pre-configured wrappers for:
 *   **Google Gemini**: For generative AI tasks.
-*   **RAGrenn**: Custom RAG (Retrieval-Augmented Generation) implementation.
+*   **Ragarenn**: Custom RAG (Retrieval-Augmented Generation) implementation.
 
 ---
 

@@ -8,7 +8,7 @@ from .src.utils.config import load_config, get_config
 from .src.utils.logger import logger
 from .src.utils.helpers.time import TimestampHelper
 from .src.utils.models.gemini import GeminiModel
-from .src.utils.models.ragrenn import RagrennModel
+from .src.utils.models.ragarenn import RagarennModel
 from .src.utils.storage.factory import RepositoryFactory
 from .src.utils.storage.base import FileRepository
 from .src.utils.storage.json_repo import JsonRepository
@@ -51,7 +51,7 @@ __all__ = [
 
     #LLM models
     "GeminiModel",
-    "RagrennModel",
+    "RagarennModel",
 
     #Storage
     "FileRepository",

@@ -1,6 +1,6 @@
 from smolagents.agents import CodeAgent
 from typing import Optional
-from utils import RagrennModel, logger, load_config, get_config
+from utils import RagarennModel, logger, load_config, get_config
 from .tools import fetch_tool, preprocess_tool
 
 class DataPipelineAgent:
@@ -20,7 +20,7 @@ class DataPipelineAgent:
         config = get_config().LLM_MODULES.DATA_PIPELINE
 
         # Initialize model
-        self.model = RagrennModel(model_config=config).to_smol_model()
+        self.model = RagarennModel(model_config=config).to_smol_model()
 
         # Load pipeline instructions
         self.default_task = config.DEFAULT_TASK

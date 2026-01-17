@@ -1,7 +1,7 @@
 from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
-from utils import RagrennModel, JsonRepository, CsvRepository
+from utils import RagarennModel, JsonRepository, CsvRepository
 from .tools import louvain_clustering_tool, save_tool
 
 class GroupIdentifierAgent:
@@ -21,7 +21,7 @@ class GroupIdentifierAgent:
         config = get_config().LLM_MODULES.GROUP_IDENTIFIER
 
         # Initialize model
-        self.model = RagrennModel(model_config=config).to_smol_model()
+        self.model = RagarennModel(model_config=config).to_smol_model()
 
         # Load instructions, default task & retries
         self.instructions = config.INSTRUCTIONS

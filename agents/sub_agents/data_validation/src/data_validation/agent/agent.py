@@ -1,6 +1,6 @@
 from smolagents.agents import CodeAgent
 from utils import logger, load_config, get_config
-from utils import RagrennModel
+from utils import RagarennModel
 from typing import Optional
 from data_validation.agent.tools import device_validation_tool, timestamp_validation_tool, identity_validation_tool
 
@@ -22,7 +22,7 @@ class DataValidationAgent:
 
         config = get_config().LLM_MODULES.DATA_VALIDATION
 
-        self.model = RagrennModel(model_config=config).to_smol_model()
+        self.model = RagarennModel(model_config=config).to_smol_model()
 
         # Load validation instructions
         self.instructions = config.INSTRUCTIONS

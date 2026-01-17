@@ -1,7 +1,7 @@
 from smolagents.agents import CodeAgent
 from typing import Optional
 from utils import logger, load_config, get_config
-from utils import RagrennModel
+from utils import RagarennModel
 from utils import CsvRepository, JsonRepository
 from .tools import data_insighter_tool, groups_insighter_tool, alerts_insighter_tool
 
@@ -22,7 +22,7 @@ class KnowledgeInsightAgent:
         config = get_config().LLM_MODULES.KNOWLEDGE_INSIGHT
 
         # Initialize model
-        self.model = RagrennModel(model_config=config).to_smol_model()
+        self.model = RagarennModel(model_config=config).to_smol_model()
 
         # Initialize default task
         self.default_task = config.DEFAULT_TASK

@@ -1,7 +1,7 @@
 from smolagents.agents import ToolCallingAgent
 from typing import Optional, List, Dict, Any
 from utils import logger, get_config, load_config
-from utils import RagrennModel
+from utils import RagarennModel
 from .tools import pipeline_agent_tool, validation_agent_tool, group_identifier_agent_tool, insighter_agent_tool 
 from agents.memory import MemoryManager, ShortTermMemory, BaseMemory
 
@@ -33,7 +33,7 @@ class Orchestrator:
         config = get_config().LLM_MODULES.ORCHESTRATOR
 
         # Initialize model
-        self.model = RagrennModel(model_config=config).to_smol_model()
+        self.model = RagarennModel(model_config=config).to_smol_model()
 
         # Load orchestrator instructions
         self.instructions = config.INSTRUCTIONS
