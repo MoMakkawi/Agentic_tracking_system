@@ -125,6 +125,28 @@ const Alerts = () => {
         setPage(1);
     };
 
+    const getLatenessInfo = (logTime, sessionStartTime, firstLogTime) => {
+        let refMinutes;
+        if (sessionStartTime) {
+            const referenceTime = new Date(sessionStartTime);
+            refMinutes = referenceTime.getHours() * 60 + referenceTime.getMinutes();
+        } else if (firstLogTime) {
+            const [h, m] = firstLogTime.split(':').map(Number);
+            refMinutes = h * 60 + m;
+        } else {
+            return { color: 'var(--border-primary)', bg: 'var(--bg-secondary)' };
+        }
+
+        const [h, m] = logTime.split(':').map(Number);
+        const logMinutes = h * 60 + m;
+
+        const diff = logMinutes - refMinutes;
+
+        if (diff < 10) return { color: 'var(--accent-success)', bg: 'rgba(var(--accent-success-rgb), 0.05)' };
+        if (diff <= 15) return { color: 'var(--accent-warning)', bg: 'rgba(var(--accent-warning-rgb), 0.05)' };
+        return { color: 'var(--accent-danger)', bg: 'rgba(var(--accent-danger-rgb), 0.05)' };
+    };
+
     const handleRowClick = async (alert) => {
         if (!alert.session_id) return;
 
@@ -219,7 +241,7 @@ const Alerts = () => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                 <Clock size={12} />
-                                {new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                             </div>
                         </div>
                     )
@@ -424,7 +446,17 @@ const Alerts = () => {
                             </div>
                             <div className="detail-item glass" style={{ padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-primary)' }}>
                                 <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Recorded At</label>
-                                <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{new Date(selectedSession.received_at).toLocaleString()}</div>
+                                <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
+                                    {new Date(selectedSession.received_at).toLocaleString([], {
+                                        year: 'numeric',
+                                        month: 'numeric',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        second: '2-digit',
+                                        hour12: false
+                                    })}
+                                </div>
                             </div>
                         </div>
 
@@ -453,12 +485,12 @@ const Alerts = () => {
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                     <Clock size={14} color="var(--accent-primary)" />
                                                     <span style={{ fontWeight: '500' }}>Start:</span>
-                                                    <span>{new Date(ms.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span>{new Date(ms.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                     <Clock size={14} color="var(--accent-primary)" />
                                                     <span style={{ fontWeight: '500' }}>End:</span>
-                                                    <span>{new Date(ms.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span>{new Date(ms.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -552,31 +584,48 @@ const Alerts = () => {
                                 maxHeight: '320px',
                                 overflowY: 'auto'
                             }}>
-                                {selectedSession.logs && selectedSession.logs.map((log, idx) => (
-                                    <div key={idx} style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.25rem',
-                                        padding: '0.6rem 0.8rem',
-                                        background: 'var(--bg-secondary)',
-                                        borderRadius: '10px',
-                                        fontSize: '0.85rem',
-                                        border: '1px solid var(--border-primary)',
-                                        color: 'var(--text-primary)',
-                                        transition: 'transform 0.2s ease'
-                                    }} className="hover-lift">
-                                        <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{log.uid}</span>
-                                        <div style={{
+                                {selectedSession.logs && selectedSession.logs.map((log, idx) => {
+                                    const sessionStartTime = selectedSession.matched_sessions?.[0]?.start;
+                                    const firstLogTime = selectedSession.logs?.[0]?.ts;
+                                    const status = getLatenessInfo(log.ts, sessionStartTime, firstLogTime);
+
+                                    return (
+                                        <div key={idx} style={{
                                             display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.35rem',
-                                            color: 'var(--text-secondary)'
-                                        }}>
-                                            <Clock size={12} color="var(--accent-primary)" />
-                                            <span>{log.ts.slice(0, 5)}</span>
+                                            flexDirection: 'column',
+                                            gap: '0.25rem',
+                                            padding: '0.6rem 0.8rem',
+                                            background: status.bg,
+                                            borderRadius: '10px',
+                                            fontSize: '0.85rem',
+                                            border: `1px solid ${status.color}`,
+                                            color: 'var(--text-primary)',
+                                            transition: 'transform 0.2s ease',
+                                            position: 'relative',
+                                            overflow: 'hidden'
+                                        }} className="hover_lift">
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '3px',
+                                                height: '100%',
+                                                background: status.color
+                                            }} />
+                                            <span style={{ fontWeight: '600', color: 'var(--text-primary)', marginLeft: '4px' }}>{log.uid}</span>
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.35rem',
+                                                color: 'var(--text-secondary)',
+                                                marginLeft: '4px'
+                                            }}>
+                                                <Clock size={12} color={status.color} />
+                                                <span>{log.ts.slice(0, 5)}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {(!selectedSession.logs || selectedSession.logs.length === 0) && (
                                     <div style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
                                         No student identifiers found for this session.
