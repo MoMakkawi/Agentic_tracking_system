@@ -63,7 +63,6 @@ class DataValidationAgent:
         """
 
         task = task or self.default_task
-
         for attempt in range(1, self.retries + 1):
             try:
                 return self._execute(task)
@@ -73,9 +72,6 @@ class DataValidationAgent:
                     logger.error("All attempts failed for task: %s", task)
                     raise
                 logger.info("Retrying...")
-
-        return None
-
 
 # ----------------------------
 # Callable main() for CLI or ToolCallAgent
