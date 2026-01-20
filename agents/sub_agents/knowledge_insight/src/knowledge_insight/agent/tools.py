@@ -42,7 +42,7 @@ def data_insighter_tool(code: str) -> str:
 
     except Exception as e:
         logger.error("Error in Clean Data Insight Tool", exc_info=True)
-        return f"Error in data_insighter_tool: {e}"
+        raise Exception(f"Error in data_insighter_tool: {e}")
 
 
 # =========================================================
@@ -80,7 +80,7 @@ def groups_insighter_tool(code: str) -> str:
 
     except Exception as e:
         logger.error("Error in Groups Insight Tool", exc_info=True)
-        return f"Error in groups_insighter_tool: {e}"
+        raise Exception(f"Error in groups_insighter_tool: {e}")
 
 
 # =========================================================
@@ -121,4 +121,4 @@ def alerts_insighter_tool(code: str) -> str:
 
     except Exception as e:
         logger.error("Error in Alerts Insight Tool", exc_info=True)
-        return f"Error in alerts_insighter_tool: {e}"
+        raise Exception(f"Error in alerts_insighter_tool: {e}")
