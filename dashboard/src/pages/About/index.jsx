@@ -33,7 +33,7 @@ const About = () => {
     const team = {
         student: {
             name: "Mohamad Faraj MAKKAWI",
-            role: "Software Engineer",
+            role: "IT Engineer",
             github: "https://github.com/MoMakkawi",
             email: "MoMakkawi@hotmail.com"
         },
