@@ -28,13 +28,18 @@ const Agent = () => {
 
         let processedText = text;
 
-        // 1. Handle JSON blocks that might be escaped
-        // Find content between triple backticks
+        // 1. Handle escaped newlines and literal characters if the API returns them as raw strings
+        if (processedText.includes('\\n')) {
+            processedText = processedText.replace(/\\n/g, '\n');
+        }
+        if (processedText.includes('\\"')) {
+            processedText = processedText.replace(/\\"/g, '"');
+        }
+
+        // 2. Handle JSON blocks that are already wrapped in backticks but might be escaped
         processedText = processedText.replace(/```(?:json)?\s*([\s\S]*?)```/g, (match, content) => {
             try {
-                // If it looks like escaped JSON (contains \"), try to parse and re-stringify it
                 if (content.includes('\\"')) {
-                    // Remove literal \n and \\
                     const unescaped = content
                         .replace(/\\n/g, '\n')
                         .replace(/\\"/g, '"')
@@ -53,12 +58,38 @@ const Agent = () => {
             return match;
         });
 
-        // 2. Fix literal \n outside of code blocks if they exist
-        // (sometimes APIs return raw \n strings)
-        // Only if they aren't already handled by Markdown
-        if (processedText.includes('\\n')) {
-            processedText = processedText.replace(/\\n/g, '\n');
-        }
+        // 3. Detect "naked" JSON objects/arrays not in backticks
+        // Look for { ... "key": ... } or [ ... { ... } ... ]
+        const jsonPattern = /(?:^|\n)\s*([{\[](?:\s*"[^"]+"\s*:\s*[\s\S]*?|[{\[][\s\S]*?[}\]][\s\S]*?)[}\]])(?:\s*$\n|\s*$)/g;
+        processedText = processedText.replace(jsonPattern, (match, p1) => {
+            try {
+                // Try to parse to verify it's valid JSON
+                JSON.parse(p1);
+                return `\n\n\`\`\`json\n${p1.trim()}\n\`\`\`\n\n`;
+            } catch (e) {
+                // If it looks like JSON but fails parse (e.g. trailing commas, missing quotes), 
+                // we still wrap it if it has strong JSON characteristics
+                if (p1.includes('":') || p1.includes('": ')) {
+                    return `\n\n\`\`\`json\n${p1.trim()}\n\`\`\`\n\n`;
+                }
+                return match;
+            }
+        });
+
+        // 4. Detect "naked" code blocks like Python functions or JS code
+        // Simple heuristic: block of lines with consistent indentation or characteristic keywords
+        const codeHeuristics = [
+            { lang: 'python', pattern: /(?:^|\n)(def\s+\w+\s*\(.*?\)\s*:[\s\S]*?)(?=\n\w|\n\n|$)/g },
+            { lang: 'javascript', pattern: /(?:^|\n)(function\s+\w*\s*\(.*?\)\s*\{[\s\S]*?\})(?=\n\n|$)/g },
+            { lang: 'javascript', pattern: /(?:^|\n)(const\s+\w+\s*=\s*\(.*?\)\s*=>\s*\{[\s\S]*?\})(?=\n\n|$)/g }
+        ];
+
+        codeHeuristics.forEach(({ lang, pattern }) => {
+            processedText = processedText.replace(pattern, (match, p1) => {
+                // Only wrap if not already in a code block
+                return `\n\n\`\`\`${lang}\n${p1.trim()}\n\`\`\`\n\n`;
+            });
+        });
 
         return processedText;
     };

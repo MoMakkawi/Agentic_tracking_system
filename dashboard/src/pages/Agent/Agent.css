@@ -336,6 +336,7 @@
 
 .message-text {
     font-family: inherit;
+    white-space: pre-wrap;
 }
 
 .message-text p {
