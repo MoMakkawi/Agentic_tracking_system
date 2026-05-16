@@ -1,3 +1,5 @@
+import os
+import json
 import requests
 from typing import Optional, Dict
 from utils import Secrets, logger, get_config
@@ -11,6 +13,7 @@ class DataFetcher:
     - Fetch logs from a configured URL
     - Fetch ICS from a configured URL
     - Save both to disk
+    - Merge generated synthetic logs into the main log file
     """
 
     def __init__(
@@ -24,6 +27,7 @@ class DataFetcher:
 
         self.logs_url = logs_url or config.SOURCE_URLS.LOGS
         self.logs_path = logs_path or config.PATHS.LOGS
+        self.generated_logs_path = config.PATHS.GENERATED_LOGS
 
         self.ics_url = ics_url or Secrets.ICS_URL
         self.ics_path = ics_path or config.PATHS.ICS
@@ -80,6 +84,45 @@ class DataFetcher:
             logger.error(f"Failed to save {resource_name} to {path}: {e}")
             raise
 
+    def _merge_generated_logs(self) -> None:
+        """
+        Merge generated synthetic logs into the main logs file.
+        
+        Reads from the generated_logs.jsonl file (if it exists) and appends
+        each record to the main logs_data.jsonl file using the repository's
+        add() method.
+        """
+        if not self.generated_logs_path:
+            return
+
+        if not os.path.exists(self.generated_logs_path):
+            logger.info("No generated logs file found, skipping merge.")
+            return
+
+        try:
+            # Read generated log records
+            generated_records = []
+            with open(self.generated_logs_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        generated_records.append(json.loads(line))
+
+            if not generated_records:
+                logger.info("Generated logs file is empty, skipping merge.")
+                return
+
+            # Append to the main logs file
+            logs_repo = RepositoryFactory.get_repository(self.logs_path)
+            logs_repo.add(generated_records)
+            logger.info(
+                f"Merged {len(generated_records)} generated log entries "
+                f"from '{self.generated_logs_path}' into '{self.logs_path}'."
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to merge generated logs: {e}")
+            raise
+
     # ----------------------------------------------------------------------
     # Public methods
     # ----------------------------------------------------------------------
@@ -103,7 +146,7 @@ class DataFetcher:
 
     def save(self) -> Dict[str, str]:
         """
-        Saves fetched data to disk.
+        Saves fetched data to disk, then merges any generated synthetic logs.
 
         Returns:
             dict: {
@@ -119,6 +162,9 @@ class DataFetcher:
 
         # Save logs in jsonl format using RepositoryFactory
         self._save_data(self.logs, self.logs_path, "logs")
+
+        # Merge generated synthetic logs into the main log file
+        self._merge_generated_logs()
 
         # Return the saved paths
         return {
