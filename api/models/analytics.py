@@ -19,6 +19,10 @@ class EnrichedGroupItem(BaseModel):
     member_count: int
     attendanceTrend: List[GroupTrendItem]
     avgAttendance: int
+    did_not_attend_at_all: int = 0
+    did_not_attend_sometimes: int = 0
+    late: int = 0
+    on_time: int = 0
 
 class MultiTrendDataPoint(BaseModel):
     date: str

@@ -19,6 +19,8 @@ import {
     Calendar
 } from 'lucide-react';
 import {
+    BarChart,
+    Bar,
     AreaChart,
     Area,
     XAxis,
@@ -193,6 +195,19 @@ const Groups = () => {
         );
     }, [groups, searchTerm]);
 
+    const histogramData = useMemo(() => {
+        return groups.map(g => {
+            const total = g.member_count || 1;
+            return {
+                name: g.name,
+                on_time: Number(((g.on_time / total) * 100).toFixed(1)),
+                late: Number(((g.late / total) * 100).toFixed(1)),
+                sometimes: Number(((g.did_not_attend_sometimes / total) * 100).toFixed(1)),
+                at_all: Number(((g.did_not_attend_at_all / total) * 100).toFixed(1))
+            };
+        });
+    }, [groups]);
+
     const scroll = (direction) => {
         if (scrollRef.current) {
             const { scrollLeft, clientWidth } = scrollRef.current;
@@ -278,25 +293,15 @@ const Groups = () => {
             >
                 <div className="chart-wrapper adaptive-chart">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={multiTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <defs>
-                                {groups.map((g, i) => (
-                                    <linearGradient key={`grad-${g.name}`} id={`color-${g.name.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={groupColors[g.name]} stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor={groupColors[g.name]} stopOpacity={0} />
-                                    </linearGradient>
-                                ))}
-                            </defs>
+                        <BarChart data={histogramData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                             <XAxis
-                                dataKey="date"
-                                tickFormatter={formatDateAxis}
+                                dataKey="name"
                                 stroke="var(--text-secondary)"
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
                                 dy={10}
-                                minTickGap={30}
                             />
                             <YAxis
                                 stroke="var(--text-secondary)"
@@ -306,7 +311,7 @@ const Groups = () => {
                                 tickFormatter={(val) => `${val}%`}
                             />
                             <RechartsTooltip
-                                labelFormatter={formatDateTooltip}
+                                formatter={(value) => [`${value}%`]}
                                 contentStyle={{
                                     backgroundColor: 'rgba(13, 17, 23, 0.95)',
                                     border: '1px solid rgba(255,255,255,0.1)',
@@ -316,7 +321,7 @@ const Groups = () => {
                                     backdropFilter: 'blur(8px)'
                                 }}
                                 itemStyle={{ padding: '4px 0', fontSize: '13px' }}
-                                cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
+                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                             />
                             <Legend
                                 content={({ payload }) => (
@@ -363,19 +368,11 @@ const Groups = () => {
                                     </div>
                                 )}
                             />
-                            {groups.map(g => (
-                                <Area
-                                    key={g.name}
-                                    type="monotone"
-                                    dataKey={g.name}
-                                    stroke={groupColors[g.name]}
-                                    fillOpacity={1}
-                                    fill={`url(#color-${g.name.replace(/\s+/g, '-')})`}
-                                    strokeWidth={3}
-                                    activeDot={{ r: 6, strokeWidth: 0 }}
-                                />
-                            ))}
-                        </AreaChart>
+                            <Bar dataKey="on_time" name="On Time" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="late" name="Late" fill="#eab308" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="sometimes" name="Sometimes Absent" fill="#f97316" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="at_all" name="Always Absent" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
             </Card>

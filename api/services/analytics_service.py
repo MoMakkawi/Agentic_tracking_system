@@ -10,7 +10,7 @@ from api.models.analytics import (
     GroupTrendItem,
     GroupAnalyticsResponse
 )
-from utils import logger
+from utils import logger, get_config
 
 class AnalyticsService:
     def __init__(self, session_service: SessionService, group_service: GroupService, alert_service: AlertService):
@@ -77,14 +77,38 @@ class AnalyticsService:
             logger.error(f"Error calculating attendance trend: {e}")
             return []
 
+    def _is_late(self, log_ts: str, session_start: str, lateness_threshold_minutes: int) -> bool:
+        """Return True if log_ts is >= lateness_threshold_minutes after session_start."""
+        try:
+            # ts is HH:MM or HH:MM:SS, session_start is a full ISO datetime string
+            ref = datetime.fromisoformat(session_start)
+            ref_minutes = ref.hour * 60 + ref.minute
+            parts = log_ts.split(':')
+            log_minutes = int(parts[0]) * 60 + int(parts[1])
+            return (log_minutes - ref_minutes) > lateness_threshold_minutes
+        except Exception:
+            return False
+
     def get_group_analytics(self, date_from: datetime, date_to: datetime) -> GroupAnalyticsResponse:
         try:
+            # Load analytics config thresholds
+            try:
+                cfg = get_config()
+                analytics_cfg = cfg.ANALYTICS
+                lateness_threshold = analytics_cfg.LATENESS_THRESHOLD_MINUTES
+                min_missed = analytics_cfg.MIN_MISSED_SESSIONS
+                min_late = analytics_cfg.MIN_LATE_SESSIONS
+            except Exception:
+                lateness_threshold = 10
+                min_missed = 1
+                min_late = 1
+
             # 1. Fetch data
             session_filters = SessionFilters(received_at_from=date_from, received_at_to=date_to)
             all_sessions = self.session_service.get_all_sessions()
             sessions = self.session_service.filter_sessions(all_sessions, session_filters)
             groups_dto = self.group_service.get_all_groups()
-            
+
             # Enrich groups with their individual attendance trends
             enriched_groups = []
             for g in groups_dto:
@@ -111,12 +135,99 @@ class AnalyticsService:
                 present_in_range = all_uids_in_range.intersection(member_set)
                 avg = round((len(present_in_range) / len(g.members)) * 100) if g.members else 0
 
+                # --- Attendance bucket computation ---
+                # For each member, track: attended_sessions, missed_sessions, late_sessions
+                member_attended = {m: 0 for m in member_set}   # sessions they appeared in
+                member_late = {m: 0 for m in member_set}       # sessions they were late in
+
+                for s in sessions:
+                    logs = getattr(s, 'logs', []) or []
+                    # Get session start reference time from matched_sessions if available
+                    matched = getattr(s, 'matched_sessions', []) or []
+                    session_start = None
+                    if matched:
+                        ms0 = matched[0]
+                        session_start = getattr(ms0, 'start', None)
+                        if session_start and not isinstance(session_start, str):
+                            try:
+                                session_start = session_start.isoformat()
+                            except Exception:
+                                session_start = str(session_start)
+
+                    # Build uid -> first ts mapping for members in this session
+                    uid_first_ts: Dict[str, str] = {}
+                    for l in logs:
+                        uid_norm = str(l.uid).strip().lower() if hasattr(l, 'uid') and l.uid else None
+                        ts = str(getattr(l, 'ts', '') or '')
+                        if uid_norm and uid_norm in member_set:
+                            if uid_norm not in uid_first_ts:
+                                uid_first_ts[uid_norm] = ts
+
+                    # Use first log as fallback reference if no matched session
+                    first_log_ts = next(iter(uid_first_ts.values()), None) if uid_first_ts else None
+
+                    for member in member_set:
+                        if member in uid_first_ts:
+                            member_attended[member] += 1
+                            ts = uid_first_ts[member]
+                            # Determine reference time for lateness check
+                            if session_start:
+                                is_late = self._is_late(ts, session_start, lateness_threshold)
+                            elif first_log_ts and first_log_ts != ts:
+                                # Use first log as reference only when no start time available
+                                try:
+                                    ref_parts = first_log_ts.split(':')
+                                    ref_min = int(ref_parts[0]) * 60 + int(ref_parts[1])
+                                    mem_parts = ts.split(':')
+                                    mem_min = int(mem_parts[0]) * 60 + int(mem_parts[1])
+                                    is_late = (mem_min - ref_min) > lateness_threshold
+                                except Exception:
+                                    is_late = False
+                            else:
+                                is_late = False
+                            if is_late:
+                                member_late[member] += 1
+
+                # Count sessions relevant to this group (where at least one member was present)
+                group_relevant_sessions = sum(
+                    1 for s in sessions
+                    if any(
+                        str(l.uid).strip().lower() in member_set
+                        for l in (getattr(s, 'logs', []) or [])
+                        if hasattr(l, 'uid') and l.uid
+                    )
+                )
+
+                # Categorize each member into one of the four buckets
+                did_not_attend_at_all = 0
+                did_not_attend_sometimes = 0
+                late_count = 0
+                on_time_count = 0
+
+                for member in member_set:
+                    attended = member_attended[member]
+                    missed = group_relevant_sessions - attended
+                    late_sess = member_late[member]
+
+                    if attended == 0:
+                        did_not_attend_at_all += 1
+                    elif missed >= min_missed:
+                        did_not_attend_sometimes += 1
+                    elif late_sess >= min_late:
+                        late_count += 1
+                    else:
+                        on_time_count += 1
+
                 enriched_groups.append(EnrichedGroupItem(
                     name=g.name,
                     members=g.members,
                     member_count=len(g.members),
                     attendanceTrend=trend,
-                    avgAttendance=avg
+                    avgAttendance=avg,
+                    did_not_attend_at_all=did_not_attend_at_all,
+                    did_not_attend_sometimes=did_not_attend_sometimes,
+                    late=late_count,
+                    on_time=on_time_count
                 ))
 
             # 2. Multi Trend Data (Strictly Groups)
@@ -161,10 +272,3 @@ class AnalyticsService:
             logger.error(f"Error calculating group analytics: {e}", exc_info=True)
             return GroupAnalyticsResponse(groups=[], multiTrendData=[], groupColors={})
 
-    def _get_session_date(self, session: Any) -> str:
-        received_at = getattr(session, 'received_at', None)
-        if not received_at:
-            return ""
-        if isinstance(received_at, datetime):
-            return received_at.strftime("%Y-%m-%d")
-        return str(received_at).split(' ')[0]

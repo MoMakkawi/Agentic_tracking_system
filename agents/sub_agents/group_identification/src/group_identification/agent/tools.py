@@ -60,7 +60,8 @@ def save_tool(groups: dict[str, List[str]]) -> str:
     try:
         logger.info("Starting Save Tool by Agent!")
 
-        output_path = GroupSaver().save(groups)
+        ordered_groups = dict(sorted(groups.items()))
+        output_path = GroupSaver().save(ordered_groups)
 
         logger.info(f"Groups saved successfully by Agent!")
         return output_path
