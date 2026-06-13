@@ -25,7 +25,10 @@ Traditional attendance systems fail silently — producing noisy logs, missed an
 
 ### Demo Video
 
-> *A walkthrough demo video will be added here.*
+<video controls width="100%">
+    <source src="./Assets/ATS platform short demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
 
 ---
 
@@ -33,8 +36,8 @@ Traditional attendance systems fail silently — producing noisy logs, missed an
 
 | Document | Description |
 | :--- | :--- |
-| [System Report](./Reports/Agentic%20Tracking%20System%20Report%20-%20Mohamad%20Faraj%20Makkawi.pdf) | Full system technical report covering implementation, architecture decisions, and results. |
-| [Design & Proposal](./Reports/Design_and_Proposal_of_an_Intelligent_Workflow_Tracking_and_Automation_System_for_University_Operations.pdf) | Original design proposal for the Intelligent Workflow Tracking and Automation System for University Operations. |
+| [System Report](./Assets/Agentic%20Tracking%20System%20Report%20-%20Mohamad%20Faraj%20Makkawi.pdf) | Full system technical report covering implementation, architecture decisions, and results. |
+| [Design & Proposal](./Assets/Design_and_Proposal_of_an_Intelligent_Workflow_Tracking_and_Automation_System_for_University_Operations.pdf) | Original design proposal for the Intelligent Workflow Tracking and Automation System for University Operations. |
 
 ---
 
