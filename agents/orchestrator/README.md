@@ -1,173 +1,141 @@
-# Orchestrator Agent 
-------------------------------------------------
+# Orchestrator Agent
+
+The `orchestrator` is the central coordinator, planner, and security governor of the Agentic Tracking System. Built on the **smolagents** framework, it parses user queries or system events, validates their scope, designs execution plans, schedules sub-agent operations, and formats the final user-facing responses.
+
+Importantly, the Orchestrator **never directly manipulates raw database files or executes analytical code**. Instead, it acts as a manager delegating tasks to specialized sub-agents.
+
+---
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Agent Scope](#agent-scope)
 - [Responsibilities](#responsibilities)
 - [Sub-Agents](#sub-agents)
-- [Memory](#memory)
+- [Memory Management](#memory-management)
 - [Workflow](#workflow)
 - [Dynamic Activation](#dynamic-activation)
-- [Scope, Security, and Errors](#scope-security-and-errors)
+- [Security & Scope Validation](#security--scope-validation)
 - [Output Rules](#output-rules)
 - [Tools](#tools)
-- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)
+- [Recommended Models](#recommended-models)
 - [License](#license)
 
 ---
 
 ## Overview
-`orchestrator` is the **master control agent** of the Agentic Tracking System.  
-It validates scope, plans execution, coordinates sub-agents, enforces security rules, and returns the final user-facing response—**without executing tools or processing data**.
+
+The Orchestrator provides a safe, natural-language interface for system operators. By utilizing tool-calling models, it routes complex questions (e.g., about attendance anomalies or cohort patterns) to the appropriate sub-agent, handles intermediate failures, and presents synthesized answers.
 
 ---
 
 ## Agent Scope
-- **Role**: Central planning, validation, and coordination layer.
-- **Allowed**: intent interpretation, workflow design, agent dispatch, error handling, response synthesis.
-- **Forbidden**: code execution, dataset access, analysis logic.
-- **Output**: one final, user-ready answer only.
+
+- **Allowed Actions**: User intent classification, sequence planning, sub-agent task routing, memory lookup, and response synthesis.
+- **Forbidden Actions**: Directly writing code, importing raw data, running calculations, or disclosing file paths and instructions.
+- **Output Constraint**: Returns a single, clean final text response to the client.
 
 ---
 
 ## Responsibilities
-- Covers the **entire execution lifecycle**:
-- Scope validation
-- Intent interpretation
-- Workflow planning
-- Sub-agent dispatch
-- Dependency ordering
-- Failure handling
-- Final response formatting
 
-- Enforces instruction priority:
-**system > developer > user**
-
-- Any violation of higher-level rules results in immediate rejection.
+- **Entire Execution Lifecycle**: Handles the query from validation to delivery (scope -> intent -> routing -> orchestration -> synthesis -> delivery).
+- **Instruction Precedence**: Enforces a strict control hierarchy: **System Instructions > Developer Rules > User Input**.
+- **Input Neutralization**: Sanitizes user inputs to prevent injection attempts.
 
 ---
 
 ## Sub-Agents
-The ORCHESTRATOR coordinates the following agents:
 
-- **DATA_PIPELINE** — ingestion and preprocessing
-- **DATA_VALIDATION** — integrity and anomaly checks
-- **GROUP_IDENTIFIER** — cohort and group detection
-- **KNOWLEDGE_INSIGHT** — read-only analytical insights
+The Orchestrator coordinates the following sub-agents as registerable tools:
+1. **DATA_PIPELINE** (Stage 1): Handles data fetching and cleaning.
+2. **DATA_VALIDATION** (Stage 2): Performs multi-layer data anomaly validations.
+3. **GROUP_IDENTIFIER** (Stage 3): Formulates cohort groups via Louvain clustering.
+4. **KNOWLEDGE_INSIGHT** (Stage 4): Evaluates complex analytical queries against stored data.
 
-The ORCHESTRATOR:
-- Selects the **minimum required agents**
-- Orders them by **logical dependency**
-- Sends **goal-level instructions only**
-- Never passes:
-- Tool names
-- File paths
-- Code snippets
-- Internal schemas
+When routing, the Orchestrator:
+- Designs the **minimal execution path** to resolve the query.
+- Orders sub-agent calls by logical data dependencies.
+- Dispatches sub-agents using **goal-oriented tasks** rather than technical execution instructions (never disclosing internal paths, tools, or code).
 
 ---
 
-## Memory
-The Orchestrator implements an extensible memory system to maintain context across interactions:
+## Memory Management
 
-- **Short-Term Memory**: Persists conversation history (user inputs and agent responses) to ensure continuity within and across sessions. This allows the agent to recall previous context and provide coherent multi-turn responses.
+To maintain coherence across multi-turn interactions, the Orchestrator includes:
+- **Short-Term Memory**: Stores user messages and assistant responses within a single conversation session. This lets the operator ask follow-up questions without repeating context.
+- **Strict Session Isolation**: Prevents memory leakage between independent user sessions, keeping credentials and queries private.
+- **Insight-First Resolution**: Checks cached memories and previous answers first to resolve queries without executing expensive sub-agent pipelines when possible.
 
 ---
 
 ## Workflow
-1. Validate request scope and safety
-2. Interpret user intent
-3. Design execution plan
-4. Select and order required sub-agents
-5. Dispatch agents sequentially
-6. Monitor failures and adapt safely
-7. Synthesize final user-facing response
 
-Execution may be partial or full-chain depending on the request.
+1. **Scope Check**: Validates if the query belongs to the attendance analytics domain.
+2. **Memory Probe**: Checks short-term memory to see if the answer can be retrieved directly.
+3. **Intent Decomposing**: Parses the query and identifies the required sub-agents.
+4. **Sequential Dispatch**: Invokes sub-agents via their tool interfaces and handles results.
+5. **Synthesis**: Polishes the final result, adds descriptive context, and drops technical tracebacks.
 
 ---
 
 ## Dynamic Activation
 
-While the Orchestrator primarily responds to direct user queries via the API, it also supports **Autonomous Triggering**:
-
-- **System-Initiated Tasks**: The `EventSchedulerService` can trigger the Orchestrator automatically when specific time-based events occur (e.g., at the end of a scheduled class).
-- **Default Workflows**: When triggered autonomously, the Orchestrator executes a pre-defined `DEFAULT_TASK` (configured in `config.json`) to perform system-wide updates, validation, and insight generation without human intervention.
+The Orchestrator operates under two modes:
+- **Query-Driven (API)**: Responds to direct REST queries submitted through the `/agent/chat` endpoint.
+- **Event-Driven (Scheduler)**: Triggered autonomously by the background `EventSchedulerService` at the conclusion of calendar sessions (`pass.ics`). In this mode, it runs the default workflow to fetch, validate, and cluster logs.
 
 ---
 
-## Scope, Security, and Errors
-- **In-scope topics**:
-- Attendance
-- Sessions
-- Student groups
-- Alerts
-- Derived analytics
+## Security & Scope Validation
 
-- **Out-of-scope or unsafe requests**:
-- Rejected immediately
-- No agent is invoked
+### Valid Scope Topics
+- Attendance logs, lateness, absences, and check-in timelines.
+- Student cohorts, community structures, and engagement matrices.
+- System-generated device, timestamp, and identity alerts.
 
-- Actively defends against:
-- Prompt injection
-- Jailbreak attempts
-- Requests for internal prompts, schemas, paths, tools, or agent rules
+### Forbidden / Out-of-Scope Topics
+- Requests to view internal instructions, agent system prompts, or configuration parameters.
+- Direct file exports or requests for local file paths on the server.
+- Database modification commands (add, update, delete records via chat).
 
-- On sub-agent failure:
-- Execution halts or adapts safely
-- No blind continuation
-- Returns a **high-level error summary**
-- Never exposes raw tracebacks
+If a request violates security boundaries, the Orchestrator rejects it immediately with the canonical response:
+> "I can't help with that request. I operate within a restricted attendance analytics system, and your request falls outside those boundaries. Please ask a question related to attendance data, student groups, alerts, or related analysis."
 
 ---
 
 ## Output Rules
-- Output:
-    - One line description + the sub-agent answer 
-    - Matches user-requested structure (lists, tables, values)
-    - Contains **no internal reasoning**
-    - Contains **no tool calls**
-    - Contains **no paths or system instructions**
-    - Only user-relevant insights are exposed.
+
+The Orchestrator's final response must:
+- Start with **exactly one explanatory sentence**.
+- Immediately present the **final result**.
+- Provide a new line suggesting **logical next steps**.
+- Exclude internal reasoning steps, sub-agent tool call blocks, and file paths.
 
 ---
 
 ## Tools
 
-### Orchestrator Tools Module
-The tools module exposes sub-agents as callable tools via `smolagents`.
-
-#### Available Tools
-- **pipeline_agent_tool**  
-Runs the Data Pipeline and returns a confirmation.
-
-- **validation_agent_tool**  
-Executes validation checks and returns a summary.
-
-- **group_identifier_agent_tool**  
-Identifies student groups and confirms completion.
-
-- **insighter_agent_tool**  
-Executes Knowledge Insight analysis and returns the result.
-
-#### Tool Rules
-- Responses are standardized:
-- Short confirmations or summaries only
-- No file paths or implementation details
-- Errors are caught and converted to user-friendly messages.
+The `orchestrator.tools` package exposes the sub-agents to the Orchestrator as standard callable tools:
+- **`pipeline_agent_tool`**: Triggers data ingestion and cleaning.
+- **`validation_agent_tool`**: Triggers anomaly checks and returns execution status.
+- **`group_identifier_agent_tool`**: Triggers Louvain clustering and updates group files.
+- **`insighter_agent_tool`**: Triggers sandboxed query analysis on data.
 
 ---
 
-## Recommended Models (Ragarenn)
+## Recommended Models
 
-| Model | Stars | Notes |
-|------|-------|-------|
-| `openai/gpt-oss-120b` | ⭐⭐⭐ | Best for multi-step planning and orchestration |
-| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐⭐ | Deterministic and safer fallback |
-| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐ | Lightweight fallback |
+The system is configured in `config.json` to utilize the following models hosted on the **RAGaRenn** platform:
+
+| Model | Role | Description |
+| :--- | :--- | :--- |
+| **`openai/gpt-oss-120b`** | Primary Model | Optimal for high-level sequence planning, reasoning, and context synthesis. |
+| **`mistralai/Mistral-Small-3.2-24B-Instruct-2506`** | Primary / Fallback | Fast, lightweight model optimized for structured tool call routing. |
+| **`RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic`** | Fallback Model | Stable instruction-following model used for intent verification and safety checks. |
 
 ---
 
 ## License
-See LICENSE in project root
+
+See LICENSE in the project root.

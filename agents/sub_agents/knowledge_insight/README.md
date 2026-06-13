@@ -1,149 +1,105 @@
 # Knowledge Insight Agent – Stage 4
-------------------------------------------------
+
+The `knowledge_insight` agent is the **analytical query and insight agent** of the Agentic Tracking System. It generates Python analysis scripts (as a string) based on natural-language user queries, delegates execution to one of the sandboxed Insighter tools, and returns the computed analytical results.
+
+The agent does **not** execute python code locally on the server, does **not** write to files, and does **not** modify datasets. All analysis is executed within a secure, isolated sandbox environment.
+
+---
 
 ## Table of Contents
+
 - [Overview](#overview)  
 - [Agent Scope](#agent-scope)  
 - [Tools](#tools)  
 - [Executor Package](#executor-package)  
 - [Execution Policy](#execution-policy)  
-- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)  
+- [Recommended Models](#recommended-models)  
 - [Installation](#installation)  
 - [License](#license)
 
 ---
 
 ## Overview
-`knowledge_insight` is the **analytical insight agent** of the Agentic Tracking System.  
 
-It **generates Python analysis code** (as a string) based on user queries, delegates execution to the appropriate Insighter tool, and returns only the computed analytical result.
-
-The agent does not execute code locally, **does not fetch, preprocess, validate, or modify data, and does not access external resources**. All execution is handled by sandboxed tools.
+The Knowledge Insight agent enables natural-language reasoning over attendance metrics, student communities, and security alerts. By writing specialized scripts to execute in an isolated runtime namespace, it handles complex correlations (e.g., comparing group attendance rates to security anomaly counts) without compromising system security.
 
 ---
 
 ## Agent Scope
-- **Role**: Generate analytical insights from existing, preloaded datasets only.   
-- **Input**: 
-  - Preprocessed attendance/session datasets
-  - Group membership datasets
-  - Security alert datasets (identity, timestamp, device)
-- **Output**: 
-  - A single string result assigned to result
-  - No code, file paths, dataset dumps, or intermediate variables in the output
 
-Intermediate variables may exist inside generated code, but must not appear in the final result string.
+- **Role**: Stage-4 read-only analytical insight generation.
+- **Input**: Preprocessed sessions JSON, group memberships JSON, and CSV anomaly logs.
+- **Forbidden**: Ingesting raw logs, altering database records, or returning source code blocks to the Orchestrator.
+- **Output**: A single string result containing the computed answer.
 
 ---
 
 ## Tools
 
-### data_insighter_tool
-- Primary entry point for **attendance and cross-domain analysis.**
-- Loads preprocessed attendance data and identity alerts. 
-- Provides access to:
-  - `attendance_data`
-  - `groups_data` (if needed for cross-domain analysis)
-  - `identity_alerts`, `timestamp_alerts`, `device_alerts` (read-only).
+### `data_insighter_tool`
+- Used for **attendance and cross-dataset analysis**.
+- Preloads `attendance_data`, `groups_data`, and all alert tables (`identity_alerts`, `timestamp_alerts`, `device_alerts`).
+- **Primary Tool** for correlations and multi-dataset evaluations.
 
-Recommended tool for multi-dataset analysis
+### `groups_insighter_tool`
+- Used for **group-only analysis**.
+- Preloads only the `groups_data` mapping.
 
-<details>
-<summary>DataInsighter</summary>
+### `alerts_insighter_tool`
+- Used for **security anomalies analysis**.
+- Preloads the three alert tables: `identity_alerts`, `timestamp_alerts`, and `device_alerts`.
 
-**Workflow**:
-
-```text
-__init__:
-  - Load attendance_data JSON
-  - Initialize executor environment with datasets and helpers
-```
-*Entry point*: `DataInsighter.init() → ready-to-analyze environment`
-</details>
-
-### groups_insighter_tool
-- Loads saved groups.  
-- Exposes `groups_data` to **CodeExecutor** for interactive analysis.
-
-<details>
-<summary>GroupInsighter</summary>
-
-**Workflow**:
-
-```text
-__init__:
-  - Load groups
-  - Populate datasets dictionary with "groups_data"
-  - Initialize executor environment
-```
-*Entry point*: `GroupInsighter.init() → ready-to-analyze environment`
-</details>
-
-### alerts_insighter_tool
-- Loads identity, timestamp, and device alert CSVs.  
-- Exposes all three alert datasets to **CodeExecutor** for interactive analysis.
-
-<details>
-<summary>AlertsInsighter</summary>
-
-**Workflow**:
-
-```text
-__init__:
-  - Load CSV files into memory
-  - Build datasets dictionary with three alert tables
-  - Initialize executor environment
-```
-*Entry point*: `AlertsInsighter.init() → ready-to-analyze environment`
-</details>
+---
 
 ## Executor Package
 
-The **executor** provides a secure, sandboxed Python execution engine used by all Insighter tools.
-
-**Purpose**: Execute generated Python snippets against preloaded, read-only datasets with:
-- AST-based validation
-- Restricted imports
-- Controlled execution time and memory
-
-**Main Components**:
+The **executor** provides a secure, sandboxed execution engine used by all Insighter tools. It parses the generated Python code into an Abstract Syntax Tree (AST) to validate instructions before execution:
 
 | File | Responsibility |
-|------|----------------|
-| `executor.py` | Implements **CodeExecutor** to validate and execute Python code, returning results |
-| `validator.py` | **CodeValidator** parses AST to block unsafe imports, dangerous functions, and dunder attributes |
-| `namespace.py` | Builds a restricted execution namespace from datasets and helper functions |
-| `defaults.py` | Defines default modules, execution timeouts, and safety limits |
-| `exceptions.py` | Custom exceptions for validation or runtime errors |
+| :--- | :--- |
+| `executor.py` | Implements `CodeExecutor` to compile, validate, and execute python scripts, returning standard strings. |
+| `validator.py` | Implements `CodeValidator` to block unsafe imports (`os`, `sys`, etc.), dangerous functions, and dunder attributes. |
+| `namespace.py` | Restricts the execution namespace to preloaded variables and safe math/json builtins. |
+| `defaults.py` | Configures system timeouts, maximum steps, memory parameters, and forbidden keywords. |
+| `exceptions.py` | Contains customized AST validation and runtime failure exceptions. |
 
 ---
 
 ## Execution Policy
 
-- The agent **generates Python code as a string**; it **never executes code directly** becuse Code execution is **delegated exclusively** to Insighter tools. 
-- Tool selection depends on the focus of the question:  
-  - Attendance or cross-domain analysis → `data_insighter_tool`  
-  - Groups-only analysis → `groups_insighter_tool`  
-  - Alerts-only analysis → `alerts_insighter_tool`  
-- **Output Rules**: The final answer must be assigned to `result` variable. `result` must always be a string. Include one concise explanatory sentence in result. Do not return code, intermediate variables, or internal implementation details.  
-- Requests outside attendance, groups, or alerts are rejected with a fixed clarification message.
+- **Code Generation**: The agent writes python code as a string template and passes it to the selected tool; it **never executes code locally**.
+- **Tool Selection**:
+  * Attendance metrics or multi-dataset queries → `data_insighter_tool`
+  * Cohort membership queries → `groups_insighter_tool`
+  * Anomaly auditing queries → `alerts_insighter_tool`
+- **Output Contract**: The final result must be assigned to the `result` string variable. The string must contain a one-line explanation and the answer.
+- **Access Safety**: The script should use safe dictionary accesses (`get()`, `next(..., None)`) to prevent runtime crashes when matching records.
 
 ---
 
-## Recommended Models (Ragarenn)
+## Recommended Models
 
-| Model | Stars | Notes |
-|-------|-------|-------|
-| `analyse-de-risques` | ⭐⭐⭐ | Individual anomaly & risk modeling |
-| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐⭐ | Strong behavioral reasoning |
-| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐ | Suitable for simpler analysis tasks |
+The agent utilizes models hosted on the **RAGaRenn** platform, selected in the following preference order:
+
+| Model | Rating | Notes |
+| :--- | :--- | :--- |
+| **`analyse-de-risques`** | ⭐⭐⭐ | Optimal choice for individual anomaly modeling and risk metrics. |
+| **`RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic`** | ⭐⭐ | Stable reasoning capability, excellent for generating clean, syntax-compliant Python snippets. |
+| **`analyse-swot`** | ⭐ | Fallback model suited for basic descriptive analytics. |
 
 ---
 
 ## Installation
-```console
-pip install knowledge_insight
+
+To install the agent package:
+
+```bash
+cd agents/sub_agents/knowledge_insight
+pip install -e .
 ```
 
+---
+
 ## License
-MIT © 2026 Agentic Tracking System
+
+See LICENSE in the project root.

@@ -1,6 +1,8 @@
-# Agents
+# Agents Package
 
-Core multi-agent system that orchestrates data processing, validation, grouping, and analytical insights for student attendance tracking.
+Core multi-agent intelligence layer of the **Agentic Tracking System**. This package orchestrates data ingestion, rule-based validation, graph-based clustering, and natural-language insight generation using the **smolagents** framework.
+
+---
 
 ## Index
 
@@ -18,152 +20,147 @@ Core multi-agent system that orchestrates data processing, validation, grouping,
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Basic Usage](#basic-usage)
-  - [Running Tests](#running-tests)
 - [Configuration](#configuration)
 - [Error Handling](#error-handling)
 - [Monitoring & Logging](#monitoring--logging)
 - [License](#license)
 
+---
 
 ## Overview
 
-The agents module implements a hierarchical agent architecture where:
-- **Orchestrator Agent** acts as the central controller, parsing user requests or autonomous system triggers and delegating tasks
-- **Sub-agents** handle specialized responsibilities with narrow, well-defined scopes
-- Each agent is modular, testable, and reusable across different contexts
+The `agents` package implements a hierarchical agent workflow:
+- **Orchestrator Agent**: Acts as the central controller, scope validator, routing planner, and final response composer. It receives user inputs or system events and delegates work to sub-agents.
+- **Sub-Agents**: Specialized units with a narrow, well-defined scope (validation, ingestion, grouping, or analysis).
+- **Context Preservation**: Employs an isolated memory layer to track conversation states without leaks.
+
+---
 
 ## Architecture
 
+```text
+Orchestrator Agent (Entry Point & Planner)
+└── Sub-Agents
+    ├── Data Pipeline Agent (Stage 1)
+    │   ├── Ingests raw badge logs & calendar files
+    │   └── Standardizes and structures data into clean sessions
+    ├── Data Validation Agent (Stage 2)
+    │   ├── Performs Device validation (clock resets, duration)
+    │   ├── Performs Timestamp validation (valid dates, holiday checks)
+    │   └── Performs Identity validation (hex patterns, redundancy)
+    ├── Group Identifier Agent (Stage 3)
+    │   ├── Generates student co-attendance features
+    │   └── Applies Louvain clustering to identify cohort communities
+    └── Knowledge Insight Agent (Stage 4)
+        ├── Analyzes natural-language queries
+        └── Generates and executes sandboxed Python code over datasets
+
+Shared Core
+└── Memory System (Short-term, session-isolated memory manager)
 ```
-Orchestrator Agent (Entry Point)
-└── Sub Agents
-    ├── Data Pipeline Agent
-    │   ├── Data Fetcher
-    │   ├── Preprocessor
-    │   └── Session Builder
-    ├── Data Validation Agent
-    │   ├── Device Validator
-    │   ├── Timestamp Validator
-    │   └── Identity Validator
-    ├── Group Identifier Agent
-    │   ├── Feature Engineer
-    │   ├── Louvain Clustering
-    │   └── Group Analyzer
-    └── Knowledge Insight Agent
-        ├── Query Analyzer
-        ├── Code Generator
-        └── Safe Executor
-Shared Components
-└── Memory Package (Short-term, Long-term)
-```
+
+---
 
 ## Components
 
 ### orchestrator/
-
-Central entry point that receives user queries and coordinates execution across sub-agents.
-
-**Responsibilities:**
-- Parse and classify user requests
-- Design execution workflows
-- Aggregate results into coherent responses
-- Handle errors and graceful degradation
+The master control agent.
+* **Responsibilities**:
+  * Validates whether user queries are within the allowed analytics scope.
+  * Checks existing memory context using an **Insight-First** resolution policy.
+  * Dispatches sub-agents with goal-level descriptions instead of technical details (hiding paths/tools).
+  * Cleans and formats sub-agent results into a polite, professional final answer.
 
 ### sub_agents/
-
-Specialized agents, each handling a specific domain of the tracking system.
+Specialized computational and reasoning agents.
 
 #### data_pipeline/
-
-Handles raw data ingestion, cleaning, and preprocessing.
-
-- **Fetch**: Retrieves attendance records and schedules from data sources
-- **Clean**: Removes duplicates, handles missing values, normalizes formats
-- **Build Sessions**: Constructs cleaned session objects with metadata
+* **Purpose**: Fetches, cleans, and standardizes data.
+* **Responsibilities**: Downloads raw logs and calendar resources, deduplicates check-ins, and creates structured session objects.
 
 #### data_validation/
-
-Runs multi-layer validation to detect anomalies and inconsistencies.
-
-- **Device Validation**: Checks for suspicious device patterns
-- **Timestamp Validation**: Identifies impossible or illogical timestamps
-- **Identity Validation**: Verifies student identity consistency
+* **Purpose**: Performs quality assurance checks.
+* **Responsibilities**: Executes device, timestamp, and identity validations to flag data corruption and potential check-in spoofing.
 
 #### group_identifier/
-
-Build behavioral groups through clustering analysis.
-
-- **Feature Engineering**: Creates behavioral features from sessions
-- **Clustering**: Applies Louvain algorithm to identify student communities
-- **Group Analysis**: Characterizes groups by patterns and attributes
+* **Purpose**: Clusters participants based on behavior.
+* **Responsibilities**: Extracts features and runs the Louvain algorithm to partition participants into engagement cohorts.
 
 #### knowledge_insight/
-
-Generates custom analytical insights through safe code execution.
-
-- **Query Understanding**: Parses natural language analysis requests
-- **Code Generation**: Creates safe Python analysis snippets
-- **Execution**: Runs code with resource limits and safety checks
+* **Purpose**: Generates interactive query results.
+* **Responsibilities**: Receives target analytical questions, generates appropriate Python scripts, and runs them securely inside a restricted sandbox environment.
 
 ### memory/
+* **Purpose**: Maintains conversation history.
+* **Responsibilities**: Provides chat-scoped short-term memory to keep track of user context within a session, preventing prompt injection across sessions.
 
-Shared memory package providing persistence capabilities for agents.
-
-- **Short-Term Memory**: Conversation history and context management
-- **Long-Term Memory**: Persistent storage across sessions (planned)
-- **Memory Manager**: Coordinator for multiple memory types
+---
 
 ## Workflow Example
 
-### User Query: "What are the attendance patterns of students in group 2?"
+### User Query: "Are there any anomalies in Group 2's attendance?"
 
-1. **Orchestrator** receives query
-2. validates scope and safety
-3. interprets user intent
-4. designs execution plan
-5. selects and orders required sub-agents
-6. dispatches agents sequentially
-7. monitors failures and adapts safely
-8. synthesizes final user-facing response
+1. **Orchestrator** receives the query and validates that it falls within the allowed attendance scope.
+2. It checks its **Short-Term Memory** to see if relevant context was recently loaded.
+3. If fresh data is required, it plans the execution sequence and invokes sub-agents.
+4. It calls **Knowledge Insight** with instructions to evaluate Group 2 against security alert logs.
+5. The sub-agent generates a sandboxed script, executes it, and returns the list of anomalies.
+6. The Orchestrator improves formatting, removes raw tracebacks, and delivers a clean final summary to the user.
 
-Note : Orchestrator have short memory, so it will not remember previous conversations that will help him to understand the context of the conversation and sometime will use it is memory to help him to answer the user query or to plan the execution of the sub-agents.
+> **Note**: The Orchestrator leverages a short-term memory system to maintain conversation context across multiple turns, enabling context-aware interactions and avoiding redundant computations by reusing past insights.
+
+---
 
 ## Getting Started
 
+### Installation
+
+Install all agent modules in editable mode from the root directory:
+
+```bash
+pip install -e ./agents/orchestrator -e ./agents/sub_agents/data_pipeline -e ./agents/sub_agents/data_validation -e ./agents/sub_agents/group_identification -e ./agents/sub_agents/knowledge_insight
+```
+
 ### Basic Usage
+
+You can invoke the orchestrator directly from Python:
 
 ```python
 from agents.orchestrator import orchestrator_run
 
-response = orchestrator_run("Show me abnormal attendance patterns.")
+# Execute query
+response = orchestrator_run("Show me the total check-in count for the last session.")
 print(response)
 ```
+
+---
+
 ## Configuration
 
-Each agent reads from `config.json`:
+All agents load configuration details dynamically from the global `config.json` file. Each agent reads settings under its respective key in the `LLM_MODULES` section:
+* **LLM Model Families**: Defines primary and fallback models (e.g. OpenAI, Mistral, Llama, codestral).
+* **Retry Policies**: Configures execution retries for API resilience.
+* **Module-Specific Parameters**: Such as similarity thresholds for Louvain clustering and AST execution limitations for knowledge insights.
+
+---
 
 ## Error Handling
 
-Agents implement graceful degradation:
+The package enforces strict execution safety policies:
+* **Fail-Closed Principle**: If a scope violation or potential prompt injection is detected, the query is rejected immediately with a canonical warning message.
+* **Sub-Agent Halting**: In multi-agent pipelines, any failure in a step (e.g., pipeline ingestion fails) halts the chain immediately to prevent processing stale or corrupt records.
+* **Graceful Degradation**: User-facing responses summarize errors at a high level and hide detailed raw tracebacks for system safety.
 
-- **Critical Errors**: Stop execution, return error details
-- **Warning Errors**: Continue with partial results, log warning
-- **Data Errors**: Fallback to cached data or defaults
-
-All errors are logged with full context for debugging.
+---
 
 ## Monitoring & Logging
 
-All agents log to `logs/agents.log`:
+Execution telemetry is managed by the structured logger in `utils`. Logs are written directly to standard output and persisted on disk:
+* **Agents Telemetry**: Located at `logs/agents.log` (or output path defined in config), recording tool execution times, prompt tokens, and validation status.
+* **Server Logs**: Tracks API calls and event scheduler status (e.g. tracking concluded calendar events and auto-triggering workflows).
 
-```
-2026-01-11 16:09:55 | run.py | INFO |       AGENTIC TRACKING SYSTEM - DASHBOARD & API
-2026-01-11 16:09:56 | run.py | INFO | Starting API on http://localhost:8000...
-2026-01-11 16:09:56 | run.py | INFO | Starting Dashboard...
-2026-01-11 16:09:56 | run.py | INFO | Both services are starting. Press Ctrl+C to stop both.
-2026-01-11 16:10:12 | api\services\session_service.py | INFO | Loading all sessions and detailed alerts
-2026-01-11 16:10:13 | api\services\session_service.py | INFO | Loaded 101 sessions with detailed alerts successfully
-```
+---
 
 ## License
-See LICENSE in project root
+
+See LICENSE in the project root.

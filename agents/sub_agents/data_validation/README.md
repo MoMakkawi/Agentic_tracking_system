@@ -1,103 +1,59 @@
-# Data Validation Agent – Stage 2  
-------------------------------------------------
+# Data Validation Agent – Stage 2
+
+The `data_validation` agent is the **second-stage agent** of the Agentic Tracking System. It validates preprocessed attendance sessions, executes three specialized anomaly validation checks (device, timestamp, identity), and writes CSV anomaly reports.
+
+---
 
 ## Table of Contents
-- [Overview](#overview)  
-- [Agent Scope](#agent-scope)  
-- [Tools](#tools)  
-- [Workflow](#workflow)  
-- [Hard Rules](#hard-rules)  
-- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)  
-- [Installation](#installation)  
+
+- [Overview](#overview)
+- [Agent Scope](#agent-scope)
+- [Tools](#tools)
+- [Workflow](#workflow)
+- [Hard Rules](#hard-rules)
+- [Recommended Models](#recommended-models)
+- [Installation](#installation)
 - [License](#license)
 
+---
+
 ## Overview
-`DATA_VALIDATION` is the **second-stage agent** of the Agentic Tracking System.  
-It **validates preprocessed attendance sessions**, runs **three anomaly-focused checks** (device, timestamp, identity), and **reports where the anomaly reports were saved—nothing else**.
+
+Data validation ensures the integrity, compliance, and authenticity of badge logs. By running sequential validators, the system flags hardware misconfigurations, illegal check-in dates/times, and redundant or suspicious identity scans before cohort grouping.
+
+---
 
 ## Agent Scope
-- **Role**: Stage-2 anomaly validation only.  
-- **Input**: preprocessed session dataset.  
-- **Forbidden**: clustering, grouping, insights.  
-- **Output**: one fixed final confirmation message.
+
+- **Role**: Stage-2 anomaly validation.
+- **Input**: Preprocessed session data.
+- **Forbidden**: Cohort clustering, query answering, and data modification.
+- **Output**: Reports paths to generated validation logs.
+
+---
 
 ## Tools
 
-### device_validation_tool
-- Internally uses the **DeviceValidator** class (see details below).  
-- Returns `<device_anomaly_report_path>` or raises.
+### `device_validation_tool`
+- Scans preprocessed sessions to detect device-level errors (missing identifiers, long durations, and clock resets).
+- Internally wraps the `DeviceValidator` logic.
+- **Returns**: The path to the device anomalies CSV report.
 
-<details>
-<summary>DeviceValidator internals (click to expand)</summary>
+### `timestamp_validation_tool`
+- Verifies check-in timestamps against semester dates, daily operating hours, and holiday schedules.
+- Internally wraps the `TimestampValidator` logic.
+- **Returns**: The path to the timestamp anomalies CSV report.
 
-The **DeviceValidator** analyzes device-level behavior across sessions and produces device–session anomaly alerts.
-
-| Step | What it does |
-|------|--------------|
-| **Load** | Read preprocessed session JSON |
-| **Flatten** | Build per-log DataFrame with `session_id`, `device_id`, timestamps |
-| **Detect missing data** | Flag missing `device_id`, `session_id`, or `received_at` |
-| **Detect clock resets** | Flag date mismatches between log date and received date |
-| **Detect long sessions** | Flag device–session durations exceeding configured hours |
-| **Collect alerts** | Aggregate issues per device–session |
-| **Save** | Persist alerts to CSV |
-
-Entry point: `DeviceValidator.run()` → alerts, then `save()` → CSV path.
-</details>
-
----
-
-### timestamp_validation_tool
-- Internally uses the **TimestampValidator** class (see details below).  
-- Returns `<timestamp_anomaly_report_path>` or raises.
-
-<details>
-<summary>TimestampValidator internals (click to expand)</summary>
-
-The **TimestampValidator** checks time-based correctness of check-ins.
-
-| Step | What it does |
-|------|--------------|
-| **Load** | Read preprocessed session JSON |
-| **Flatten** | Build timestamped table with `uid`, `timestamp`, `session_id`, `device_id` |
-| **Validate dates** | Flag check-ins outside semester range |
-| **Validate hours** | Flag check-ins outside daily allowed time window |
-| **Detect invalid days** | Flag weekend and holiday check-ins |
-| **Collect alerts** | Group reasons per UID–timestamp–session–device |
-| **Save** | Persist alerts to CSV |
-
-Entry point: `TimestampValidator.run()` then `save()` returns CSV path.
-</details>
-
----
-
-### identity_validation_tool
-- Internally uses the **IdentityValidator** class (see details below).  
-- Returns `<identity_anomaly_report_path>` or raises.
-
-<details>
-<summary>IdentityValidator internals (click to expand)</summary>
-
-The **IdentityValidator** analyzes UID behavior across sessions and devices.
-
-| Step | What it does |
-|------|--------------|
-| **Load** | Read preprocessed session JSON |
-| **Flatten** | Build DataFrame with `uid`, `session_id`, `device_id`, `redundant_count` |
-| **Flag patterns** | Detect UIDs not matching expected hex-like format |
-| **Detect redundancy** | Flag highly redundant UIDs within sessions |
-| **Detect rarity** | Flag globally rare or single-occurrence UIDs |
-| **Track history** | Record per-UID anomaly sessions and repeat counts |
-| **Collect alerts** | Build UID–device alert rows with reasons |
-| **Save** | Persist alerts to CSV |
-
-Entry point: `IdentityValidator.run()` → alerts, then `save()` → CSV path.
-</details>
+### `identity_validation_tool`
+- Audits student check-in IDs for structural hex patterns, redundancy spikes, and global check-in rarity.
+- Internally wraps the `IdentityValidator` logic.
+- **Returns**: The path to the identity anomalies CSV report.
 
 ---
 
 ## Workflow
-Executed **exactly** as follows; any failure **halts immediately**.
+
+The agent executes the validation check tools in an **immutable** sequence:
 
 ```python
 device_report_path = device_validation_tool()
@@ -109,32 +65,42 @@ print("Timestamp anomalies report path:", timestamp_report_path)
 identity_report_path = identity_validation_tool()
 print("Identity anomalies report path:", identity_report_path)
 
-final_answer("Device & Timestamp & Identity Validations complete.")
+final_answer("Validation complete. Do you want to categorize attendees into groups?")
 ```
+
+---
 
 ## Hard Rules
-- The agent is authorized to execute **only** the following tools:
-  - `device_validation_tool()`
-  - `timestamp_validation_tool()`
-  - `identity_validation_tool()`
-- Unless explicitly restricted by the task, **all three tools must be executed**.
-- Each tool’s returned value **will be printed** using the exact descriptive prefixes defined in the workflow.
-- The agent **must not fabricate** file paths or infer tool outputs.
-- No additional logic is permitted, including loops, retries, conditionals, wrappers, or helper functions.
-- The final agent response **must be exactly**:
 
-Device & Timestamp & Identity Validations complete.
+- **Execution Compliance**: Unless explicitly instructed to process a subset, the agent must run **all three tools** in the exact order: `device_validation_tool` → `timestamp_validation_tool` → `identity_validation_tool`.
+- **Formatting Constraints**: The output files must be printed using the exact console prefixes (`Device anomalies report path:`, etc.) defined in the workflow.
+- **Safety Policy**: The agent must not fabricate file paths or inject custom verification logic (no loops, conditionals, or wrappers are allowed).
 
-## Recommended Models (Ragarenn)
-| Model | Stars | Notes |
-|-------|-------|-------|
-| `analyse-de-risques` | ⭐⭐⭐ | Optimal for anomaly detection and validation workflows |
-| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐⭐ | Reliable for structured reasoning and complex instruction handling |
-| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐ | Best suited for lightweight validation tasks |
+---
+
+## Recommended Models
+
+The agent utilizes models hosted on the **RAGaRenn** platform, selected in the following preference order:
+
+| Model | Rating | Notes |
+| :--- | :--- | :--- |
+| **`RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic`** | ⭐⭐⭐ | Strong structured reasoning, excellent tool parameter control, and compliance with immutable sequences. |
+| **`analyse-de-risques`** | ⭐⭐ | Tailored for risk categorization and security auditing checks. |
+| **`mistralai/Mistral-Small-3.2-24B-Instruct-2506`** | ⭐ | Fast, lightweight instruction-following model for basic validation workflows. |
+
+---
 
 ## Installation
-```console
-pip install data_validation
+
+To install the agent package:
+
+```bash
+cd agents/sub_agents/data_validation
+pip install -e .
 ```
+
+---
+
 ## License
-See LICENSE in project root
+
+See LICENSE in the project root.

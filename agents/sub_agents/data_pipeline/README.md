@@ -1,70 +1,64 @@
 # Data Pipeline Agent – Stage 1
-------------------------------------------------
+
+The `data_pipeline` agent is the **first-stage agent** of the Agentic Tracking System. It ingests raw attendance logs and schedules, cleans them, structures them into sessions, and returns a single preprocessed dataset.
+
+---
 
 ## Table of Contents
-- [Overview](#overview)  
-- [Agent Scope](#agent-scope)  
-- [Tools](#tools)  
-- [Workflow](#workflow)  
-- [Hard Rules](#hard-rules)  
-- [Recommended Models (Ragarenn)](#recommended-models-ragarenn)  
-- [Installation](#installation)  
+
+- [Overview](#overview)
+- [Agent Scope](#agent-scope)
+- [Tools](#tools)
+- [Workflow](#workflow)
+- [Hard Rules](#hard-rules)
+- [Recommended Models](#recommended-models)
+- [Installation](#installation)
 - [License](#license)
 
+---
+
 ## Overview
-`data_pipeline` is the **first-stage agent** of the Agentic Tracking System.  
-It **ingests raw attendance logs & calendars**, cleans them, and returns a single pre-processed dataset—nothing more.
+
+This agent is responsible for raw file extraction and standardization. It maps raw check-in records to calendar events defined in `.ics` schedules, deduplicates badge scans, and prepares a structured JSON file for downstream validation and cohort grouping.
+
+---
 
 ## Agent Scope
-- **Role**: Stage-1 data ingestion & cleaning only.  
-- **input**: from config files URLs to raw attendance logs & calendars.  
-- **Output**: one plain confirmation sentence after successful run.
+
+- **Role**: Stage-1 data ingestion and preprocessing.
+- **Input**: Configured URLs pointing to raw check-in logs and iCalendar schedules.
+- **Forbidden**: Anomaly detection, validation auditing, cohort clustering, and analytical answering.
+- **Output**: A confirmation message indicating successful preprocessing.
+
+---
 
 ## Tools
 
-### fetch_tool
-- Downloads `.ics` + `.logs` from configured source (URLs) and store them in the configured paths, internally uses the `DataFetcher` class (see details below).
-- Returns `{"logs":"<path>","ics":"<path>"}` or raises.
+### `fetch_tool`
+- Downloads raw `.jsonl` check-in logs and `.ics` calendars from configured endpoints and persists them to configured target directories.
+- Internally wraps the `DataFetcher` helper.
+- **Returns**: A directory map (e.g., `{"logs": "<path>", "ics": "<path>"}`).
 
-<details>
-<summary>DataFetcher internals (click to expand)</summary>
+### `preprocess_tool`
+- Deduplicates raw badge scans (tracking duplicate counts), structures scans into sessions, and matches sessions to overlapping scheduled events.
+- Internally wraps the `Preprocessor` logic.
+- **Returns**: The output filepath of the clean preprocessed dataset.
 
-The **DataFetcher** class handles the actual download and persistence.
+---
 
-| Step | What it does |
-|------|--------------|
-| **Validate** | Check that all required URLs & target paths are present |
-| **Download** | Fetch JSONL logs & ICS calendars with timeout / retry logic |
-| **Store** | Write bytes to disk via `RepositoryFactory` (JSONL → logs, ICS → calendar) |
-| **Return** | `{"logs":"<path>","ics":"<path>"}` on success, raises on any failure |
+## Workflow
 
-Entry point: `DataFetcher.run()` executes download + save and returns the path dict.
-</details>
+The agent executes the pipeline tools in an **immutable** sequence:
 
-### preprocess_tool
-- Internally uses the `Preprocessor` class (see details below).  
-- Returns `<clean_dataset_path>` or raises.
+1. **Download Raw Data**: Call `fetch_tool()` to retrieve files.
+2. **Standardize and Enrich**: Call `preprocess_tool()` to process and align logs with calendars.
+3. **Notify Orchestrator**: Call `final_answer()` to return the pipeline status.
 
-<details>
-<summary>Preprocessor internals (click to expand)</summary>
-
-The **Preprocessor** loads raw attendance logs & ICS calendars, cleans and deduplicates scans, builds session objects, enriches them with overlapping calendar events, and writes the final structured dataset to JSON.
-
-| Step | What it does |
-|------|--------------|
-| **Load** | Read JSONL logs + ICS events from configured paths |
-| **Clean** | Drop redundant badge scans per UID, store redundancy stats |
-| **Sessionise** | Aggregate logs into sessions (counts, timestamps, metadata) |
-| **Enrich** | Match each session with overlapping ICS event(s) and attach titles |
-| **Save** | Persist enriched sessions to a JSON file for downstream agents |
-
-Entry point: `Preprocessor.run()` executes the full chain and returns the output path.
-</details>
-
-Executed **exactly** in this order; any failure **halts immediately**.
+---
 
 ## Hard Rules
-- Emit **only** the mandatory 4-line block:
+
+- **Code Block Execution**: The agent must output and execute **only** the following 4-line python block:
   ```python
   fetched_file_paths = fetch_tool()
   print(fetched_file_paths)
@@ -72,22 +66,36 @@ Executed **exactly** in this order; any failure **halts immediately**.
   clean_data_path = preprocess_tool()
   print(clean_data_path)
 
-  final_answer("Fetch and preprocess completed.")
+  final_answer("Data fetched and preprocessed successfully. Do you want to validate it?")
   ```
-- No extra logic, loops, logs, or exposed paths.  
-- Agent answer with one sentence like: “Fetch and preprocess completed.”
+- **Constraints**: No conditionals, loops, retries, wrappers, helper functions, or additional reasoning steps are allowed.
+- **Failure Policy**: Execution halts immediately on any tool failure or empty output.
 
-## Recommended Models (Ragarenn)
-| Model | Stars | Notes |
-|-------|-------|-------|
-| `codestral:latest` | ⭐⭐⭐ | Built for pipelines, tools, deterministic execution |
-| `mistralai/Mistral-Small-3.2-24B-Instruct` | ⭐⭐ | Solid instruction following + tool usage |
-| `RedHatAI/Llama-3.3-70B-Instruct` | ⭐ | Use only if pipeline logic grows complex |
+---
+
+## Recommended Models
+
+The agent utilizes models hosted on the **RAGaRenn** platform, selected in the following preference order:
+
+| Model | Rating | Notes |
+| :--- | :--- | :--- |
+| **`analyse-de-risques`** | ⭐⭐⭐ | Highly optimized for data extraction, schema mapping, and preprocessing logic. |
+| **`openai/gpt-oss-120b`** | ⭐⭐ | Reliable reasoning capabilities for processing raw calendar dates and tables. |
+| **`mistralai/Mistral-Small-3.2-24B-Instruct-2506`** | ⭐ | Lightweight, deterministic execution of code and tool parameters. |
+
+---
 
 ## Installation
-```console
-pip install data_pipeline
+
+To install the agent package:
+
+```bash
+cd agents/sub_agents/data_pipeline
+pip install -e .
 ```
 
+---
+
 ## License
-See LICENSE in project root
+
+See LICENSE in the project root.

@@ -1,7 +1,14 @@
 # Agentic Tracking System - Utils Package
 
+The **Utils Package** is the foundational shared library for the Agentic Tracking System, abstracting complex low-level operations into clean, reusable interfaces. It provides essential services such as configuration management with hot-reloading, a unified storage repository pattern, DTO (Data Transfer Object) mapping, structured logging, and helpers for timezone operations.
+
+Designed specifically for multi-agent architectures, this package ensures data consistency, error handling, and external model integrations (Google Gemini, RAGaRenn) across the system.
+
+---
+
 ## Index
-- [Overview](#Overview)
+
+- [Overview](#overview)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
 - [Key Features](#key-features)
@@ -13,14 +20,14 @@
   - [Using the Storage Repositories](#using-the-storage-repositories)
   - [Managing Configuration](#managing-configuration)
   - [Structured Logging](#structured-logging)
+  - [Time Utilities](#time-utilities)
+- [License](#license)
 
 ---
 
 ## Overview
 
-The **Utils Package** is the foundational library for the **Agentic Tracking System**, abstracting complex low-level operations into clean, reusable interfaces. It provides essential services such as configuration management with auto-reloading, a unified storage repository pattern, structured logging, and robust data transfer objects (DTOs).
-
-Designed for multi-agent architectures, this package ensures consistency across data access, error handling, and external service integration (Google Gemini, Ragarenn).
+The `utils` package ensures that both the API backend and the orchestrated AI Agents read from the same configuration, interact with the same storage schemas, and log in a standardized format. 
 
 ---
 
@@ -29,47 +36,41 @@ Designed for multi-agent architectures, this package ensures consistency across 
 To install the package in your local environment, run the following command from the `utils` directory:
 
 ```bash
-pip install .
-```
-
-Or if you are managing dependencies with Hatch/Poetry:
-
-```bash
-hatch shell
+pip install -e .
 ```
 
 ---
 
 ## Project Structure
 
-The package is organized efficiently to separate concerns between data, logic, and infrastructure:
+The package is organized to separate concerns between data mapping, storage adapters, helpers, and AI models:
 
 ```text
 src/utils/
-├── config.py           # Centralized threaded configuration manager
-├── logger.py           # Structured logging setup
-├── Secrets.py          # Secure credentials handling
+├── config.py           # Thread-safe configuration manager with file watcher
+├── logger.py           # Structured logging utility
+├── Secrets.py          # Secure environment variables helper
 ├── DTOs/               # Data Transfer Objects (Pydantic-style models)
-│   ├── alerts/
-│   ├── attendance/
-│   └── groups/
-├── mappers/            # Domain <-> DTO transformation logic
+│   ├── alerts/         # Validation alerts (device, identity, timestamp)
+│   ├── attendance/     # Sessions and attendance logs
+│   └── groups/         # Student cohort structures
+├── mappers/            # Domain model <-> DTO transformation logic
 │   ├── alert_mappers.py
 │   ├── group_mappers.py
 │   └── session_mappers.py
-├── storage/            # Repository Pattern Implementation
+├── storage/            # Repository Pattern implementation
 │   ├── base.py         # Abstract Base Class
 │   ├── factory.py      # Repository Factory
-│   ├── csv_repo.py     # CSV Storage
-│   ├── json_repo.py    # JSON Storage
-│   ├── jsonl_repo.py   # JSONL Storage
-│   └── ics_repo.py     # iCalendar Storage
-├── helpers/            # Utility functions
+│   ├── csv_repo.py     # CSV Storage adapter
+│   ├── json_repo.py    # JSON Storage adapter
+│   ├── jsonl_repo.py   # JSONL Storage adapter
+│   └── ics_repo.py     # iCalendar (ICS) Storage adapter
+├── helpers/            # Helper utilities
 │   ├── general.py
-│   └── time.py
-└── models/             # AI Integration
-    ├── gemini.py
-    └── Ragarenn.py
+│   └── time.py         # Timezone conversion and checking helpers
+└── models/             # AI model integration layer
+    ├── gemini.py       # Google Gemini model wrapper
+    └── Ragarenn.py     # RAGaRenn client wrapper
 ```
 
 ---
@@ -77,29 +78,29 @@ src/utils/
 ## Key Features
 
 ### Storage Layer
-A robust **Repository Pattern** implementation that abstracts file I/O. It supports multiple backends (`.json`, `.jsonl`, `.csv`, `.ics`) through a unified interface (`RepositoryFactory`).
-*   **Automatic type detection** based on file extension.
-*   **CRUD operations**: `read_all`, `add`, `update`, `delete`.
-*   **Object-Style Support**: `read`, `save`, and `update_dict` for managing settings or state files.
-*   **Event Monitoring**: `IcsRepository.get_ending_events` for finding events ending within a specific time window.
-*   **Schema introspection**: `get_schema_info`.
+A robust **Repository Pattern** implementation that abstracts file I/O operations. It supports multiple backends (`.json`, `.jsonl`, `.csv`, `.ics`) through a unified factory interface (`RepositoryFactory`).
+* **Automatic Type Detection**: Selects the appropriate repository driver based on the file extension.
+* **CRUD Operations**: Standardized methods (`read_all`, `add`, `update`, `delete`).
+* **Settings & State Management**: Supports `read` and `save` for managing configurations or runtime states.
+* **iCalendar Event Monitoring**: `IcsRepository.get_ending_events` retrieves events ending within a specific time window, supporting scheduler triggers.
+* **Schema Introspection**: `get_schema_info` returns structural schema layouts for downstream AI agents.
 
 ### Configuration Management
-A thread-safe configuration manager that supports:
-*   **Hot-reloading**: Automatically detects changes to `config.json` and updates the application state in real-time.
-*   **Environment variable overrides**: Seamlessly inject secrets or environment-specific settings.
-*   **Dot-notation access**: Access deeply nested config keys easily (e.g., `config.SOURCE_URLS.LOGS`).
+A thread-safe configuration manager featuring:
+* **Hot-Reloading**: A background watcher thread automatically detects updates in `config.json` and updates the runtime configuration state without requiring a service restart.
+* **Environment Variable Overrides**: Securely injects credentials and secrets.
+* **Dot-Notation Access**: Access nested settings intuitively (e.g., `config.SOURCE_URLS.LOGS`).
 
 ### Data Transfer Objects (DTOs)
-Strictly typed data structures for core domain entities:
-*   **Attendance**: Tracking student presence.
-*   **Groups**: Managing agent or student groupings.
-*   **Alerts**: System notifications and anomalies.
+Strictly typed data structures using Pydantic schemas for core system domains:
+* **Attendance**: Managing raw scans and structured attendance sessions.
+* **Groups**: Maintaining cohort clusters.
+* **Alerts**: Encapsulating anomaly classifications (device, identity, timestamp).
 
 ### AI Models
-Pre-configured wrappers for:
-*   **Google Gemini**: For generative AI tasks.
-*   **Ragarenn**: Custom RAG (Retrieval-Augmented Generation) implementation.
+Unified model wrappers that present a clean interface to `smolagents`:
+* **Google Gemini**: Integrates Gemini generative AI capabilities.
+* **RAGaRenn**: A client wrapper for the RAGaRenn open-source generative AI platform.
 
 ---
 
@@ -107,7 +108,7 @@ Pre-configured wrappers for:
 
 ### Using the Storage Repositories
 
-The `RepositoryFactory` automatically selects the correct driver for your file type.
+The `RepositoryFactory` automatically selects the correct driver for your file type:
 
 ```python
 from utils import RepositoryFactory
@@ -131,7 +132,7 @@ user_repo.delete("1")
 
 ### Managing Configuration
 
-Load the configuration once at startup. The watcher thread handles updates automatically.
+Load the configuration once at startup. The watcher thread handles updates automatically:
 
 ```python
 from utils import load_config, get_config
@@ -151,13 +152,12 @@ print(f"System running with log level: {log_level}")
 
 ### Structured Logging
 
-Use the pre-configured logger for consistent output formats.
+Use the pre-configured logger for consistent output formats:
 
 ```python
 from utils import logger
 
 try:
-    # Business logic here
     logger.info("Processing started...")
 except Exception as e:
     logger.error(f"Processing failed: {e}")
@@ -180,4 +180,4 @@ is_now = TimestampHelper.is_within_window(current_ts)
 
 ## License
 
-See LICENSE in project root
+See LICENSE in the project root.
