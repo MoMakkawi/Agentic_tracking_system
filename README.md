@@ -25,7 +25,7 @@ Traditional attendance systems fail silently — producing noisy logs, missed an
 
 ### Demo Video
 
-[![Watch the Demo](./Assets/demo-thumbnail.png)](./Assets/ATS%20platform%20short%20demo.mp4)
+[![Watch the Demo](./Assets/demo-thumbnail.png)](https://www.youtube.com/watch?v=O2nUgC_Srf0)
 
 Click the image above to watch the full demo of the Agentic Tracking System.
 
